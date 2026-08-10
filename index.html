@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Facturas AGX - Pro</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Facturas AGX" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Facturas%20AGX%22%2C%22short_name%22%3A%22Facturas%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f1115%22%2C%22theme_color%22%3A%22%23000000%22%7D" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 20px); }
+
+      /* MATA-SANDBOX AGRESIVO (el banner lo inyecta el entorno de pruebas) */
+      [class*="sandbox"], [id*="sandbox"], [class*="preview-banner"],
+      button[title*="Sandbox"], a[title*="Sandbox"],
+      #csb-watermark, .csb-watermark, iframe[src*="codesandbox"], div[style*="z-index: 99999"], 
+      .csb-badge, div[class*="sandbox-badge"], a[href*="codesandbox"] {
+        display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -9999 !important; height: 0 !important; width: 0 !important; position: absolute !important;
+      }
+
+      /* SCROLL NATIVO Y FIJO */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f3f4f6; color: #111827; -webkit-tap-highlight-color: transparent;
+        /* Márgenes para que la cabecera y el footer no tapen la factura al hacer scroll */
+        padding-top: calc(60px + var(--safe-top));
+        padding-bottom: calc(90px + var(--safe-bottom));
+        overflow-x: hidden;
+      }
+
+      .app-header {
+        position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid #e5e7eb; padding: calc(12px + var(--safe-top)) 16px 12px 16px;
+        z-index: 1000; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center;
+      }
+      .bottom-nav {
+        position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid #e5e7eb;
+        padding: 10px 12px calc(14px + var(--safe-bottom)) 12px; z-index: 1000;
+      }
+
+      /* BOTONERA Y LOGO */
+      .logo-agx { cursor: pointer; background-color: #000000; color: #ffffff; font-weight: 900; font-size: 13px; letter-spacing: 2px; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; height: 32px; min-width: 56px; overflow: hidden; }
+      /* Con imagen: el logo se encaja centrado y sin deformarse dentro del rectángulo negro */
+      .logo-agx.con-imagen { padding: 5px 8px; }
+      .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
+      .btn-group { display: flex; gap: 7px; align-items: center; }
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 0 12px; height: 38px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+      .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+      .btn-icon-only { width: 38px; padding: 0; }
+      /* Botones que no aplican a la pestaña actual: apagados y no pulsables */
+      .btn.desactivado { opacity: 0.35; pointer-events: none; filter: grayscale(1); }
+      .btn:active { transform: scale(0.95); }
+      .btn-black { background-color: #000000; color: #ffffff; }
+      .btn-gray { background-color: #e5e7eb; color: #374151; }
+            .nav-grid { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; height: 44px; }
+      .nav-btn span { white-space: nowrap; }
+      .nav-btn svg { width: 17px; height: 17px; }
+      .nav-btn { border-radius: 12px; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; height: 100%;}
+      .nav-btn.active { background-color: #000000; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+      .nav-btn.inactive { background-color: #e5e7eb; color: #4b5563; }
+
+      .main-container { max-width: 900px; margin: 0 auto; padding: 12px; }
+      
+      #a4-wrapper {
+        width: 100%; display: flex; justify-content: flex-start; margin-top: 10px;
+        overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+      }
+      /* En modo "ajustar" el papel cabe entero: lo centramos */
+      #a4-wrapper.fit { justify-content: center; overflow-x: hidden; }
+      
+      /* ESTE ES EL PAPEL A4 REAL (794x1123px). Todo sucede aquí dentro. */
+      .a4-paper {
+        width: 794px; height: 1123px; background: #ffffff;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 12px;
+        padding: 40px; display: flex; flex-direction: row; gap: 24px;
+        flex-shrink: 0; box-sizing: border-box;
+        /* CLAVE: sin esto el papel se encoge hacia su propio centro
+           y deja un hueco enorme encima. */
+        transform-origin: top left;
+      }
+      /* Los campos deben ser seleccionables/tocables siempre */
+      .editable-span, .a4-paper input { -webkit-user-select: text; user-select: text; touch-action: manipulation; }
+
+      /* COLUMNA IZQUIERDA (Todo el contenido menos la barra negra) */
+      .invoice-content {
+        flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+      }
+
+      /* BARRA NEGRA LATERAL (Separada y redondeada) */
+      .invoice-sidebar {
+        width: 70px; background-color: #000000; border-radius: 16px;
+        display: flex; flex-direction: column; align-items: center; padding: 20px 0; overflow: hidden;
+      }
+      
+      /* EL TEXTO DENTRO DE LA BARRA LATERAL */
+      .sidebar-text-container { position: relative; width: 100%; height: 100%; }
+      .sidebar-text {
+        position: absolute; left: 50%; top: 50%;
+        font-weight: 900; color: #fff; white-space: nowrap; text-align: center;
+        display: flex; flex-direction: column; line-height: 1;
+        cursor: grab; touch-action: none;
+      }
+      .sidebar-text { cursor: default; }
+      body.template-editing-mode .sidebar-text { cursor: grab; }
+      body.template-editing-mode .sidebar-text:active { cursor: grabbing; }
+      body.template-editing-mode .sidebar-text { outline: 1px dashed rgba(255,255,255,0.5); }
+      .sidebar-stack span { display: block; line-height: 1; }
+
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+      .box { border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+      .box-white { border: 1px solid #d1d5db; }
+      .box-black { background-color: #000000; color: #ffffff; border: 1px solid #000000; }
+      
+      .box-header { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid rgba(156, 163, 175, 0.25); padding-bottom: 6px; margin-bottom: 4px;}
+      .box-header-title { display: flex; align-items: center; gap: 8px; }
+      .box-white .box-header { color: #000000; } .box-black .box-header { color: #ffffff; }
+
+      .field-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; margin-bottom: 2px;}
+      .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; padding-top: 2px; }
+      .box-white .field-label { color: #6b7280; } .box-black .field-label { color: #9ca3af; }
+
+      /* CAMPOS MULTILÍNEA */
+      .editable-span { font-family: inherit; font-size: 12px; border-bottom: 1px solid transparent; outline: none; display: inline-block; width: 100%; min-height: 16px; word-wrap: break-word; white-space: pre-wrap; transition: border-color 0.2s; cursor: text; padding: 2px 0; }
+      .editable-span:focus { border-bottom-color: #000000; }
+      .box-black .editable-span { color: #ffffff; } .box-black .editable-span:focus { border-bottom-color: #ffffff; }
+      input[type="number"] { font-family: inherit; font-size: 12px; border: none; border-bottom: 1px solid transparent; background: transparent; outline: none; width: 100%; padding: 2px 0; }
+      input[type="number"]:focus { border-bottom-color: #000000; }
+
+      body.template-editing-mode .field-label, body.template-editing-mode .box-header span, body.template-editing-mode th { outline: none; background: rgba(59, 130, 246, 0.08); cursor: text; border-bottom: 1px dashed #3b82f6 !important; }
+      body.template-editing-mode .editable-span { border-bottom: 1px dashed #3b82f6; }
+
+      /* METADATOS Y TABLA */
+      .meta-bar { border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; padding: 12px 0; display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; margin-bottom: 24px; }
+      .meta-item { padding: 0 4px; } .meta-item:not(:last-child) { border-right: 1px solid #e5e7eb; }
+      .meta-label { font-size: 10px; font-weight: 700; color: #6b7280; display: block; margin-bottom: 4px; text-transform: uppercase; }
+
+      table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 16px;}
+      th { background-color: #000000; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 12px 10px; text-align: left; }
+      th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      td.col-actions { text-align: center; vertical-align: middle; padding-left: 4px; padding-right: 0; }
+      th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px;}
+      /* Al exportar/imprimir se oculta la columna de acciones, asi que la de TOTAL
+         pasa a ser la ultima visible y necesita el borde redondeado. */
+      body.exportando th.col-total, body.exportando td.col-total { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px; }
+      @media print {
+        th.col-total, td.col-total { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px; }
+      }
+      td { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; font-size: 11px; vertical-align: top;}
+      td:last-child { padding-right: 16px;}
+
+      .totals-area { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
+      /* Los importes se alinean exactamente con la columna TOTAL de la tabla
+         y con el importe de la barra negra (mismo padding derecho de 16px). */
+      .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 0; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 16px; }
+      .subtotals-grid > div { display: flex; align-items: center; justify-content: flex-end; }
+      .amount-align { font-weight: 700; color: #111827; font-variant-numeric: tabular-nums; text-align: right; }
+      
+      /* BARRA TOTAL (Mismo ancho que la tabla) */
+      .total-bar { background-color: #000000; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
+      .total-label { font-size: 14px; font-weight: 900; text-transform: uppercase; text-align: right; }
+      .total-value { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
+
+      /* FOOTER 3 COLUMNAS (Iconos izquierda) */
+      .footer-3-col { border-top: 1px solid #e5e7eb; padding-top: 22px; display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; align-items: stretch; gap: 14px; margin-top: auto;}
+      .v-divider { display: block; background-color: #e5e7eb; width: 1px; }
+      /* Icono encima del texto y todo centrado: cada columna gana el ancho que
+         antes ocupaba el icono, así caben calles e IBAN largos sin partirse. */
+      .footer-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 9px; }
+      .ico-box { width: 14px; height: 14px; }
+      .ico-pie { width: 22px; height: 22px; }
+      .footer-icon { background-color: #f3f4f6; border-radius: 11px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: #000000; flex-shrink: 0; }
+      .footer-content { width: 100%; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+      .footer-content .editable-span { padding: 0; min-height: 0; line-height: 1.45; }
+      .footer-bank .field-label { display: none; }
+      .footer-bank .editable-span { font-size: 11px; }
+      /* Texto que puede ocupar varias líneas sin romper la maqueta */
+      .footer-content .editable-span, .foot-row, .bank-row { width: 100%; word-break: break-word; overflow-wrap: anywhere; }
+
+      /* PDF Y ECO MODO ESTILOS */
+      body.print-eco .box-black, body.print-eco th, body.print-eco .total-bar, body.print-eco .invoice-sidebar { background-color: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
+      body.print-eco .box-black .editable-span, body.print-eco .box-black .box-header, body.print-eco .box-black .field-label, body.print-eco .sidebar-text { color: #000 !important; }
+
+      /* MODO IMPRESIÓN DEL NAVEGADOR */
+      @media print {
+        @page { size: A4 portrait; margin: 6mm; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important;}
+        .app-header, .bottom-nav, .no-print { display: none !important; }
+        #a4-wrapper { transform: none !important; margin: 0 !important; padding: 0 !important; display: block !important; height: auto !important;}
+        .a4-paper { box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; }
+        .editable-span { background: transparent !important; border: none !important; }
+      }
+
+      .history-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      .history-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
+
+      .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+      .modal-card { background: #ffffff; border-radius: 18px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 8px; max-height: 85vh; overflow-y: auto; }
+      .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 8px; }
+      .modal-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+      
+      .accordion-item { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #f9fafb; margin-bottom: 8px;}
+      .ico-ui { width: 17px; height: 17px; flex-shrink: 0; }
+      .acc-tit { display: flex; align-items: center; gap: 9px; }
+      .modal-title .ico-ui, .datos-card-header .ico-ui { width: 18px; height: 18px; }
+      .accordion-btn { width: 100%; padding: 12px 14px; background: #f9fafb; border: none; text-align: left; font-size: 12px; font-weight: 700; color: #111827; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+      .accordion-content { padding: 14px; border-top: 1px solid #e5e7eb; display: none; flex-direction: column; gap: 12px; background: #ffffff; }
+      .config-row { display: flex; flex-direction: column; gap: 4px; }
+      .config-row label { font-size: 11px; font-weight: 600; color: #4b5563; }
+      .config-row select, .config-row input[type="range"], .config-row input[type="text"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 12px; background: #fff;}
+      
+      .lang-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .lang-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; font-size: 11px; font-weight: 600; }
+      .lang-item.active { border-color: #000000; background: #000000; color: #ffffff; }
+
+      .toast #toast-icon { display: flex; }
+      .toast { position: fixed; top: calc(70px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-150px); background: #000000; color: #ffffff; padding: 12px 20px; border-radius: 24px; font-size: 12px; font-weight: 600; z-index: 3000; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+      .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+      .hidden { display: none !important; }
+
+      /* FILAS BORRABLES Y BOTONES + FILA */
+      /* Botón de borrar fila: área de toque cómoda y bien visible */
+      .btn-del-row { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #ef4444; font-weight: 800; font-size: 15px; line-height: 1; cursor: pointer; flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+      .btn-del-row:active { background: rgba(239,68,68,0.28); }
+      .box-black .btn-del-row { color: #fca5a5; background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.45); }
+      .btn-add-field { background: none; border: none; color: #2563eb; font-size: 11px; font-weight: bold; cursor: pointer; text-align: left; padding: 4px 0; }
+      .box-black .btn-add-field { color: #60a5fa; }
+      .foot-row { display: flex; align-items: center; gap: 4px; }
+      /* Cada fila del banco lleva su propia rejilla de columnas fijas: así todas
+         las etiquetas y todos los valores quedan en la misma vertical. */
+      .footer-bank { display: flex !important; flex-direction: column; gap: 2px; align-items: center; }
+      .bank-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+
+      /* SELECTOR DE FECHA NATIVO */
+      .fecha-wrap { position: relative; }
+      .fecha-wrap .editable-span { pointer-events: none; }
+      .fecha-picker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; border: none; background: transparent; -webkit-appearance: none; cursor: pointer; }
+
+      /* ===== VISTA MÓVIL: TODO APILADO Y COMPACTO ===== */
+      body.vista-movil #a4-wrapper { overflow: visible; display: block; }
+      body.vista-movil .a4-paper {
+        width: 100% !important; height: auto !important; transform: none !important;
+        margin: 0 !important; flex-direction: column; padding: 14px; gap: 12px; border-radius: 14px;
+      }
+      body.vista-movil .invoice-content { gap: 12px; }
+      body.vista-movil .invoice-sidebar { width: 100%; height: 42px; border-radius: 10px; padding: 0; order: -1; }
+      body.vista-movil .sidebar-text { position: static; transform: none !important; flex-direction: row !important; gap: 0 !important; letter-spacing: 4px !important; font-size: 16px !important; padding: 0 !important; width: 100%; height: 100%; align-items: center; justify-content: center; cursor: default; }
+      body.vista-movil .sidebar-text .sidebar-stack { display: inline; }
+      body.vista-movil .grid-2 { grid-template-columns: 1fr; gap: 10px; margin-bottom: 0; }
+      body.vista-movil .box { padding: 12px; border-radius: 12px; }
+      body.vista-movil .meta-bar { grid-template-columns: 1fr; text-align: left; gap: 0; padding: 4px 0; margin-bottom: 0; }
+      body.vista-movil .meta-item { border-right: none !important; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+      body.vista-movil .meta-item:last-child { border-bottom: none; }
+
+      /* Tabla en formato tarjeta */
+      body.vista-movil table { margin-bottom: 10px; }
+      body.vista-movil thead { display: none; }
+      body.vista-movil tbody, body.vista-movil tr, body.vista-movil td { display: block; width: 100%; }
+      body.vista-movil tbody tr { border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; position: relative; }
+      /* Rejilla fija: la etiqueta y el valor caen SIEMPRE en la misma columna */
+      body.vista-movil td { padding: 5px 0; border: none; display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 8px; }
+      body.vista-movil td::before { content: attr(data-label); font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; text-align: left; }
+      /* Las celdas llevan text-align en línea (right/center) para la hoja A4;
+         en móvil lo anulamos o RATE y HRS se descuadran respecto a las demás. */
+      body.vista-movil td, body.vista-movil td input { text-align: left !important; }
+      body.vista-movil td.col-desc::before { display: none; }
+      body.vista-movil td.col-desc { grid-template-columns: 1fr; }
+      body.vista-movil td.col-desc { border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; margin-bottom: 4px; }
+      body.vista-movil td input { font-size: 16px !important; width: 100% !important; text-align: left !important; border-bottom: 1px solid #e5e7eb; }
+      body.vista-movil td.col-total { justify-content: flex-start; text-align: left !important; }
+      /* La ✕ del artículo deja de flotar encima del campo de descripción:
+         pasa a ser una línea propia al pie de la tarjeta. */
+      body.vista-movil td.col-actions { display: flex; justify-content: flex-end; border-top: 1px solid #f3f4f6; padding-top: 8px; margin-top: 4px; }
+      body.vista-movil td.col-actions::before { display: none; }
+      body.vista-movil tbody tr { padding: 12px; }
+
+      body.vista-movil .subtotals-grid { grid-template-columns: 1fr auto; padding-right: 0; }
+      body.vista-movil .total-bar { grid-template-columns: 1fr auto; padding: 12px 16px; }
+      body.vista-movil .footer-3-col { grid-template-columns: 1fr; gap: 14px; padding-top: 14px; }
+      /* En móvil el banco deja de ser rejilla: cada dato en su propia línea */
+      body.vista-movil .footer-bank { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+      body.vista-movil .bank-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+      body.vista-movil .footer-bank .field-label { line-height: 1.3; }
+      body.vista-movil .v-divider { display: none; }
+      /* Campos mas grandes para el dedo; 16px evita el zoom automatico de iOS */
+      /* Etiqueta y valor en columnas fijas y centrados en la misma línea base */
+      body.vista-movil .field-row { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 8px; margin-bottom: 0; }
+      body.vista-movil .field-label { font-size: 11px; padding-top: 0; line-height: 1.3; align-self: center; }
+      body.vista-movil .editable-span { font-size: 15px; line-height: 1.3; padding: 7px 8px; min-height: 32px; display: flex; align-items: center; }
+      body.vista-movil .meta-label { font-size: 11px; }
+      body.vista-movil .bank-row { justify-content: center; }
+
+      /* Recuadros guía en AMBAS vistas. Nunca salen en el PDF ni al imprimir. */
+      .editable-span { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 6px; }
+      .box-black .editable-span, .invoice-sidebar .editable-span { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.22); }
+      .editable-span:focus { background: #ffffff; border-color: #000000; }
+      .box-black .editable-span:focus { background: rgba(255,255,255,0.16); border-color: #ffffff; }
+      body.vista-movil .editable-span { border-radius: 8px; }
+      body.exportando .editable-span { background: transparent !important; border-color: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
+      body.vista-movil #tax-rate { font-size: 16px; width: 44px !important; }
+
+      /* ================= MENÚ PRINCIPAL ================= */
+      /* El modal de ajustes del menú debe quedar POR ENCIMA del menú (4000),
+         si no se abría detrás y parecía que no pasaba nada. */
+      #modal-menu { z-index: 5000; }
+      #main-menu { position: fixed; inset: 0; z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1115; overflow: hidden; }
+      #main-menu.oculto { display: none; }
+      #menu-canvas, #menu-imagen { position: absolute; inset: 0; width: 100%; height: 100%; }
+      #menu-imagen { background-size: cover; background-position: center; display: none; }
+      .menu-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.7)); }
+      .menu-contenido { position: relative; z-index: 2; width: 100%; max-width: 380px; padding: 0 24px; text-align: center; }
+      .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
+      .menu-logo img { max-height: 56px; max-width: 220px; object-fit: contain; display: block; }
+      .menu-sub { color: rgba(255,255,255,0.72); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 28px; }
+      .menu-botones { display: flex; flex-direction: column; gap: 10px; }
+      .menu-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 14px; border: none; background: rgba(255,255,255,0.94); color: #111827; font-size: 15px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); transition: transform 0.12s; }
+      .menu-btn:active { transform: scale(0.97); }
+      .menu-btn svg { width: 19px; height: 19px; }
+      .menu-esquina { position: absolute; z-index: 3; right: 16px; bottom: calc(18px + var(--safe-bottom)); display: flex; gap: 10px; }
+      .menu-icono { width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.28); background: rgba(0,0,0,0.45); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+      .menu-icono svg { width: 20px; height: 20px; }
+
+      /* TARJETAS DE LA PESTAÑA DATOS */
+      .datos-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+      .datos-card-negra { background: #000000; border-color: #000000; color: #ffffff; }
+      .datos-card-header { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+      .datos-hint { font-size: 11px; color: #9ca3af; margin-bottom: 12px; }
+      .datos-grid { display: flex; flex-direction: column; gap: 10px; }
+      .datos-sep { font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.6; margin-top: 6px; border-top: 1px solid rgba(156,163,175,0.35); padding-top: 8px; }
+      .datos-card input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 16px; background: #fff; color: #111827; }
+      .datos-card-negra label { color: #9ca3af; font-size: 11px; font-weight: 600; }
+      .datos-toggle { width: 100%; background: none; border: none; color: inherit; font-size: 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0; }
+      .btn-extra { background: rgba(255,255,255,0.12); color: #fff; border: 1px dashed rgba(255,255,255,0.45); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 6px; }
+      .datos-seccion { display: flex; flex-direction: column; gap: 8px; }
+      .dato-row { display: grid; grid-template-columns: 104px 1fr auto; gap: 8px; align-items: center; }
+      .dato-row input { font-size: 15px; padding: 9px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #111827; width: 100%; }
+      .dato-row .dato-label { font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.12); color: #e5e7eb; border-color: rgba(255,255,255,0.25); }
+      .dato-row .dato-label[readonly] { background: transparent; border-color: transparent; padding-left: 0; }
+      .cliente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+      /* Botón para insertar un cliente guardado en la factura */
+      .btn-cliente-factura { background: #000; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
+
+      /* BARRA DE EDICIÓN RÁPIDA (faltaba en el HTML original) */
+      #barra-edicion-rapida { position: fixed; top: calc(64px + var(--safe-top)); left: 12px; right: 12px; background: #111827; color: #fff; padding: 10px 12px; font-size: 12px; font-weight: 600; border-radius: 12px; z-index: 2500; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+      #barra-edicion-rapida button { background: #ffffff; color: #111827; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MENÚ PRINCIPAL ================= -->
+    <div id="main-menu" class="no-print">
+      <canvas id="menu-canvas"></canvas>
+      <div id="menu-imagen"></div>
+      <div class="menu-capa"></div>
+
+      <div class="menu-contenido">
+        <div id="menu-logo" class="menu-logo">AGX</div>
+        <p class="menu-sub" id="menu-lema">Facturación profesional</p>
+
+        <div class="menu-botones">
+          <button class="menu-btn" onclick="irA('editor')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            <span id="menu-txt-factura">Factura</span>
+          </button>
+          <button class="menu-btn" onclick="irA('datos')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span id="menu-txt-datos">Datos</span>
+          </button>
+          <button class="menu-btn" onclick="irA('history')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+            <span id="menu-txt-historial">Historial</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-esquina">
+        <button id="btn-mute" class="menu-icono" onclick="alternarSonido()" title="Silenciar"></button>
+        <button class="menu-icono" onclick="abrirAjustesMenu()" title="Ajustes del menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- AJUSTES DEL MENÚ -->
+    <div id="modal-menu" class="modal-overlay hidden" onclick="cerrarAjustesMenu(event)">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title"><span>Ajustes del menú</span></div>
+          <button onclick="cerrarAjustesMenu()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div class="config-row">
+          <label>Texto bajo el logo</label>
+          <input id="cfg-lema" type="text" placeholder="Facturación profesional" oninput="guardarCfgMenu()" />
+        </div>
+        <div class="config-row">
+          <label>Fondo</label>
+          <select id="cfg-fondo" onchange="guardarCfgMenu()">
+            <option value="animado">Camión animado</option>
+            <option value="amanecer">Degradado amanecer</option>
+            <option value="noche">Degradado noche</option>
+            <option value="papel">Papel liso</option>
+            <option value="imagen">Mi propia imagen</option>
+          </select>
+        </div>
+        <div class="config-row"><label>Subir imagen de fondo</label><input type="file" accept="image/*" onchange="subirFondoMenu(event)" /></div>
+        <div class="config-row">
+          <label>Música</label>
+          <select id="cfg-cancion" onchange="guardarCfgMenu()">
+            <option value="alegre">Alegre (por defecto)</option>
+            <option value="calma">Tranquila</option>
+            <option value="marcha">Marcha</option>
+            <option value="neon">Neón (synthwave)</option>
+            <option value="brisa">Brisa</option>
+            <option value="propia">Mi propia música</option>
+            <option value="off">Sin música</option>
+          </select>
+        </div>
+        <div class="config-row">
+          <label>Subir mi propia música (mp3, m4a...)</label>
+          <input type="file" accept="audio/*" onchange="subirMusicaPropia(event)" />
+        </div>
+        <div class="config-row">
+          <label>Volumen: <span id="val-vol">30</span>%</label>
+          <input id="cfg-vol" type="range" min="0" max="100" value="30" oninput="document.getElementById('val-vol').innerText=this.value; guardarCfgMenu();" />
+        </div>
+      </div>
+    </div>
+
+    <!-- CABECERA FIJA SUPERIOR -->
+    <header class="app-header no-print">
+      <div id="app-logo-box" class="logo-agx" onclick="volverAlMenu()" title="Ir al menú principal">AGX</div>
+      <div class="btn-group">
+        <button id="hb-ajustes" onclick="abrirModalOpciones()" class="btn btn-gray btn-icon-only" title="Ajustes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </button>
+        <button id="hb-vista" onclick="alternarVista()" class="btn btn-gray btn-icon-only" title="Cambiar vista">
+          <span id="icono-vista"></span>
+        </button>
+        <button id="hb-nueva" onclick="nuevaFactura()" class="btn btn-gray btn-icon-only" title="Factura nueva en blanco">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </button>
+        <button id="hb-guardar" onclick="guardarFacturaActual()" class="btn btn-gray btn-icon-only" title="Guardar factura">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+        <button id="hb-pdf" onclick="descargarPDFDirecto()" class="btn btn-black" title="Descargar PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>PDF</span>
+        </button>
+        <button id="hb-eco" onclick="exportarPDF()" class="btn btn-gray btn-icon-only" title="PDF Eco (sin tintas negras)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="toast" class="toast"><span id="toast-icon"></span><span id="toast-text">Notificación</span></div>
+
+    <!-- BARRA DE EDICIÓN RÁPIDA (referenciada por el JS, faltaba en el HTML) -->
+    <div id="barra-edicion-rapida" class="no-print hidden">
+      <span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>Modo edición activo</span>
+      <button onclick="toggleEdicionPlantilla()">Finalizar</button>
+    </div>
+
+    <!-- ÁREA DE SCROLL LIBRE (FACTURA O HISTORIAL) -->
+    <div class="main-container" id="main-scroll-area">
+      
+      <div id="view-editor">
+        
+        <!-- ENVOLTORIO PARA ZOOM A4 EN MÓVIL -->
+        <div id="a4-wrapper">
+          <!-- PAPEL A4 REAL Y SEPARADO -->
+          <div class="a4-paper" id="invoice-export-node">
+            
+            <!-- CONTENIDO PRINCIPAL (Columna Izquierda) -->
+            <div class="invoice-content">
+              
+              <!-- CAJAS SUPERIORES -->
+              <div class="grid-2">
+                <!-- CLIENTE -->
+                <div class="box box-white">
+                  <div class="box-header">
+                    <div class="box-header-title">
+                      <!-- Icono Edificios -->
+                      <svg class="ico-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.4" y="8.4" width="2" height="2" rx="0.5"/><rect x="10.2" y="8.4" width="2" height="2" rx="0.5"/><rect x="6.4" y="12.2" width="2" height="2" rx="0.5"/><rect x="10.2" y="12.2" width="2" height="2" rx="0.5"/><rect x="6.4" y="16" width="2" height="2" rx="0.5"/><rect x="10.2" y="16" width="2" height="2" rx="0.5"/><line x1="16.2" y1="14.6" x2="18.6" y2="14.6"/><line x1="16.2" y1="17" x2="18.6" y2="17"/></svg>
+                      <span id="lbl-inv-to" contenteditable="false">FACTURAR A (CLIENTE)</span>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <button onclick="abrirSelectorClientes()" class="no-print btn-cliente-factura">+ Cliente</button>
+                      <button onclick="agregarFilaCliente()" class="no-print hidden btn-add-field" style="background: none; border: none; color: #2563eb; font-size: 11px; font-weight: bold; cursor: pointer;">+ Fila</button>
+                    </div>
+                  </div>
+                  <div id="container-client-fields">
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-name">NAME:</span><span id="client-name" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px; color: #111827;">Client Name</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-vat">BTW / VAT:</span><span id="client-vat" class="editable-span" contenteditable="true" style="font-weight: 600;">NL123456789B01</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-street">STREET:</span><span id="client-address" class="editable-span" contenteditable="true">Straatnaam 123</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-city">CITY / ZIP:</span><span id="client-city" class="editable-span" contenteditable="true">1234 AB Amsterdam</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-country">COUNTRY:</span><span id="client-country" class="editable-span" contenteditable="true">Netherlands</span></div>
+                  </div>
+                </div>
+
+                <!-- EMPRESA (Totalmente separada y redondeada) -->
+                <div class="box box-black">
+                  <div class="box-header">
+                    <div class="box-header-title">
+                      <!-- Icono Edificios -->
+                      <svg class="ico-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.4" y="8.4" width="2" height="2" rx="0.5"/><rect x="10.2" y="8.4" width="2" height="2" rx="0.5"/><rect x="6.4" y="12.2" width="2" height="2" rx="0.5"/><rect x="10.2" y="12.2" width="2" height="2" rx="0.5"/><rect x="6.4" y="16" width="2" height="2" rx="0.5"/><rect x="10.2" y="16" width="2" height="2" rx="0.5"/><line x1="16.2" y1="14.6" x2="18.6" y2="14.6"/><line x1="16.2" y1="17" x2="18.6" y2="17"/></svg>
+                      <span id="lbl-inv-from" contenteditable="false">FACTURA DE (EMISOR)</span>
+                    </div>
+                    <button onclick="agregarFilaEmpresa()" class="no-print hidden btn-add-field" style="background: none; border: none; color: #60a5fa; font-size: 11px; font-weight: bold; cursor: pointer;">+ Fila</button>
+                  </div>
+                  <div id="container-company-fields">
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-m-company">COMPANY:</span><span id="company-name" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px;">AGX Holland</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-m-vat">BTW-ID:</span><span id="company-vat" class="editable-span" contenteditable="true">NL123456789B01</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-m-kvk">KVK NO:</span><span id="company-kvk" class="editable-span" contenteditable="true">00001220</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-m-status">STATUS:</span><span id="company-status" class="editable-span" contenteditable="true" style="color: #9ca3af;">Registered in NL</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- METADATOS -->
+              <div class="meta-bar">
+                <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-no">Invoice No.</span><span id="invoice-no" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px;">00001220</span></div>
+                <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-issue">Issue Date</span>
+                  <div class="fecha-wrap">
+                    <span id="issue-date" class="editable-span" style="font-weight: 800; font-size: 13px;">05/08/2026</span>
+                    <input type="date" class="fecha-picker no-print" id="issue-date-picker" onchange="aplicarFecha('issue-date', this.value)" />
+                  </div>
+                </div>
+                <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-due">Due Date</span>
+                  <div class="fecha-wrap">
+                    <span id="due-date" class="editable-span" style="font-weight: 800; font-size: 13px;">19/08/2025</span>
+                    <input type="date" class="fecha-picker no-print" id="due-date-picker" onchange="aplicarFecha('due-date', this.value)" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- TABLA Y AÑADIR SERVICIOS -->
+              <div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 45%;" contenteditable="false" id="th-desc">DESCRIPTION</th>
+                      <th style="text-align: center;" contenteditable="false" id="th-hours">HRS</th>
+                      <th style="text-align: right;" contenteditable="false" id="th-rate">RATE (€)</th>
+                      <th class="col-total" style="text-align: right;" contenteditable="false" id="th-amount">TOTAL</th>
+                      <th class="no-print" style="width: 30px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="items-tbody"></tbody>
+                </table>
+                <div class="no-print" style="margin-top: 12px">
+                  <button onclick="agregarServicio()" class="btn btn-black" style="padding: 8px 14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span id="txt-add-service">Añadir Servicio</span></button>
+                </div>
+              </div>
+
+              <!-- TOTALES -->
+              <div class="totals-area">
+                <div class="subtotals-grid">
+                  <div><span id="lbl-subtotal" contenteditable="false">Subtotal</span></div>
+                  <div id="subtotal-val" class="amount-align">€0,00</div>
+                  
+                  <div style="gap:4px;"><span id="lbl-tax" contenteditable="false">Tax (</span><input id="tax-rate" type="number" value="21" oninput="calcularTotales()" style="width: 30px; text-align: center; font-weight: 600; border-bottom: 1px solid #ccc; padding:0;" /><span>%)</span></div>
+                  <div id="tax-val" class="amount-align">€0,00</div>
+                </div>
+
+                <!-- BARRA TOTAL (Misma anchura que la tabla) -->
+                <div class="total-bar">
+                  <span class="total-label" id="lbl-total" contenteditable="false">TOTAL</span>
+                  <span class="total-value" id="total-val">€0,00</span>
+                </div>
+              </div>
+
+              <!-- ESPACIO FLEXIBLE PARA EMPUJAR EL FOOTER ABAJO EN EL A4 -->
+              <div style="flex-grow: 1;"></div>
+
+              <!-- PIE DE PÁGINA 3 COLUMNAS (Icono Izquierda, Centrado, Sin Títulos) -->
+              <div class="footer-3-col">
+                
+                <!-- UBICACIÓN (Icono Pin) -->
+                <div class="footer-box">
+                  <div class="footer-icon">
+                    <svg class="ico-pie" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18.6s5.9-5.6 5.9-10A5.9 5.9 0 0 0 6.1 8.6c0 4.4 5.9 10 5.9 10Z"/><circle cx="12" cy="8.6" r="2.6"/><path d="M8.7 16.9C6.4 17.3 5 18.1 5 19.1c0 1.3 3.1 2.3 7 2.3s7-1 7-2.3c0-1-1.4-1.8-3.7-2.2"/></svg>
+                  </div>
+                  <div class="footer-content" id="container-addr-fields">
+                    <div class="foot-row"><span id="addr-street" class="editable-span" contenteditable="true" style="font-weight: 600;">Straatnaam 123</span></div>
+                    <div class="foot-row"><span id="addr-city" class="editable-span" contenteditable="true">1234 AB Amsterdam</span></div>
+                    <div class="foot-row"><span id="addr-country" class="editable-span" contenteditable="true">Netherlands</span></div>
+                    <button onclick="agregarFilaPie('container-addr-fields')" class="no-print hidden btn-add-field">+ Fila</button>
+                  </div>
+                </div>
+
+                <div class="v-divider"></div>
+
+                <!-- CONTACTO (Icono Teléfono con @) -->
+                <div class="footer-box">
+                  <div class="footer-icon">
+                    <svg class="ico-pie" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.3 14a12.4 12.4 0 0 1-3.5-3.5l1.3-1.2a1.4 1.4 0 0 0 .3-1.6l-1-2A1.4 1.4 0 0 0 6.6 5L4.3 5.9a1.4 1.4 0 0 0-.9 1.5A14.3 14.3 0 0 0 14.4 19a1.4 1.4 0 0 0 1.5-.9l.9-2.2a1.4 1.4 0 0 0-.7-1.7l-2-1a1.4 1.4 0 0 0-1.6.3Z"/><circle cx="17.4" cy="7.6" r="2.4"/><path d="M19.8 5.6v3.1c0 1 .5 1.5 1.3 1.5s1.3-.7 1.4-1.7A5.6 5.6 0 1 0 18.6 13"/></svg>
+                  </div>
+                  <div class="footer-content" id="container-contact-fields">
+                    <div class="foot-row"><span id="contact-email" class="editable-span" contenteditable="true" style="font-weight: 600;">info@agxholland.nl</span></div>
+                    <div class="foot-row"><span id="contact-phone" class="editable-span" contenteditable="true">+31 6 12345678</span></div>
+                    <button onclick="agregarFilaPie('container-contact-fields')" class="no-print hidden btn-add-field">+ Fila</button>
+                  </div>
+                </div>
+
+                <div class="v-divider"></div>
+
+                <!-- BANCO (Icono Templo Griego) -->
+                <div class="footer-box">
+                  <div class="footer-icon">
+                    <svg class="ico-pie" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 9.9 12 4.3l8.6 5.6"/><line x1="3.4" y1="9.9" x2="20.6" y2="9.9"/><rect x="5.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="10.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="15.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="3.6" y="19.6" width="16.8" height="2.1" rx="1"/></svg>
+                  </div>
+                  <div class="footer-content footer-bank" id="container-bank-fields">
+                    <div class="bank-row"><span id="bank-name" class="editable-span" contenteditable="true" style="font-weight: 600;">ING Bank N.V.</span></div>
+                    <div class="bank-row"><span id="bank-iban" class="editable-span" contenteditable="true">NL12 INGB 1234 5678 90</span></div>
+                    <div class="bank-row"><span id="bank-bic" class="editable-span" contenteditable="true">INGBNL2A</span></div>
+                    <div class="bank-row"><span id="bank-holder" class="editable-span" contenteditable="true">AGX Holland B.V.</span></div>
+                    <button onclick="agregarFilaBanco()" class="no-print hidden btn-add-field" style="grid-column: 1 / -1;">+ Fila</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- BARRA LATERAL NEGRA (100% ALTURA DEL CONTENIDO) -->
+            <div class="invoice-sidebar">
+              <div class="sidebar-text-container" id="sidebar-aligner-mobile">
+                <div class="sidebar-text" id="lbl-sidebar-text"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VISTA: DATOS (MIS DATOS + CLIENTES) -->
+      <section id="view-datos" class="hidden">
+
+        <!-- TARJETA NEGRA: MIS DATOS (PLEGABLE) -->
+        <div class="datos-card datos-card-negra">
+          <button onclick="toggleMisDatos()" class="datos-toggle">
+            <span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.6" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="6.6" y="13" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="13" width="1.8" height="1.8" rx="0.5"/></svg>Mis Datos (Emisor)</span>
+            <span id="flecha-mis-datos" style="transition:0.3s">▼</span>
+          </button>
+          <div id="cuerpo-mis-datos" class="hidden">
+            <p class="datos-hint">Se aplica automáticamente a la factura. Para añadir, quitar o renombrar campos, activa el Modo Edición desde Ajustes.</p>
+            <div id="seccion-empresa" class="datos-seccion"></div>
+            <div id="seccion-direccion" class="datos-seccion"></div>
+            <div id="seccion-contacto" class="datos-seccion"></div>
+            <div id="seccion-banco" class="datos-seccion"></div>
+          </div>
+        </div>
+
+        <!-- TARJETA BLANCA: CLIENTES -->
+        <div class="datos-card">
+          <div class="datos-card-header" style="color:#111827; display:flex; align-items:center; gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg>Clientes</div>
+          <p class="datos-hint" style="color:#6b7280;">Guarda tus clientes y añádelos a la factura con un toque.</p>
+
+          <div id="form-cliente" class="hidden" style="border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; background:#f9fafb;">
+            <input type="hidden" id="cli-id" />
+            <div class="datos-grid">
+              <div class="config-row"><label>Nombre</label><input id="cli-name" type="text" placeholder="Nombre del cliente" /></div>
+              <div class="config-row"><label>BTW / VAT</label><input id="cli-vat" type="text" /></div>
+              <div class="config-row"><label>Calle</label><input id="cli-address" type="text" /></div>
+              <div class="config-row"><label>Ciudad / CP</label><input id="cli-city" type="text" /></div>
+              <div class="config-row"><label>País</label><input id="cli-country" type="text" /></div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button onclick="guardarCliente()" class="btn btn-black" style="flex:1; justify-content:center; padding:10px;">Guardar cliente</button>
+              <button onclick="cerrarFormCliente()" class="btn btn-gray" style="padding:10px 14px;">Cancelar</button>
+            </div>
+          </div>
+
+          <button onclick="abrirFormCliente()" class="btn btn-black" style="width:100%; justify-content:center; padding:10px; margin-bottom:12px;" style="width:100%; justify-content:center; padding:10px; margin-bottom:12px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="8.4" cy="7.5" r="3.6"/><line x1="19" y1="6" x2="19" y2="12"/><line x1="16" y1="9" x2="22" y2="9"/></svg>Nuevo cliente</button>
+          <div id="clientes-container" class="history-grid"></div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: HISTORIAL -->
+      <section id="view-history" class="hidden">
+        <div style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div><h2 style="font-size: 16px; font-weight: 800; color: #111827" id="txt-hist-title">Facturas Guardadas</h2><p style="font-size: 11px; color: #6b7280" id="txt-hist-desc">Historial en el dispositivo</p></div>
+          <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" style="padding: 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; width: 100%; background: #f9fafb;" />
+        </div>
+        <div id="history-container" class="history-grid"></div>
+      </section>
+
+    </div> <!-- FIN ÁREA SCROLLABLE -->
+
+    <!-- BOTONERA INFERIOR FIJA -->
+    <nav class="bottom-nav no-print">
+      <div class="nav-grid">
+        <button id="btn-tab-editor" onclick="cambiarPestana('editor')" class="nav-btn active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          <span id="txt-tab-template">Factura</span>
+        </button>
+        <button id="btn-tab-datos" onclick="cambiarPestana('datos')" class="nav-btn inactive">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="txt-tab-datos">Datos</span>
+        </button>
+        <button id="btn-tab-history" onclick="cambiarPestana('history')" class="nav-btn inactive">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+          <span id="txt-tab-history">Historial</span>
+          <span id="history-badge" style="background: #ffffff; color: #000000; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MODAL: ELEGIR CLIENTE GUARDADO -->
+    <div id="modal-clientes" class="modal-overlay hidden" onclick="cerrarSelectorClientes()">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg><span>Elegir cliente</span></div>
+          <button onclick="cerrarSelectorClientes()" style="background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
+        </div>
+        <div id="lista-selector-clientes"></div>
+      </div>
+    </div>
+
+    <!-- MODAL DE OPCIONES EN ACORDEÓN -->
+    <div id="modal-opciones" class="modal-overlay hidden" onclick="cerrarModalOpciones(event)">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>Ajustes Profesionales</span></div>
+          <button onclick="cerrarModalOpciones()" style="background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
+        </div>
+        
+        <!-- ACORDEÓN 1: IDIOMA -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAcc('acc-idioma')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.2 9h17.6M3.2 15h17.6"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>Idioma de Factura</span> <span id="arrow-acc-idioma" style="transition:0.3s">▼</span></button>
+          <div id="acc-idioma" class="accordion-content">
+            <div class="lang-list">
+              <div class="lang-item" onclick="cambiarIdioma('es')"><span>🇪🇸</span> <span>Español</span></div>
+              <div class="lang-item" onclick="cambiarIdioma('en')"><span>🇬🇧</span> <span>English</span></div>
+              <div class="lang-item" onclick="cambiarIdioma('nl')"><span>🇳🇱</span> <span>Nederlands</span></div>
+              <div class="lang-item" onclick="cambiarIdioma('de')"><span>🇩🇪</span> <span>Deutsch</span></div>
+              <div class="lang-item" onclick="cambiarIdioma('ro')"><span>🇷🇴</span> <span>Română</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACORDEÓN 2: BARRA LATERAL -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAcc('acc-barra')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="18" y1="8" x2="18" y2="16"/></svg>Diseño Barra Lateral</span> <span id="arrow-acc-barra" style="transition:0.3s">▼</span></button>
+          <div id="acc-barra" class="accordion-content">
+            <div class="config-row">
+              <label>Orientación / sentido de lectura:</label>
+              <select id="conf-sidebar-ori" onchange="aplicarConfigBarra()">
+                <option value="stack">Letras apiladas (una debajo de otra)</option>
+                <option value="rot90">Girado 90° — se lee de arriba a abajo</option>
+                <option value="-rot90">Girado -90° — se lee de abajo a arriba</option>
+              </select>
+            </div>
+            <div class="config-row">
+              <label>Tamaño Letra (px): <span id="val-size">42</span></label>
+              <input id="conf-sidebar-size" type="range" min="10" max="70" value="42" oninput="document.getElementById('val-size').innerText=this.value; aplicarConfigBarra();" />
+            </div>
+            <div class="config-row">
+              <label>Separación Letras (px): <span id="val-gap">36</span></label>
+              <input id="conf-sidebar-gap" type="range" min="0" max="60" value="36" oninput="document.getElementById('val-gap').innerText=this.value; aplicarConfigBarra();" />
+            </div>
+            <div class="config-row">
+              <label>Posición vertical: <span id="val-posy">50</span>%</label>
+              <input id="conf-sidebar-posy" type="range" min="0" max="100" value="50" oninput="document.getElementById('val-posy').innerText=this.value; aplicarConfigBarra();" />
+              <span style="font-size:10px; color:#6b7280;">También puedes arrastrar el texto con el dedo arriba y abajo directamente sobre la barra negra.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACORDEÓN 3: LOGO -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAcc('acc-logo')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m4 17 4.5-4.3a1.4 1.4 0 0 1 1.9 0L15 17"/><path d="m13.5 15.2 2-1.9a1.4 1.4 0 0 1 1.9 0L20 15.6"/></svg>Logo Empresa</span> <span id="arrow-acc-logo" style="transition:0.3s">▼</span></button>
+          <div id="acc-logo" class="accordion-content">
+            <div class="config-row"><label>Texto del Logo:</label>
+            <div style="display:flex;gap:6px;"><input id="input-logo-text" type="text" placeholder="Ej: AGX" style="flex:1" /><button onclick="actualizarLogoTexto()" class="btn btn-black">Aplicar</button></div></div>
+            <div class="config-row"><label>Subir Logo (se convierte a blanco):</label><input type="file" id="input-logo-file" accept="image/*" onchange="subirImagenLogo(event)" /></div>
+            <div class="config-row" style="flex-direction:row; align-items:center; gap:8px;">
+              <input type="checkbox" id="chk-logo-invertir" onchange="procesarLogo()" style="width:auto;" />
+              <label for="chk-logo-invertir" style="margin:0;">Invertir (si sale al revés)</label>
+            </div>
+            <div class="config-row">
+              <label>Sensibilidad al fondo: <span id="val-tol">60</span></label>
+              <input id="conf-logo-tol" type="range" min="10" max="180" value="60" oninput="document.getElementById('val-tol').innerText=this.value; procesarLogo();" />
+            </div>
+            <div class="config-row hidden" id="logo-preview-box">
+              <label>Vista previa sobre la caja negra:</label>
+              <div style="background:#000; border-radius:8px; padding:10px; display:flex; justify-content:center;"><img id="logo-preview" alt="preview" style="max-height:40px; max-width:100%; object-fit:contain;" /></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ACORDEÓN 4: COPIAS DE SEGURIDAD -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAcc('acc-backup')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Copias de Seguridad</span> <span id="arrow-acc-backup" style="transition:0.3s">▼</span></button>
+          <div id="acc-backup" class="accordion-content" style="gap:8px;">
+            <button onclick="exportarHistorialJSON()" class="btn btn-gray" style="justify-content:center; padding:10px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="8 11 12 15 16 11"/><line x1="12" y1="4" x2="12" y2="15"/></svg>Copia de seguridad completa</button>
+            <label class="btn btn-gray" style="justify-content:center; cursor:pointer; padding:10px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="8 8 12 4 16 8"/><line x1="12" y1="4" x2="12" y2="15"/></svg>Restaurar desde copia<input type="file" accept=".json" onchange="importarHistorialJSON(event)" style="display:none;" /></label>
+          </div>
+        </div>
+
+        <!-- ESTRUCTURA EDICIÓN -->
+        <div><button id="btn-toggle-edit-template" onclick="toggleEdicionPlantilla()" class="btn btn-gray" style="width: 100%; justify-content: center; font-size: 12px; padding:10px;"><span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>Activar Edición de Plantilla</span></button></div>
+        
+      </div>
+    </div>
+
+    <!-- SCRIPTS CORE -->
+    <script>
+      const ICO_LAPIZ = '<svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>';
+      const ICO_CANDADO = '<svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/></svg>';
+
+      let servicios = [
+        { id: "1", desc: "CE Truck Driver Services – Week 32", hours: 48, rate: 32 },
+        { id: "2", desc: "CE Truck Driver Services – Week 33", hours: 48, rate: 32 },
+        { id: "3", desc: "CE Truck Driver Services – Week 34", hours: 48, rate: 32 },
+        { id: "4", desc: "Waiting Time / Standby", hours: 4, rate: 32 },
+      ];
+      let historialFacturas = []; let idiomaActual = "es"; let editandoPlantillaEstructura = false;
+      let sidebarConfig = { ori: "stack", size: 42, gap: 36, posY: 50 };
+
+      const i18n = {
+        es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE:", cVat: "BTW / VAT:", cStreet: "CALLE:", cCity: "CIUDAD / CP:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos" },
+        en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME:", cVat: "VAT / TAX ID:", cStreet: "STREET:", cCity: "CITY / ZIP:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data" },
+        nl: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TEN NAME VAN:", invTo: "FACTUUR AAN (KLANT)", cName: "NAAM:", cVat: "BTW-ID:", cStreet: "STRAAT:", cCity: "STAD / POSTCODE:", cCountry: "LAND:", invFrom: "FACTUUR VAN (AFZENDER)", mCompany: "BEDRIJF:", mVat: "BTW-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Factuurnummer", metaIssue: "Factuurdatum", metaDue: "Vervaldatum", thDesc: "OMSCHRIJVING", thHours: "UREN", thRate: "TARIEF (€)", thAmount: "BEDRAG", addService: "Dienst Toevoegen", subtotal: "Subtotaal", tax: "BTW (", total: "TOTAAL", sidebar: "FACTUUR", histTitle: "Opgeslagen Facturen", histDesc: "Volledige geschiedenis", tabTemplate: "Factuur", tabHistory: "Geschiedenis", tabDatos: "Gegevens" },
+        de: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "INHABER:", invTo: "RECHNUNG AN (KUNDE)", cName: "NAME:", cVat: "UST-ID:", cStreet: "STRASSE:", cCity: "STADT / PLZ:", cCountry: "LAND:", invFrom: "RECHNUNG VON (AUSSTELLER)", mCompany: "FIRMA:", mVat: "UST-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Rechnungsnr.", metaIssue: "Datum", metaDue: "Fälligkeit", thDesc: "BESCHREIBUNG", thHours: "STND", thRate: "SATZ (€)", thAmount: "BETRAG", addService: "Dienst Hinzufügen", subtotal: "Zwischensumme", tax: "MwSt. (", total: "GESAMT", sidebar: "RECHNUNG", histTitle: "Rechnungen", histDesc: "Verlauf", tabTemplate: "Rechnung", tabHistory: "Verlauf", tabDatos: "Daten" },
+        ro: { bBank: "BANCA:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURĂ CĂTRE (CLIENT)", cName: "NUME:", cVat: "CUI / TVA:", cStreet: "STRADA:", cCity: "ORAȘ / COD POȘTAL:", cCountry: "ȚARA:", invFrom: "FACTURĂ DE LA (EMITENT)", mCompany: "FIRMA:", mVat: "COD TVA:", mKvk: "NR. REG:", mStatus: "STARE:", metaNo: "Nr. factură", metaIssue: "Data emiterii", metaDue: "Data scadenței", thDesc: "DESCRIERE", thHours: "ORE", thRate: "TARIF (€)", thAmount: "TOTAL", addService: "Adaugă serviciu", subtotal: "Subtotal", tax: "TVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturi salvate", histDesc: "Istoric pe dispozitiv", tabTemplate: "Factură", tabHistory: "Istoric", tabDatos: "Date" }
+      };
+
+      window.onload = function () {
+        cargarConfigBarra(); cargarHistorialLocal(); renderizarServicios(); renderizarHistorial(); aplicarIdioma("es"); cargarLogoGuardado();
+        cargarClientes();
+        cargarMisDatos(true);
+        renderizarClientes();
+        // Si no hay ninguna factura guardada, empezamos en blanco desde el número 1
+        if (historialFacturas.length === 0) nuevaFactura();
+        sincronizarSelectoresFecha();
+        refrescarBotonesBorrar();
+        refrescarEstadoBotones();
+        cargarCfgMenu();
+        sincronizarLogoMenu();
+        // iOS no deja sonar audio sin un gesto previo: arrancamos al primer toque
+        registrarGestos();
+        vigilarBannerSandbox();
+        window.addEventListener('resize', autoZoomA4);
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) { pararAnimacion(); pararMusica(); }
+          else if (!document.getElementById("main-menu").classList.contains("oculto")) aplicarCfgMenu();
+        });
+        autoZoomA4();
+      };
+
+      // MODO DE VISTA: "a4" (hoja real) o "movil" (todo apilado y compacto)
+      let modoVista = localStorage.getItem("agx_vista") || "a4";
+
+      function aplicarEscalaPapel(escala) {
+        const paper = document.querySelector(".a4-paper");
+        paper.style.transform = `scale(${escala})`;
+        // Al escalar con transform la caja sigue midiendo 794x1123: lo compensamos.
+        paper.style.marginRight = `${-794 * (1 - escala)}px`;
+        paper.style.marginBottom = `${-1123 * (1 - escala)}px`;
+      }
+
+      function autoZoomA4() {
+        const wrapper = document.getElementById("a4-wrapper");
+        const paper = document.querySelector(".a4-paper");
+        if (!wrapper || !paper) return;
+
+        if (modoVista === "movil") {
+          document.body.classList.add("vista-movil");
+          wrapper.classList.remove("fit");
+          paper.style.transform = "none";
+          paper.style.marginRight = "0px";
+          paper.style.marginBottom = "0px";
+          return;
+        }
+
+        document.body.classList.remove("vista-movil");
+        // Si el editor está oculto (estás en Datos o Historial) su ancho es 0 y la
+        // escala salía negativa: la hoja desaparecía. Usamos un ancho de respaldo.
+        let ancho = wrapper.parentElement.clientWidth;
+        if (!ancho) ancho = document.querySelector(".main-container").clientWidth || window.innerWidth;
+        const escala = Math.min(1, Math.max(0.1, (ancho - 24) / 794));
+        wrapper.classList.add("fit");
+        aplicarEscalaPapel(escala);
+        posicionarTextoBarra();
+      }
+
+      // Icono del botón de vista y botones que no aplican a la pestaña actual
+      const ICONO_MOVIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="10" y1="18" x2="14" y2="18"/></svg>';
+      const ICONO_HOJA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>';
+
+      function refrescarEstadoBotones() {
+        const btn = document.getElementById("hb-vista");
+        if (btn) {
+          const icono = document.getElementById("icono-vista");
+          if (icono) icono.innerHTML = modoVista === "a4" ? ICONO_MOVIL : ICONO_HOJA;
+          btn.title = modoVista === "a4" ? "Ver en modo móvil" : "Ver como hoja A4";
+        }
+        const soloFactura = ["hb-vista", "hb-nueva", "hb-guardar", "hb-pdf", "hb-eco"];
+        soloFactura.forEach((id) => {
+          const b = document.getElementById(id);
+          if (b) b.classList.toggle("desactivado", pestanaActual !== "editor");
+        });
+      }
+
+      function alternarVista() {
+        modoVista = modoVista === "a4" ? "movil" : "a4";
+        localStorage.setItem("agx_vista", modoVista);
+        autoZoomA4();
+        refrescarEstadoBotones();
+        mostrarToast(modoVista === "movil" ? "Vista móvil: edición cómoda" : "Vista hoja A4");
+      }
+
+      // Pasa la fecha del selector nativo (aaaa-mm-dd) al formato dd/mm/aaaa
+      function aplicarFecha(idCampo, valorISO) {
+        if (!valorISO) return;
+        const [a, m, d] = valorISO.split("-");
+        setVal(idCampo, `${d}/${m}/${a}`);
+      }
+
+      // Precarga el selector con lo que ya muestra la factura
+      function sincronizarSelectoresFecha() {
+        ["issue-date", "due-date"].forEach((id) => {
+          const picker = document.getElementById(id + "-picker");
+          if (!picker) return;
+          const partes = (getVal(id) || "").trim().split("/");
+          if (partes.length === 3) picker.value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+        });
+      }
+
+
+      /* ==================== MENÚ PRINCIPAL ====================
+         Fondo animado en canvas, música generada con Web Audio
+         (sin archivos externos) y ajustes propios. */
+      let cfgMenu = { fondo: "animado", cancion: "alegre", vol: 30, imagen: "", mute: false, lema: "Facturación profesional" };
+      let vocesActivas = []; // osciladores en curso, para poder callarlos al instante
+      let animID = null, audioCtx = null, audioGain = null, loopMusica = null;
+
+      const ICO_SONIDO = '<svg viewBox="0 0 24 24" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+      const ICO_MUDO   = '<svg viewBox="0 0 24 24" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><line x1="16" y1="9.5" x2="21" y2="14.5"/><line x1="21" y1="9.5" x2="16" y2="14.5"/></svg>';
+
+      function cargarCfgMenu() {
+        try { Object.assign(cfgMenu, JSON.parse(localStorage.getItem("agx_menu") || "{}")); } catch (e) {}
+        const f = document.getElementById("cfg-fondo"), c = document.getElementById("cfg-cancion"), v = document.getElementById("cfg-vol");
+        if (f) f.value = cfgMenu.fondo;
+        if (c) c.value = cfgMenu.cancion;
+        if (v) { v.value = cfgMenu.vol; document.getElementById("val-vol").innerText = cfgMenu.vol; }
+        const l = document.getElementById("cfg-lema");
+        if (l) l.value = cfgMenu.lema || "";
+        aplicarCfgMenu();
+      }
+
+      function guardarCfgMenu() {
+        cfgMenu.fondo = document.getElementById("cfg-fondo").value;
+        cfgMenu.cancion = document.getElementById("cfg-cancion").value;
+        cfgMenu.vol = parseInt(document.getElementById("cfg-vol").value);
+        cfgMenu.lema = document.getElementById("cfg-lema").value;
+        localStorage.setItem("agx_menu", JSON.stringify(cfgMenu));
+        aplicarCfgMenu();
+      }
+
+      const FONDOS = {
+        amanecer: "linear-gradient(180deg,#2b1055,#7597de 55%,#ffb37b)",
+        noche: "linear-gradient(180deg,#0b1020,#1b2a4a 60%,#2d3f63)",
+        papel: "linear-gradient(180deg,#e9e5dc,#cfc9bd)",
+      };
+
+      function aplicarCfgMenu() {
+        const canvas = document.getElementById("menu-canvas");
+        const capa = document.getElementById("menu-imagen");
+        const animado = cfgMenu.fondo === "animado";
+        canvas.style.display = animado ? "block" : "none";
+        capa.style.display = animado ? "none" : "block";
+        if (!animado) {
+          capa.style.background = cfgMenu.fondo === "imagen" && cfgMenu.imagen
+            ? `url(${cfgMenu.imagen}) center/cover` : (FONDOS[cfgMenu.fondo] || FONDOS.noche);
+        }
+        const lema = document.getElementById("menu-lema");
+        if (lema) lema.innerText = cfgMenu.lema !== undefined ? cfgMenu.lema : "Facturación profesional";
+        animado ? iniciarAnimacion() : pararAnimacion();
+        actualizarBotonSonido();
+        aplicarVolumen();
+        pararMusica();
+        if (cfgMenu.cancion !== "off" && !cfgMenu.mute) arrancarMusica();
+      }
+
+      // Guarda la pista del usuario. Los archivos grandes no caben en el
+      // almacenamiento del navegador, así que avisamos y la usamos solo
+      // durante esta sesión.
+      function subirMusicaPropia(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          cfgMenu.audio = ev.target.result;
+          cfgMenu.cancion = "propia";
+          document.getElementById("cfg-cancion").value = "propia";
+          try {
+            localStorage.setItem("agx_menu", JSON.stringify(cfgMenu));
+            mostrarToast("Música guardada");
+          } catch (err) {
+            mostrarToast("Pista muy grande: solo esta sesión");
+          }
+          pararMusica();
+          aplicarCfgMenu();
+        };
+        r.onerror = () => mostrarToast("No se pudo leer el audio");
+        r.readAsDataURL(file);
+      }
+
+      function subirFondoMenu(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          cfgMenu.imagen = ev.target.result;
+          document.getElementById("cfg-fondo").value = "imagen";
+          guardarCfgMenu();
+          mostrarToast("Fondo actualizado");
+        };
+        r.readAsDataURL(file);
+      }
+
+      /* ---------- Camión animado (estilo dinosaurio de Chrome) ---------- */
+      function pararAnimacion() { if (animID) { cancelAnimationFrame(animID); animID = null; } }
+
+      function iniciarAnimacion() {
+        pararAnimacion();
+        const cv = document.getElementById("menu-canvas");
+        const ctx = cv.getContext("2d");
+        let W = 0, H = 0, t = 0;
+
+        const medir = () => {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          W = cv.clientWidth; H = cv.clientHeight;
+          cv.width = W * dpr; cv.height = H * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        medir();
+        window.addEventListener("resize", medir);
+
+        // Elementos del decorado con velocidades distintas (parallax)
+        const nubes = Array.from({ length: 5 }, () => ({ x: Math.random(), y: 0.12 + Math.random() * 0.25, e: 0.6 + Math.random() * 0.7 }));
+        const cactus = Array.from({ length: 6 }, (_, i) => ({ x: i / 6 + Math.random() * 0.1, h: 14 + Math.random() * 18 }));
+
+        function camion(x, suelo, bote) {
+          ctx.save();
+          ctx.translate(x, suelo + bote);
+          ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.lineCap = "round";
+          // remolque
+          ctx.strokeRect(-52, -34, 42, 26);
+          // cabina
+          ctx.beginPath();
+          ctx.moveTo(-8, -8); ctx.lineTo(-8, -26); ctx.lineTo(2, -26); ctx.lineTo(10, -17);
+          ctx.lineTo(10, -8); ctx.closePath(); ctx.stroke();
+          // ventanilla y tubo de escape
+          ctx.strokeRect(0, -24, 8, 7);
+          ctx.beginPath(); ctx.moveTo(-9, -26); ctx.lineTo(-9, -33); ctx.stroke();
+          // ruedas girando
+          [-42, -20, 4].forEach((rx) => {
+            ctx.beginPath(); ctx.arc(rx, -4, 5.2, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(rx, -4);
+            ctx.lineTo(rx + Math.cos(t * 0.35) * 4.4, -4 + Math.sin(t * 0.35) * 4.4);
+            ctx.stroke();
+          });
+          ctx.restore();
+        }
+
+        function dibujar() {
+          t += 1;
+          ctx.clearRect(0, 0, W, H);
+
+          const suelo = H * 0.72;
+          // cielo
+          const g = ctx.createLinearGradient(0, 0, 0, H);
+          g.addColorStop(0, "#141a2b"); g.addColorStop(1, "#2a3350");
+          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+          // nubes
+          ctx.strokeStyle = "rgba(255,255,255,0.22)"; ctx.lineWidth = 2;
+          nubes.forEach((n) => {
+            n.x -= 0.0006 * n.e;
+            if (n.x < -0.2) n.x = 1.2;
+            const cx = n.x * W, cy = n.y * H;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 11 * n.e, Math.PI, 0);
+            ctx.arc(cx + 15 * n.e, cy, 8 * n.e, Math.PI, 0);
+            ctx.lineTo(cx - 11 * n.e, cy);
+            ctx.stroke();
+          });
+
+          // suelo
+          ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(0, suelo); ctx.lineTo(W, suelo); ctx.stroke();
+
+          // cactus del decorado
+          ctx.strokeStyle = "rgba(255,255,255,0.3)";
+          cactus.forEach((c) => {
+            c.x -= 0.0022;
+            if (c.x < -0.1) { c.x = 1.1; c.h = 14 + Math.random() * 18; }
+            const cx = c.x * W;
+            ctx.beginPath();
+            ctx.moveTo(cx, suelo); ctx.lineTo(cx, suelo - c.h);
+            ctx.moveTo(cx, suelo - c.h * 0.6); ctx.lineTo(cx - 7, suelo - c.h * 0.6); ctx.lineTo(cx - 7, suelo - c.h * 0.85);
+            ctx.stroke();
+          });
+
+          // línea discontinua de la carretera
+          ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 3;
+          ctx.setLineDash([16, 20]); ctx.lineDashOffset = t * 2.2;
+          ctx.beginPath(); ctx.moveTo(0, suelo + 12); ctx.lineTo(W, suelo + 12); ctx.stroke();
+          ctx.setLineDash([]);
+
+          // el camión avanza en bucle con un ligero traqueteo
+          const x = ((t * 1.6) % (W + 160)) - 60;
+          camion(x, suelo, Math.sin(t * 0.25) * 0.9);
+
+          animID = requestAnimationFrame(dibujar);
+        }
+        dibujar();
+      }
+
+      /* ---------- Música generada (inspirada en Portal, en alegre) ---------- */
+      const CANCIONES = {
+        // [semitono relativo, duración en negras]
+        alegre: { bpm: 132, onda: "triangle", notas: [[0,1],[7,1],[4,1],[7,1],[9,1],[7,1],[4,1],[0,1],[2,1],[9,1],[5,1],[9,1],[11,1],[9,1],[5,1],[2,1]] },
+        calma:  { bpm: 84,  onda: "sine",     notas: [[0,2],[4,2],[7,2],[11,2],[9,2],[7,2],[4,2],[2,2]] },
+        marcha: { bpm: 150, onda: "square",   notas: [[0,1],[0,1],[7,1],[7,1],[5,1],[3,1],[2,1],[0,1],[7,2],[5,2],[3,1],[2,1],[0,2]] },
+        brisa:  { bpm: 96,  onda: "triangle", notas: [[0,1],[4,1],[7,1],[12,1],[7,1],[4,1],[2,1],[5,1],[9,1],[14,1],[9,1],[5,1],[-1,1],[4,1],[7,1],[11,1],[7,1],[4,1],[0,2]] },
+      };
+
+      /* Pista "Neón": synthwave por capas — pad de acordes sostenidos, bajo
+         pulsante en corcheas y arpegio brillante encima. Composición original
+         con el aire nocturno y melancólico del anime que comentabas, pero
+         construida con sintetizador en vez de pitidos de 8 bits. */
+      const NEON = {
+        bpm: 112,
+        compases: [
+          { acorde: [-3, 1, 4, 8],  arp: [8, 12, 15, 12], bajo: -15 },
+          { acorde: [-5, -1, 2, 6], arp: [6, 11, 14, 11], bajo: -17 },
+          { acorde: [-8, -4, 0, 3], arp: [3, 8, 12, 8],   bajo: -20 },
+          { acorde: [-6, -1, 3, 6], arp: [6, 10, 13, 10], bajo: -18 },
+        ],
+      };
+
+      function tocarNeon(inicio, negra) {
+        NEON.compases.forEach((c, i) => {
+          const t0 = inicio + i * negra * 4;
+          c.acorde.forEach((n) =>
+            voz(n, t0, negra * 3.9, { onda: "sawtooth", detune: [-9, 9], nivel: 0.15, ataque: 0.55, sostenido: 0.95, caida: 0.5, corte: 900, q: 3, barrido: true })
+          );
+          for (let p = 0; p < 8; p++) {
+            voz(c.bajo, t0 + p * negra * 0.5, negra * 0.42,
+              { onda: "square", nivel: 0.28, ataque: 0.01, sostenido: 0.35, caida: 0.06, corte: 420, q: 2 });
+          }
+          c.arp.forEach((n, j) => {
+            voz(n, t0 + j * negra, negra * 0.9,
+              { onda: "triangle", detune: [-5, 5], nivel: 0.24, ataque: 0.015, sostenido: 0.4, caida: 0.22, corte: 3200, q: 1 });
+            voz(n + 12, t0 + j * negra + negra * 0.5, negra * 0.35,
+              { onda: "sine", nivel: 0.09, ataque: 0.01, sostenido: 0.3, caida: 0.1, corte: 4200, q: 1 });
+          });
+        });
+      }
+
+      let gestoUsuario = false;   // ¿el usuario ya ha tocado la pantalla?
+      let audioDesbloqueado = false;
+      let audioPropio = null;      // <audio> cuando el usuario sube su pista
+
+      // CLAVE en iOS: el AudioContext debe CREARSE dentro de un gesto real.
+      // Si se crea al cargar la página queda suspendido y a veces ya no arranca,
+      // que es justo el fallo de "unas veces suena y otras no".
+      function iniciarAudio() {
+        if (audioCtx || !gestoUsuario) return;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audioCtx = new AC();
+        audioGain = audioCtx.createGain();
+        audioGain.connect(audioCtx.destination);
+        aplicarVolumen();
+      }
+
+      function desbloquearAudio() {
+        if (!gestoUsuario) return Promise.resolve(false);
+        iniciarAudio();
+        if (!audioCtx) return Promise.resolve(false);
+        if (audioCtx.state === "running") { audioDesbloqueado = true; return Promise.resolve(true); }
+        return audioCtx.resume()
+          .then(() => (audioDesbloqueado = audioCtx.state === "running"))
+          .catch(() => false);
+      }
+
+      // Cualquier tipo de interacción sirve como gesto de desbloqueo
+      function registrarGestos() {
+        const manejar = () => {
+          gestoUsuario = true;
+          if (menuVisible() && !cfgMenu.mute && cfgMenu.cancion !== "off") arrancarMusica();
+          if (audioDesbloqueado || audioPropio) quitar();
+        };
+        const eventos = ["pointerdown", "touchend", "click", "keydown"];
+        const quitar = () => eventos.forEach((e) => document.removeEventListener(e, manejar, true));
+        eventos.forEach((e) => document.addEventListener(e, manejar, true));
+      }
+
+      // El banner "Open Sandbox" lo añade el entorno de vista previa por encima
+      // de la página. Lo ocultamos si aparece dentro de nuestro documento.
+      function vigilarBannerSandbox() {
+        const limpiar = () => {
+          document.querySelectorAll("body > *").forEach((el) => {
+            const t = (el.innerText || "").trim().toLowerCase();
+            if (el.id === "main-menu" || el.closest(".main-container")) return;
+            if (t === "open sandbox" || t === "open in sandbox") el.style.display = "none";
+          });
+        };
+        limpiar();
+        new MutationObserver(limpiar).observe(document.body, { childList: true });
+      }
+
+      function menuVisible() {
+        return !document.getElementById("main-menu").classList.contains("oculto");
+      }
+
+      function aplicarVolumen() {
+        const v = cfgMenu.mute || cfgMenu.cancion === "off" ? 0 : (cfgMenu.vol / 100) * 0.22;
+        if (audioGain && audioCtx) audioGain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.05);
+        if (audioPropio) audioPropio.volume = Math.min(1, (cfgMenu.mute ? 0 : cfgMenu.vol / 100) * 1.2);
+      }
+
+      /* ---------- Síntesis con más cuerpo (no chiptune) ----------
+         Cada voz son dos osciladores ligeramente desafinados pasando por un
+         filtro paso bajo, con ataque y caída suaves: suena a sintetizador
+         moderno en lugar de a pitido retro. */
+      function voz(semitono, inicio, dur, cfg) {
+        if (!audioCtx) return;
+        const frec = 261.63 * Math.pow(2, semitono / 12);
+        const filtro = audioCtx.createBiquadFilter();
+        filtro.type = "lowpass";
+        filtro.frequency.setValueAtTime(cfg.corte || 1800, inicio);
+        if (cfg.barrido) {
+          filtro.frequency.linearRampToValueAtTime((cfg.corte || 1800) * 2.2, inicio + dur * 0.5);
+          filtro.frequency.linearRampToValueAtTime((cfg.corte || 1800) * 0.7, inicio + dur);
+        }
+        filtro.Q.value = cfg.q || 6;
+
+        const g = audioCtx.createGain();
+        const ataque = cfg.ataque !== undefined ? cfg.ataque : 0.02;
+        g.gain.setValueAtTime(0, inicio);
+        g.gain.linearRampToValueAtTime(cfg.nivel || 0.5, inicio + ataque);
+        g.gain.setTargetAtTime(0.0001, inicio + Math.max(ataque, dur * (cfg.sostenido || 0.55)), cfg.caida || 0.12);
+
+        (cfg.detune || [0]).forEach((cent) => {
+          const osc = audioCtx.createOscillator();
+          osc.type = cfg.onda || "sawtooth";
+          osc.frequency.value = frec;
+          osc.detune.value = cent;
+          osc.connect(filtro);
+          osc.start(inicio);
+          osc.stop(inicio + dur + 0.6);
+          vocesActivas.push(osc);
+          osc.onended = () => { vocesActivas = vocesActivas.filter((o) => o !== osc); };
+        });
+
+        filtro.connect(g);
+        g.connect(audioGain);
+      }
+
+      // Compatibilidad con el resto del código
+      function nota(sem, inicio, dur, onda) {
+        voz(sem, inicio, dur, { onda: onda, nivel: 0.45, corte: 2600, q: 1 });
+      }
+
+      function arrancarMusica() {
+        if (cfgMenu.cancion === "off" || cfgMenu.mute || !menuVisible()) return;
+
+        // Pista subida por el usuario: bucle con un <audio> normal
+        if (cfgMenu.cancion === "propia") {
+          if (!cfgMenu.audio) { mostrarToast("Sube primero tu pista en Ajustes"); return; }
+          if (!audioPropio) { audioPropio = new Audio(); audioPropio.loop = true; }
+          if (audioPropio.src !== cfgMenu.audio) audioPropio.src = cfgMenu.audio;
+          aplicarVolumen();
+          audioPropio.play().then(() => { audioDesbloqueado = true; }).catch(() => {});
+          return;
+        }
+
+        desbloquearAudio().then((ok) => {
+          if (!ok || !menuVisible()) return;
+          pararMusica();
+          aplicarVolumen();
+
+          if (cfgMenu.cancion === "neon") {
+            const negra = 60 / NEON.bpm;
+            const ciclo = () => tocarNeon(audioCtx.currentTime + 0.08, negra);
+            ciclo();
+            loopMusica = setInterval(ciclo, negra * 4 * NEON.compases.length * 1000);
+            return;
+          }
+
+          const cancion = CANCIONES[cfgMenu.cancion] || CANCIONES.alegre;
+          const negra = 60 / cancion.bpm;
+          const total = cancion.notas.reduce((a, n) => a + n[1], 0) * negra;
+          const ciclo = () => {
+            let cursor = audioCtx.currentTime + 0.05;
+            cancion.notas.forEach(([sem, dur]) => {
+              voz(sem, cursor, dur * negra * 0.9, { onda: cancion.onda, detune: [-6, 6], nivel: 0.26, corte: 2400, q: 2 });
+              voz(sem - 12, cursor, dur * negra * 0.9, { onda: "sine", nivel: 0.15, corte: 700, q: 1 });
+              cursor += dur * negra;
+            });
+          };
+          ciclo();
+          loopMusica = setInterval(ciclo, total * 1000);
+        });
+      }
+
+      // Silencio inmediato: además del bucle, hay que cortar las notas que ya
+      // estaban programadas por delante, o el sonido seguía un par de segundos.
+      function pararMusica() {
+        if (loopMusica) { clearInterval(loopMusica); loopMusica = null; }
+        vocesActivas.forEach((o) => { try { o.stop(); } catch (e) {} });
+        vocesActivas = [];
+        if (audioPropio) { audioPropio.pause(); audioPropio.currentTime = 0; }
+      }
+
+      function alternarSonido() {
+        cfgMenu.mute = !cfgMenu.mute;
+        localStorage.setItem("agx_menu", JSON.stringify(cfgMenu));
+        actualizarBotonSonido();
+        if (cfgMenu.mute) { aplicarVolumen(); pararMusica(); }
+        else { arrancarMusica(); aplicarVolumen(); }
+      }
+
+      function actualizarBotonSonido() {
+        const b = document.getElementById("btn-mute");
+        if (b) { b.innerHTML = cfgMenu.mute ? ICO_MUDO : ICO_SONIDO; b.title = cfgMenu.mute ? "Activar sonido" : "Silenciar"; }
+      }
+
+      function abrirAjustesMenu() { document.getElementById("modal-menu").classList.remove("hidden"); }
+      function cerrarAjustesMenu() { document.getElementById("modal-menu").classList.add("hidden"); }
+
+      /* ---------- Entrar y salir del menú ---------- */
+      function irA(tab) {
+        document.getElementById("main-menu").classList.add("oculto");
+        pararAnimacion();
+        if (audioGain && audioCtx) audioGain.gain.setValueAtTime(0, audioCtx.currentTime);
+        pararMusica();
+        cambiarPestana(tab);
+        requestAnimationFrame(autoZoomA4);
+      }
+
+      function volverAlMenu() {
+        document.getElementById("main-menu").classList.remove("oculto");
+        sincronizarLogoMenu();
+        aplicarCfgMenu();
+      }
+
+      // El logo del menú refleja el que hayas elegido (texto o imagen)
+      function sincronizarLogoMenu() {
+        const origen = document.getElementById("app-logo-box");
+        const destino = document.getElementById("menu-logo");
+        if (origen && destino) destino.innerHTML = origen.innerHTML;
+      }
+
+      function formatEuro(monto) { return "€" + (Number(monto) || 0).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+      function getVal(id) { const el = document.getElementById(id); return el ? (el.tagName === 'INPUT' ? el.value : el.innerText) : ""; }
+      function setVal(id, val) { const el = document.getElementById(id); if(!el) return; if(el.tagName === 'INPUT') el.value = val; else el.innerText = val; }
+
+      // ACORDEÓN SETTINGS
+      function toggleAcc(id) {
+        const cont = document.getElementById(id); const arrow = document.getElementById("arrow-" + id);
+        if(cont.style.display === "flex") { cont.style.display = "none"; arrow.style.transform = "rotate(0deg)"; }
+        else { cont.style.display = "flex"; arrow.style.transform = "rotate(180deg)"; }
+      }
+
+      function renderizarServicios() {
+        const tbody = document.getElementById("items-tbody"); tbody.innerHTML = "";
+        const etq = i18n[idiomaActual] || i18n.es;
+        servicios.forEach((item, index) => {
+          const totalFila = (Number(item.hours) || 0) * (Number(item.rate) || 0);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td class="col-desc" data-label="${etq.thDesc}"><div class="editable-span" contenteditable="true" oninput="actualizarServicio(${index}, 'desc', this.innerText, this)" style="font-weight:600;">${item.desc}</div></td>
+          <td data-label="${etq.thHours}" style="text-align:center;"><input type="number" step="0.1" value="${item.hours}" oninput="actualizarServicio(${index}, 'hours', this.value, this)" style="text-align:center; width:40px;"></td>
+          <td data-label="${etq.thRate}" style="text-align:right;"><input type="number" step="0.01" value="${item.rate}" oninput="actualizarServicio(${index}, 'rate', this.value, this)" style="text-align:right; width:50px;"></td>
+          <td class="col-total" data-label="${etq.thAmount}" style="text-align:right; font-weight:800; font-variant-numeric: tabular-nums;">${formatEuro(totalFila)}</td>
+          <td class="no-print col-actions" style="text-align:center; vertical-align:middle;"><button class="btn-del-row" title="Eliminar artículo" onclick="eliminarServicio(${index})">✕</button></td>
+        `; tbody.appendChild(tr);
+        }); calcularTotales();
+      }
+      function agregarServicio() { servicios.push({ id: Date.now().toString(), desc: "Nuevo Servicio", hours: 1, rate: 32 }); renderizarServicios(); }
+      function eliminarServicio(index) { if (servicios.length <= 1) { mostrarToast("Mínimo 1 servicio"); return; } servicios.splice(index, 1); renderizarServicios(); }
+      // IMPORTANTE: aquí NO se puede llamar a renderizarServicios(), porque
+      // regenerar la tabla destruye el campo que estás escribiendo y iOS cierra
+      // el teclado en cuanto tecleas la primera letra. Actualizamos solo lo justo.
+      function actualizarServicio(index, campo, valor, el) {
+        servicios[index][campo] = campo === "desc" ? valor : parseFloat(valor) || 0;
+        const item = servicios[index];
+        const fila = el ? el.closest("tr") : document.querySelectorAll("#items-tbody tr")[index];
+        if (fila) {
+          const celda = fila.querySelector(".col-total");
+          if (celda) celda.textContent = formatEuro((Number(item.hours) || 0) * (Number(item.rate) || 0));
+        }
+        calcularTotales();
+      }
+
+      function calcularTotales() {
+        const subtotal = servicios.reduce((sum, item) => sum + (Number(item.hours) || 0) * (Number(item.rate) || 0), 0);
+        const taxRate = parseFloat(document.getElementById("tax-rate").value) || 0;
+        const taxAmount = (subtotal * taxRate) / 100; const total = subtotal + taxAmount;
+        document.getElementById("subtotal-val").innerText = formatEuro(subtotal);
+        document.getElementById("tax-val").innerText = formatEuro(taxAmount);
+        document.getElementById("total-val").innerText = formatEuro(total);
+      }
+
+      function cargarConfigBarra() {
+        try {
+          const s = localStorage.getItem("agx_sidebar_v4"); if (s) sidebarConfig = JSON.parse(s);
+          document.getElementById('conf-sidebar-ori').value = sidebarConfig.ori;
+          document.getElementById('conf-sidebar-size').value = sidebarConfig.size; document.getElementById('val-size').innerText = sidebarConfig.size;
+          document.getElementById('conf-sidebar-gap').value = sidebarConfig.gap; document.getElementById('val-gap').innerText = sidebarConfig.gap;
+          if (typeof sidebarConfig.posY !== "number") sidebarConfig.posY = 50;
+          document.getElementById('conf-sidebar-posy').value = sidebarConfig.posY;
+          document.getElementById('val-posy').innerText = sidebarConfig.posY;
+        } catch(e){}
+        activarArrastreBarra();
+      }
+
+      // Permite arrastrar el texto de la barra negra con el dedo (solo eje vertical)
+      function activarArrastreBarra() {
+        const label = document.getElementById("lbl-sidebar-text");
+        const zona = document.querySelector(".invoice-sidebar");
+        if (!label || !zona || label.dataset.dragReady) return;
+        label.dataset.dragReady = "1";
+
+        let arrastrando = false;
+
+        const mover = (clientY) => {
+          const caja = zona.getBoundingClientRect();
+          // getBoundingClientRect ya tiene en cuenta el zoom del papel
+          let pct = ((clientY - caja.top) / caja.height) * 100;
+          pct = Math.max(0, Math.min(100, pct));
+          sidebarConfig.posY = Math.round(pct);
+          document.getElementById('conf-sidebar-posy').value = sidebarConfig.posY;
+          document.getElementById('val-posy').innerText = sidebarConfig.posY;
+          posicionarTextoBarra();
+        };
+
+        label.addEventListener('pointerdown', (e) => {
+          // Solo se puede mover con el Modo Edición de Plantilla activado
+          if (!editandoPlantillaEstructura || modoVista === "movil") return;
+          arrastrando = true;
+          label.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+        label.addEventListener('pointermove', (e) => {
+          if (!arrastrando) return;
+          mover(e.clientY);
+          e.preventDefault();
+        });
+        const soltar = () => {
+          if (!arrastrando) return;
+          arrastrando = false;
+          localStorage.setItem("agx_sidebar_v4", JSON.stringify(sidebarConfig));
+        };
+        label.addEventListener('pointerup', soltar);
+        label.addEventListener('pointercancel', soltar);
+      }
+
+      // Coloca el texto respetando el limite de la barra negra (no se sale nunca)
+      function posicionarTextoBarra() {
+        const label = document.getElementById("lbl-sidebar-text");
+        const zona = document.querySelector(".invoice-sidebar");
+        if (!label || !zona) return;
+
+        const rotado = sidebarConfig.ori !== "stack";
+        // Alto real que ocupa el texto en la barra (si esta rotado, su "alto" es su ancho)
+        const alto = rotado ? label.offsetWidth : label.offsetHeight;
+        const altoZona = zona.clientHeight;
+
+        // Margen interior para que nunca toque los bordes redondeados
+        const margen = 12;
+        const minCentro = margen + alto / 2;
+        const maxCentro = altoZona - margen - alto / 2;
+
+        let centro = (sidebarConfig.posY / 100) * altoZona;
+        if (maxCentro > minCentro) centro = Math.max(minCentro, Math.min(maxCentro, centro));
+        else centro = altoZona / 2; // el texto es mas alto que la barra: lo centramos
+
+        label.style.top = `${centro}px`;
+        const giro = sidebarConfig.ori === "rot90" ? "rotate(90deg)" : (sidebarConfig.ori === "-rot90" ? "rotate(-90deg)" : "");
+        label.style.transform = `translate(-50%, -50%) ${giro}`;
+      }
+
+      function aplicarConfigBarra(guardar = true) {
+        if(guardar) {
+          sidebarConfig.ori = document.getElementById('conf-sidebar-ori').value;
+          sidebarConfig.size = parseInt(document.getElementById('conf-sidebar-size').value) || 42;
+          sidebarConfig.gap = parseInt(document.getElementById('conf-sidebar-gap').value) || 36;
+          sidebarConfig.posY = parseInt(document.getElementById('conf-sidebar-posy').value);
+          if (isNaN(sidebarConfig.posY)) sidebarConfig.posY = 50;
+          localStorage.setItem("agx_sidebar_v4", JSON.stringify(sidebarConfig));
+        }
+        const texto = (i18n[idiomaActual] || i18n.es).sidebar;
+        const label = document.getElementById("lbl-sidebar-text");
+
+        label.style.fontSize = `${sidebarConfig.size}px`;
+
+        if (sidebarConfig.ori === "stack") {
+          // Letras una debajo de otra: la separacion es el hueco vertical
+          label.style.flexDirection = "column";
+          label.style.gap = `${sidebarConfig.gap}px`;
+          label.style.letterSpacing = "0";
+          label.innerHTML = texto.split('').map(l => `<span class="sidebar-stack"><span>${l}</span></span>`).join('');
+        } else {
+          // Palabra girada: la separacion es el espaciado entre letras
+          label.style.flexDirection = "row";
+          label.style.gap = "0px";
+          label.style.letterSpacing = `${sidebarConfig.gap}px`;
+          // letter-spacing deja un hueco extra tras la ultima letra: lo compensamos
+          label.style.paddingLeft = `${sidebarConfig.gap}px`;
+          label.innerHTML = texto;
+        }
+        if (sidebarConfig.ori === "stack") label.style.paddingLeft = "0px";
+
+        posicionarTextoBarra();
+        activarArrastreBarra();
+      }
+
+      /* ============ EXPORTACIÓN (PDF normal y PDF Eco) ============
+         Un solo motor para los dos botones. Siempre genera una hoja A4 real
+         a partir del DOM, nunca captura la pantalla. */
+      let exportando = false;
+
+      function descargarPDFDirecto() { generarPDF(false); }
+      function exportarPDF() { generarPDF(true); }
+
+      function generarPDF(eco) {
+        if (exportando) return;
+        if (typeof html2pdf === "undefined") { mostrarToast("Falta la librería PDF"); return; }
+        exportando = true;
+        mostrarToast(eco ? "Generando PDF Eco..." : "Generando PDF A4...");
+
+        const paper = document.querySelector(".a4-paper");
+        const editando = editandoPlantillaEstructura;
+        const vistaPrevia = modoVista;
+
+        // 1) Estado limpio: sin modo edición, siempre en hoja A4
+        if (editando) toggleEdicionPlantilla();
+        if (modoVista === "movil") { modoVista = "a4"; autoZoomA4(); }
+
+        document.body.classList.add("exportando");
+        if (eco) document.body.classList.add("print-eco");
+
+        paper.style.transform = "none";
+        paper.style.marginRight = "0px";
+        paper.style.marginBottom = "0px";
+        paper.style.boxShadow = "none";
+        paper.style.borderRadius = "0";
+        paper.querySelectorAll(".no-print").forEach((el) => (el.style.display = "none"));
+
+        // 2) Los <input> no se dibujan bien en el lienzo: los sustituimos por texto.
+        //    Se excluyen los .no-print (como los selectores de fecha invisibles),
+        //    que si no aparecían impresos como una fecha fantasma extra.
+        paper.querySelectorAll("input:not(.no-print)").forEach((inp) => {
+          const span = document.createElement("span");
+          span.className = "temp-pdf-span";
+          span.style.cssText = window.getComputedStyle(inp).cssText;
+          span.style.display = "inline-block";
+          span.style.whiteSpace = "normal";
+          span.innerText = inp.value;
+          inp.parentNode.insertBefore(span, inp);
+          inp.dataset.oculto = "1";
+          inp.style.display = "none";
+        });
+
+        const restaurar = () => {
+          document.body.classList.remove("exportando", "print-eco");
+          paper.style.boxShadow = "";
+          paper.style.borderRadius = "";
+          paper.querySelectorAll(".no-print").forEach((el) => (el.style.display = ""));
+          paper.querySelectorAll(".temp-pdf-span").forEach((el) => el.remove());
+          paper.querySelectorAll("input[data-oculto]").forEach((inp) => {
+            inp.style.display = "";
+            delete inp.dataset.oculto;
+          });
+          modoVista = vistaPrevia;
+          autoZoomA4();
+          if (editando) toggleEdicionPlantilla();
+          exportando = false;
+        };
+
+        const num = getVal("invoice-no") || "0000";
+        const opciones = {
+          margin: 0,
+          filename: `Factura_AGX_${num}${eco ? "_Eco" : ""}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, width: 794, height: 1123, windowWidth: 794, windowHeight: 1123, scrollX: 0, scrollY: 0 },
+          jsPDF: { unit: "px", format: [794, 1123], orientation: "portrait" },
+        };
+
+        setTimeout(() => {
+          // En iOS, .save() abre una pestaña con un blob y al pulsar Compartir
+          // Safari manda el ENLACE, no el PDF. Generamos el archivo y lo
+          // ofrecemos como fichero real a la hoja de compartir del sistema.
+          html2pdf().set(opciones).from(paper).outputPdf("blob")
+            .then((blob) => {
+              restaurar();
+              const archivo = new File([blob], opciones.filename, { type: "application/pdf" });
+              if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+                navigator.share({ files: [archivo], title: opciones.filename })
+                  .then(() => mostrarToast("PDF listo"))
+                  .catch(() => descargarBlob(blob, opciones.filename));
+              } else {
+                descargarBlob(blob, opciones.filename);
+              }
+            })
+            .catch(() => { restaurar(); mostrarToast("No se pudo generar el PDF"); });
+        }, 350);
+      }
+
+      // Guarda un archivo generado en memoria (en iPhone va a la app Archivos)
+      function descargarBlob(blob, nombre) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = nombre;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 8000);
+        mostrarToast("Archivo guardado");
+      }
+
+      // Funciones Estándares
+      /* ============ COPIA DE SEGURIDAD COMPLETA ============
+         Un único archivo con TODO: facturas, clientes, tus datos de emisor,
+         el logo y las preferencias. Sirve para cambiar de móvil. */
+      const CLAVES_COPIA = [
+        "agx_facturas_iphone", "agx_clientes", "agx_mis_datos_v2",
+        "agx_custom_logo", "agx_sidebar_v4", "agx_menu", "agx_vista",
+      ];
+
+      function exportarHistorialJSON() {
+        const copia = { app: "Facturas AGX", version: 2, fecha: new Date().toISOString(), datos: {} };
+        CLAVES_COPIA.forEach((k) => {
+          const v = localStorage.getItem(k);
+          if (v !== null) copia.datos[k] = v;
+        });
+
+        const blob = new Blob([JSON.stringify(copia, null, 2)], { type: "application/json" });
+        const hoy = new Date().toISOString().slice(0, 10);
+        const nombre = `Copia_Facturas_AGX_${hoy}.json`;
+        const archivo = new File([blob], nombre, { type: "application/json" });
+
+        if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+          navigator.share({ files: [archivo], title: nombre })
+            .then(() => mostrarToast("Copia creada"))
+            .catch(() => descargarBlob(blob, nombre));
+        } else {
+          descargarBlob(blob, nombre);
+        }
+      }
+
+      function importarHistorialJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const contenido = JSON.parse(e.target.result);
+
+            // Formato nuevo: copia completa
+            if (contenido && contenido.datos) {
+              if (!confirm("Se sustituirán TODOS los datos actuales por los de la copia. ¿Continuar?")) return;
+              CLAVES_COPIA.forEach((k) => {
+                if (contenido.datos[k] !== undefined) localStorage.setItem(k, contenido.datos[k]);
+              });
+              mostrarToast("Copia restaurada");
+              setTimeout(() => location.reload(), 900);
+              return;
+            }
+
+            // Formato antiguo: solo el listado de facturas
+            if (Array.isArray(contenido)) {
+              historialFacturas = contenido;
+              localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas));
+              actualizarBadgeHistorial();
+              renderizarHistorial();
+              mostrarToast("Facturas importadas");
+              return;
+            }
+            mostrarToast("Archivo no reconocido");
+          } catch (err) {
+            mostrarToast("Error: el archivo no es válido");
+          }
+        };
+        reader.onerror = () => mostrarToast("No se pudo leer el archivo");
+        reader.readAsText(file);
+      }
+
+      function actualizarLogoTexto() { const txt = (getVal("input-logo-text") || "").trim() || "AGX"; aplicarLogo({ type: "text", val: txt }); mostrarToast("Logo actualizado"); }
+      // Convierte cualquier logo en silueta blanca. En vez de suponer que el logo
+      // es oscuro, DETECTA el fondo mirando las esquinas y elimina ese fondo:
+      // así funciona igual con logos negros, blancos o de color.
+      let logoOrigen = null; // guardamos la imagen para poder reprocesarla al invertir
+
+      function subirImagenLogo(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          const img = new Image();
+          img.onload = function () {
+            logoOrigen = img;
+            procesarLogo();
+          };
+          img.onerror = function () { mostrarToast("No se pudo leer la imagen"); };
+          img.src = evt.target.result;
+        };
+        reader.onerror = function () { mostrarToast("Error al abrir el archivo"); };
+        reader.readAsDataURL(file);
+      }
+
+      function procesarLogo() {
+        if (!logoOrigen) { mostrarToast("Sube primero una imagen"); return; }
+        const img = logoOrigen;
+        const invertir = document.getElementById("chk-logo-invertir").checked;
+        const tolerancia = parseInt(document.getElementById("conf-logo-tol").value) || 60;
+
+        const alturaObjetivo = 160;
+        const escala = alturaObjetivo / img.height;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * escala));
+        canvas.height = alturaObjetivo;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+        const w = canvas.width, h = canvas.height;
+
+        // 1) Detectamos el color de fondo con la media de las cuatro esquinas
+        const esquinas = [[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+        let fr=0, fg=0, fb=0, opacas=0, transparentes=0;
+        esquinas.forEach(([x,y]) => {
+          const p=(y*w+x)*4;
+          if (d[p+3] < 12) { transparentes++; }
+          else { fr+=d[p]; fg+=d[p+1]; fb+=d[p+2]; opacas++; }
+        });
+        const fondoTransparente = transparentes >= opacas;
+        if (opacas) { fr/=opacas; fg/=opacas; fb/=opacas; }
+
+        for (let i = 0; i < d.length; i += 4) {
+          const a = d[i+3];
+          let fuera; // ¿este pixel es fondo?
+          if (a < 12) {
+            fuera = true; // transparente = fondo siempre
+          } else if (fondoTransparente) {
+            fuera = false; // fondo transparente: todo lo opaco es logo
+          } else {
+            const dist = Math.sqrt((d[i]-fr)**2 + (d[i+1]-fg)**2 + (d[i+2]-fb)**2);
+            fuera = dist < tolerancia;
+          }
+          if (invertir && a >= 12) fuera = !fuera;
+
+          d[i] = 255; d[i+1] = 255; d[i+2] = 255; // blanco monocromo
+          d[i+3] = fuera ? 0 : a;
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        const recortado = recortarTransparente(canvas);
+        aplicarLogo({ type: "image", val: recortado });
+        const prev = document.getElementById("logo-preview");
+        if (prev) { prev.src = recortado; prev.parentElement.classList.remove("hidden"); }
+        mostrarToast("Logo aplicado en blanco");
+      }
+
+      // Quita el margen transparente sobrante para que el logo llene la caja
+      function recortarTransparente(canvas) {
+        const ctx = canvas.getContext("2d");
+        const { width: w, height: h } = canvas;
+        const d = ctx.getImageData(0, 0, w, h).data;
+        let minX = w, minY = h, maxX = -1, maxY = -1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            if (d[(y * w + x) * 4 + 3] > 10) {
+              if (x < minX) minX = x; if (x > maxX) maxX = x;
+              if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+          }
+        }
+        if (maxX < 0) return canvas.toDataURL("image/png"); // imagen vacia
+        const corte = document.createElement("canvas");
+        corte.width = maxX - minX + 1;
+        corte.height = maxY - minY + 1;
+        corte.getContext("2d").drawImage(canvas, minX, minY, corte.width, corte.height, 0, 0, corte.width, corte.height);
+        return corte.toDataURL("image/png");
+      }
+
+      function aplicarLogo(obj) {
+        const box = document.getElementById("app-logo-box");
+        if (obj.type === "text") {
+          box.innerHTML = obj.val;
+          box.classList.remove("con-imagen");
+        } else {
+          box.innerHTML = `<img src="${obj.val}" alt="Logo" />`;
+          box.classList.add("con-imagen");
+        }
+        localStorage.setItem("agx_custom_logo", JSON.stringify(obj));
+        sincronizarLogoMenu();
+      }
+
+      function cargarLogoGuardado() { try { const saved = localStorage.getItem("agx_custom_logo"); if (saved) { const obj = JSON.parse(saved); aplicarLogo(obj); if (obj.type === "text") setVal("input-logo-text", obj.val); } } catch (err) {} }
+      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); mostrarToast("Estructura Bloqueada"); } }
+      // Crea una fila nueva (con etiqueta) en las cajas superiores
+      function nuevaFilaEtiquetada(container, blanco) {
+        const div = document.createElement("div");
+        div.className = "field-row";
+        div.innerHTML = `<span class="field-label" contenteditable="true">CAMPO:</span><span class="editable-span" contenteditable="true" style="font-weight:600;${blanco ? " color:#fff;" : ""}">Dato...</span>`;
+        container.appendChild(div);
+        refrescarBotonesBorrar();
+      }
+      function agregarFilaCliente() { nuevaFilaEtiquetada(document.getElementById("container-client-fields"), false); }
+      function agregarFilaEmpresa() { nuevaFilaEtiquetada(document.getElementById("container-company-fields"), true); }
+
+      // Filas del pie: direccion y contacto (solo texto)
+      function agregarFilaPie(idContenedor) {
+        const cont = document.getElementById(idContenedor);
+        const div = document.createElement("div");
+        div.className = "foot-row";
+        div.innerHTML = `<span class="editable-span" contenteditable="true">Nuevo dato...</span>`;
+        cont.insertBefore(div, cont.querySelector(".btn-add-field"));
+        refrescarBotonesBorrar();
+      }
+
+      // Filas del bloque bancario (etiqueta + valor alineados)
+      // Las filas del banco ya no llevan etiqueta, igual que las demás cajas
+      function agregarFilaBanco() {
+        const cont = document.getElementById("container-bank-fields");
+        const div = document.createElement("div");
+        div.className = "bank-row";
+        div.innerHTML = `<span class="editable-span" contenteditable="true">Dato...</span>`;
+        cont.insertBefore(div, cont.querySelector(".btn-add-field"));
+        refrescarBotonesBorrar();
+      }
+
+      // Pone/quita la ✕ de borrar en TODAS las filas segun el modo edicion
+      function refrescarBotonesBorrar() {
+        document.querySelectorAll(".btn-del-row").forEach((b) => b.remove());
+        if (!editandoPlantillaEstructura) return;
+
+        const filas = document.querySelectorAll(
+          "#container-client-fields .field-row, #container-company-fields .field-row, .foot-row, .bank-row"
+        );
+        filas.forEach((fila) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn-del-row no-print";
+          btn.innerHTML = "✕";
+          btn.title = "Eliminar esta fila";
+          btn.onclick = () => { fila.remove(); };
+          fila.appendChild(btn);
+        });
+      }
+
+      function abrirModalOpciones() { document.getElementById("modal-opciones").classList.remove("hidden"); }
+      function cerrarModalOpciones(e) { document.getElementById("modal-opciones").classList.add("hidden"); }
+      function cambiarIdioma(lang) { idiomaActual = lang; aplicarIdioma(lang); cerrarModalOpciones(); mostrarToast(`Idioma: ${lang.toUpperCase()}`); }
+      
+      function aplicarIdioma(lang) {
+        const t = i18n[lang] || i18n.es;
+        setVal("lbl-inv-to", t.invTo); setVal("lbl-c-name", t.cName); setVal("lbl-c-vat", t.cVat);
+        setVal("lbl-c-street", t.cStreet); setVal("lbl-c-city", t.cCity); setVal("lbl-c-country", t.cCountry); setVal("lbl-inv-from", t.invFrom);
+        setVal("lbl-m-company", t.mCompany); setVal("lbl-m-vat", t.mVat); setVal("lbl-m-kvk", t.mKvk); setVal("lbl-m-status", t.mStatus);
+        setVal("lbl-meta-no", t.metaNo); setVal("lbl-meta-issue", t.metaIssue); setVal("lbl-meta-due", t.metaDue); setVal("th-desc", t.thDesc);
+        setVal("th-hours", t.thHours); setVal("th-rate", t.thRate); setVal("th-amount", t.thAmount); setVal("txt-add-service", t.addService);
+        setVal("lbl-subtotal", t.subtotal); setVal("lbl-tax", t.tax); setVal("lbl-total", t.total); 
+        setVal("txt-hist-title", t.histTitle); setVal("txt-hist-desc", t.histDesc); setVal("txt-tab-template", t.tabTemplate); setVal("txt-tab-history", t.tabHistory); setVal("txt-tab-datos", t.tabDatos);
+        setVal("menu-txt-factura", t.tabTemplate); setVal("menu-txt-datos", t.tabDatos); setVal("menu-txt-historial", t.tabHistory);
+        // Etiquetas de Empresa y Banco: se traducen salvo que las hayas renombrado
+        misDatos.forEach((en) => {
+          if (en.clave && !en.personalizado && t[en.clave]) en.label = t[en.clave];
+        });
+        aplicarMisDatosAFactura();
+        renderizarMisDatos();
+        aplicarConfigBarra(false);
+      }
+
+      let pestanaActual = "editor";
+
+      function cambiarPestana(tab) {
+        pestanaActual = tab;
+        const vistas = { editor: "view-editor", datos: "view-datos", history: "view-history" };
+        const botones = { editor: "btn-tab-editor", datos: "btn-tab-datos", history: "btn-tab-history" };
+        Object.keys(vistas).forEach((k) => {
+          const v = document.getElementById(vistas[k]);
+          const b = document.getElementById(botones[k]);
+          if (k === tab) { v.classList.remove("hidden"); v.style.display = ""; b.className = "nav-btn active"; }
+          else { v.classList.add("hidden"); b.className = "nav-btn inactive"; }
+        });
+        refrescarEstadoBotones();
+        if (tab === "editor") requestAnimationFrame(autoZoomA4);
+        if (tab === "history") renderizarHistorial();
+        if (tab === "datos") { cargarMisDatos(); renderizarClientes(); }
+      }
+
+      /* ===================== MIS DATOS ===================== */
+      // Cada campo de "Mis Datos" es una entrada editable. Las que llevan
+      // "destino" se vuelcan sobre un campo concreto de la factura.
+      const ENTRADAS_POR_DEFECTO = [
+        { id: "e1",  seccion: "empresa",   label: "COMPANY:", valor: "", destino: "company-name", clave: "mCompany" },
+        { id: "e2",  seccion: "empresa",   label: "BTW-ID:",  valor: "", destino: "company-vat", clave: "mVat" },
+        { id: "e3",  seccion: "empresa",   label: "KVK NO:",  valor: "", destino: "company-kvk", clave: "mKvk" },
+        { id: "e4",  seccion: "empresa",   label: "STATUS:",  valor: "", destino: "company-status", clave: "mStatus" },
+        { id: "d1",  seccion: "direccion", label: "Calle",    valor: "", destino: "addr-street" },
+        { id: "d2",  seccion: "direccion", label: "Ciudad / CP", valor: "", destino: "addr-city" },
+        { id: "d3",  seccion: "direccion", label: "País",     valor: "", destino: "addr-country" },
+        { id: "c1",  seccion: "contacto",  label: "Email",    valor: "", destino: "contact-email" },
+        { id: "c2",  seccion: "contacto",  label: "Teléfono", valor: "", destino: "contact-phone" },
+        { id: "b1",  seccion: "banco",     label: "BANK:",    valor: "", destino: "bank-name", clave: "bBank" },
+        { id: "b2",  seccion: "banco",     label: "IBAN:",    valor: "", destino: "bank-iban", clave: "bIban" },
+        { id: "b3",  seccion: "banco",     label: "SWIFT:",   valor: "", destino: "bank-bic", clave: "bSwift" },
+        { id: "b4",  seccion: "banco",     label: "HOLDER:",  valor: "", destino: "bank-holder", clave: "bHolder" },
+      ];
+      const TITULOS_SECCION = { empresa: "Empresa", direccion: "Dirección (pie)", contacto: "Contacto", banco: "Banco" };
+      const DESTINO_EXTRA = {
+        empresa: "container-company-fields",
+        direccion: "container-addr-fields",
+        contacto: "container-contact-fields",
+        banco: "container-bank-fields",
+      };
+
+      let misDatos = [];
+
+      function toggleMisDatos() {
+        const c = document.getElementById("cuerpo-mis-datos");
+        const f = document.getElementById("flecha-mis-datos");
+        const abierto = !c.classList.contains("hidden");
+        c.classList.toggle("hidden", abierto);
+        f.style.transform = abierto ? "rotate(0deg)" : "rotate(180deg)";
+      }
+
+      function cargarMisDatos(aplicar = true) {
+        try {
+          const g = localStorage.getItem("agx_mis_datos_v2");
+          misDatos = g ? JSON.parse(g) : JSON.parse(JSON.stringify(ENTRADAS_POR_DEFECTO));
+        } catch (e) { misDatos = JSON.parse(JSON.stringify(ENTRADAS_POR_DEFECTO)); }
+        if (!Array.isArray(misDatos) || !misDatos.length) misDatos = JSON.parse(JSON.stringify(ENTRADAS_POR_DEFECTO));
+        renderizarMisDatos();
+        if (aplicar) aplicarMisDatosAFactura();
+      }
+
+      function guardarMisDatos() {
+        localStorage.setItem("agx_mis_datos_v2", JSON.stringify(misDatos));
+        aplicarMisDatosAFactura();
+      }
+
+      function renderizarMisDatos() {
+        Object.keys(TITULOS_SECCION).forEach((sec) => {
+          const cont = document.getElementById("seccion-" + sec);
+          if (!cont) return;
+          cont.innerHTML = `<div class="datos-sep">${TITULOS_SECCION[sec]}</div>`;
+          misDatos.forEach((en) => {
+            if (en.seccion !== sec) return;
+            const fila = document.createElement("div");
+            fila.className = "dato-row";
+            fila.innerHTML = `
+              <input class="dato-label" type="text" value="${(en.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarDato('${en.id}','label',this.value)" />
+              <input class="dato-valor" type="text" placeholder="Escribe aquí" value="${(en.valor || "").replace(/"/g, "&quot;")}" oninput="editarDato('${en.id}','valor',this.value)" />`;
+            if (editandoPlantillaEstructura) {
+              const b = document.createElement("button");
+              b.className = "btn-del-row";
+              b.innerHTML = "✕";
+              b.title = "Quitar campo";
+              b.onclick = () => quitarDato(en.id);
+              fila.appendChild(b);
+            }
+            cont.appendChild(fila);
+          });
+          if (editandoPlantillaEstructura) {
+            const add = document.createElement("button");
+            add.className = "btn-extra";
+            add.innerText = "+ Añadir campo";
+            add.onclick = () => anadirDato(sec);
+            cont.appendChild(add);
+          }
+        });
+      }
+
+      function editarDato(id, campo, valor) {
+        const en = misDatos.find((x) => x.id === id);
+        if (!en) return;
+        en[campo] = valor;
+        if (campo === "label") en.personalizado = true;
+        guardarMisDatos(); // no re-renderiza: así no se cierra el teclado
+      }
+      function anadirDato(seccion) {
+        misDatos.push({ id: "x" + Date.now(), seccion: seccion, label: "NUEVO:", valor: "" });
+        guardarMisDatos(); renderizarMisDatos();
+      }
+      function quitarDato(id) {
+        misDatos = misDatos.filter((x) => x.id !== id);
+        guardarMisDatos(); renderizarMisDatos();
+      }
+
+      function aplicarMisDatosAFactura() {
+        // 1) Ocultamos las filas fijas de la factura que se hayan borrado
+        ENTRADAS_POR_DEFECTO.forEach((def) => {
+          const el = document.getElementById(def.destino);
+          if (!el) return;
+          const fila = el.closest(".field-row, .foot-row, .bank-row");
+          const sigue = misDatos.some((x) => x.destino === def.destino);
+          if (fila) fila.style.display = sigue ? "" : "none";
+        });
+
+        // 2) Volcamos valor y nombre de campo
+        document.querySelectorAll(".fila-inyectada").forEach((el) => el.remove());
+        misDatos.forEach((en) => {
+          if (en.destino) {
+            const el = document.getElementById(en.destino);
+            if (!el) return;
+            el.innerText = en.valor || "";
+            const fila = el.closest(".field-row, .bank-row");
+            const etq = fila ? fila.querySelector(".field-label") : null;
+            if (etq) etq.innerText = en.label || "";
+            return;
+          }
+          // 3) Campos nuevos: se inyectan en su caja correspondiente
+          const cont = document.getElementById(DESTINO_EXTRA[en.seccion]);
+          if (!cont) return;
+          const div = document.createElement("div");
+          const conEtiqueta = en.seccion === "empresa"; // el banco va sin etiqueta, como dirección y contacto
+          div.className = "fila-inyectada " + (en.seccion === "banco" ? "bank-row" : en.seccion === "empresa" ? "field-row" : "foot-row");
+          div.innerHTML = conEtiqueta
+            ? `<span class="field-label">${en.label || ""}</span><span class="editable-span" style="color:#fff;">${en.valor || ""}</span>`
+            : `<span class="editable-span">${en.valor || ""}</span>`;
+          const boton = cont.querySelector(".btn-add-field");
+          if (boton) cont.insertBefore(div, boton); else cont.appendChild(div);
+        });
+        refrescarBotonesBorrar();
+      }
+
+      /* ===================== CLIENTES ===================== */
+      let clientes = [];
+
+      function cargarClientes() {
+        try { clientes = JSON.parse(localStorage.getItem("agx_clientes") || "[]"); } catch (e) { clientes = []; }
+      }
+      function persistirClientes() { localStorage.setItem("agx_clientes", JSON.stringify(clientes)); }
+
+      function abrirFormCliente(id) {
+        document.getElementById("form-cliente").classList.remove("hidden");
+        const c = clientes.find((x) => x.id === id);
+        setVal("cli-id", c ? c.id : "");
+        ["name", "vat", "address", "city", "country"].forEach((k) => setVal("cli-" + k, c ? (c[k] || "") : ""));
+      }
+      function cerrarFormCliente() { document.getElementById("form-cliente").classList.add("hidden"); }
+
+      function guardarCliente() {
+        const nombre = (getVal("cli-name") || "").trim();
+        if (!nombre) { mostrarToast("El cliente necesita un nombre"); return; }
+        const id = getVal("cli-id") || Date.now().toString();
+        const cliente = {
+          id: id, name: nombre, vat: getVal("cli-vat"), address: getVal("cli-address"),
+          city: getVal("cli-city"), country: getVal("cli-country"),
+        };
+        const i = clientes.findIndex((c) => c.id === id);
+        if (i >= 0) clientes[i] = cliente; else clientes.push(cliente);
+        persistirClientes(); renderizarClientes(); cerrarFormCliente();
+        mostrarToast("Cliente guardado");
+      }
+
+      function eliminarCliente(id) {
+        clientes = clientes.filter((c) => c.id !== id);
+        persistirClientes(); renderizarClientes(); mostrarToast("Cliente eliminado");
+      }
+
+      function renderizarClientes() {
+        const cont = document.getElementById("clientes-container");
+        if (!cont) return;
+        if (clientes.length === 0) {
+          cont.innerHTML = `<div style="padding:16px; text-align:center; color:#6b7280; font-size:12px; border:1px dashed #e5e7eb; border-radius:12px;">Todavía no tienes clientes guardados.</div>`;
+          return;
+        }
+        cont.innerHTML = "";
+        clientes.forEach((c) => {
+          const div = document.createElement("div");
+          div.className = "cliente-card";
+          div.innerHTML = `<div style="min-width:0;"><h3 style="font-weight:800; font-size:14px;">${c.name}</h3><p style="font-size:11px; color:#6b7280; overflow:hidden; text-overflow:ellipsis;">${c.vat || ""} ${c.city ? "• " + c.city : ""}</p></div>
+            <div style="display:flex; gap:6px; flex-shrink:0;">
+              <button class="btn btn-gray" style="padding:6px 10px;" onclick="abrirFormCliente('${c.id}')">Editar</button>
+              <button class="btn btn-gray" style="padding:6px 10px; color:#ef4444;" onclick="eliminarCliente('${c.id}')">✕</button>
+            </div>`;
+          cont.appendChild(div);
+        });
+      }
+
+      // Selector de cliente desde la propia factura
+      function abrirSelectorClientes() {
+        cargarClientes();
+        if (clientes.length === 0) { mostrarToast("No hay clientes: créalos en la pestaña Datos"); cambiarPestana("datos"); return; }
+        const cont = document.getElementById("lista-selector-clientes");
+        cont.innerHTML = "";
+        clientes.forEach((c) => {
+          const b = document.createElement("button");
+          b.className = "btn btn-gray";
+          b.style.cssText = "width:100%; justify-content:flex-start; padding:12px; margin-bottom:6px; font-size:13px;";
+          b.innerHTML = `<b>${c.name}</b>`;
+          b.onclick = () => insertarClienteEnFactura(c.id);
+          cont.appendChild(b);
+        });
+        document.getElementById("modal-clientes").classList.remove("hidden");
+      }
+      function cerrarSelectorClientes() { document.getElementById("modal-clientes").classList.add("hidden"); }
+
+      function insertarClienteEnFactura(id) {
+        const c = clientes.find((x) => x.id === id);
+        if (!c) return;
+        setVal("client-name", c.name); setVal("client-vat", c.vat || "");
+        setVal("client-address", c.address || ""); setVal("client-city", c.city || "");
+        setVal("client-country", c.country || "");
+        cerrarSelectorClientes();
+        mostrarToast(`Cliente ${c.name} añadido`);
+      }
+
+      /* ============ NUMERACIÓN AUTOMÁTICA DE FACTURAS ============ */
+      let facturaEnEdicionNo = null; // permite re-guardar la factura que tienes abierta
+
+      function siguienteNumeroFactura() {
+        const usados = historialFacturas
+          .map((f) => parseInt(String(f.invoiceNo).replace(/\D/g, ""), 10))
+          .filter((n) => !isNaN(n));
+        const max = usados.length ? Math.max(...usados) : 0;
+        return String(max + 1);
+      }
+
+      function guardarFacturaActual() {
+        const numFactura = (getVal("invoice-no") || "").trim();
+        if (!numFactura || numFactura === "0") { mostrarToast("⚠️ Pon un número de factura válido"); return; }
+
+        // No se permite pisar una factura ya guardada con otro número
+        const yaExiste = historialFacturas.some((f) => String(f.invoiceNo) === numFactura);
+        if (yaExiste && facturaEnEdicionNo !== numFactura) {
+          mostrarToast(`⚠️ La factura N° ${numFactura} ya existe`);
+          return;
+        }
+
+        const clienteNombre = getVal("client-name") || "Sin nombre";
+        const subtotal = servicios.reduce((sum, item) => sum + (Number(item.hours) || 0) * (Number(item.rate) || 0), 0);
+        const taxRate = parseFloat(document.getElementById("tax-rate").value) || 0;
+        const total = subtotal + (subtotal * taxRate) / 100;
+        const factura = {
+          id: numFactura, invoiceNo: numFactura, clientName: clienteNombre, clientVat: getVal("client-vat"), clientAddress: getVal("client-address"), clientCity: getVal("client-city"), clientCountry: getVal("client-country"), companyName: getVal("company-name"), companyVat: getVal("company-vat"), companyKvk: getVal("company-kvk"), companyStatus: getVal("company-status"), addrStreet: getVal("addr-street"), addrCity: getVal("addr-city"), addrCountry: getVal("addr-country"), contactEmail: getVal("contact-email"), contactPhone: getVal("contact-phone"), bankName: getVal("bank-name"), bankIban: getVal("bank-iban"), bankBic: getVal("bank-bic"), bankHolder: getVal("bank-holder"), issueDate: getVal("issue-date"), dueDate: getVal("due-date"), servicios: JSON.parse(JSON.stringify(servicios)), taxRate: taxRate, total: total, idioma: idiomaActual,
+        };
+        const index = historialFacturas.findIndex((f) => f.invoiceNo === numFactura);
+        if (index >= 0) historialFacturas[index] = factura; else historialFacturas.unshift(factura);
+        localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas));
+        facturaEnEdicionNo = numFactura;
+        actualizarBadgeHistorial();
+        mostrarToast(`Guardada: N° ${numFactura}`);
+      }
+
+      function cargarHistorialLocal() { try { const guardado = localStorage.getItem("agx_facturas_iphone"); if (guardado) historialFacturas = JSON.parse(guardado); } catch (e) {} actualizarBadgeHistorial(); }
+      function renderizarHistorial() {
+        const container = document.getElementById("history-container"); const busqueda = (document.getElementById("search-input").value || "").toLowerCase();
+        const filtradas = historialFacturas.filter((f) => f.invoiceNo.toLowerCase().includes(busqueda) || f.clientName.toLowerCase().includes(busqueda));
+        if (filtradas.length === 0) { container.innerHTML = `<div style="background:#ffffff; padding:20px; border-radius:12px; text-align:center; color:#6b7280; font-size:12px;">No hay facturas guardadas.</div>`; return; }
+        container.innerHTML = "";
+        filtradas.forEach((f) => {
+          const div = document.createElement("div"); div.className = "history-card"; div.onclick = () => cargarFactura(f.invoiceNo);
+          div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#000000; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`; container.appendChild(div);
+        });
+      }
+
+      function cargarFactura(numFactura) {
+        const f = historialFacturas.find((fact) => fact.invoiceNo === numFactura); if (!f) return;
+        setVal("invoice-no", f.invoiceNo); setVal("client-name", f.clientName); setVal("client-vat", f.clientVat || ""); setVal("client-address", f.clientAddress || ""); setVal("client-city", f.clientCity || ""); setVal("client-country", f.clientCountry || "");
+        setVal("company-name", f.companyName || ""); setVal("company-vat", f.companyVat || ""); setVal("company-kvk", f.companyKvk || ""); setVal("company-status", f.companyStatus || "");
+        setVal("addr-street", f.addrStreet || ""); setVal("addr-city", f.addrCity || ""); setVal("addr-country", f.addrCountry || ""); setVal("contact-email", f.contactEmail || ""); setVal("contact-phone", f.contactPhone || "");
+        setVal("bank-name", f.bankName || ""); setVal("bank-iban", f.bankIban || ""); setVal("bank-bic", f.bankBic || ""); setVal("bank-holder", f.bankHolder || "");
+        setVal("issue-date", f.issueDate || ""); setVal("due-date", f.dueDate || ""); document.getElementById("tax-rate").value = f.taxRate || 21;
+        servicios = JSON.parse(JSON.stringify(f.servicios)); facturaEnEdicionNo = f.invoiceNo; renderizarServicios(); if (f.idioma) cambiarIdioma(f.idioma); cambiarPestana("editor"); sincronizarSelectoresFecha(); mostrarToast(`Factura N° ${f.invoiceNo} cargada`);
+      }
+
+      function eliminarFacturaHistorial(numFactura, event) { event.stopPropagation(); historialFacturas = historialFacturas.filter((f) => f.invoiceNo !== numFactura); localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas)); actualizarBadgeHistorial(); renderizarHistorial(); mostrarToast("Factura eliminada"); }
+      // Deja la factura completamente en blanco (todo a cero) con el número siguiente
+      function nuevaFactura() {
+        setVal("invoice-no", siguienteNumeroFactura());
+        facturaEnEdicionNo = null;
+
+        ["client-name", "client-vat", "client-address", "client-city", "client-country"].forEach((id) => setVal(id, ""));
+
+        const hoy = new Date();
+        const dd = String(hoy.getDate()).padStart(2, "0");
+        const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+        setVal("issue-date", `${dd}/${mm}/${hoy.getFullYear()}`);
+        setVal("due-date", "");
+        sincronizarSelectoresFecha();
+
+        // Los datos del emisor se recuperan de "Mis Datos"
+        cargarMisDatos(true);
+
+        servicios = [{ id: Date.now().toString(), desc: "", hours: 0, rate: 0 }];
+        renderizarServicios();
+        cambiarPestana("editor");
+        mostrarToast("Factura nueva en blanco");
+      }
+
+      function actualizarBadgeHistorial() { document.getElementById("history-badge").innerText = historialFacturas.length; }
+      const ICO_CHECK = '<svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8.2 12.3 11 15 16 9.6"/></svg>';
+      const ICO_ALERTA = '<svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9.2" x2="12" y2="13.4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+      // El bocadillo muestra icono de aviso o de confirmación según el mensaje
+      function mostrarToast(msg) {
+        const toast = document.getElementById("toast");
+        const aviso = /⚠|no se pudo|falta|error|ya existe|mínimo|válido/i.test(msg);
+        document.getElementById("toast-icon").innerHTML = aviso ? ICO_ALERTA : ICO_CHECK;
+        setVal("toast-text", msg.replace("⚠️", "").trim());
+        toast.classList.add("show");
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+    </script>
+  </body>
+</html>
