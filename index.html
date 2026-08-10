@@ -47,6 +47,10 @@
         border-bottom: 1px solid #e5e7eb; padding: calc(12px + var(--safe-top)) 16px 12px 16px;
         z-index: 1000; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center;
       }
+      /* Franja de relleno del área segura inferior. Sin esto asomaba una
+         banda gris (o negra en el menú) por debajo de la navegación. */
+      .safe-fill { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--safe-bottom) + 30px); background: #ffffff; z-index: 999; pointer-events: none; }
+      body.menu-abierto .safe-fill { background: #0f1115; }
       .bottom-nav {
         position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid #e5e7eb;
@@ -330,7 +334,7 @@
       body.menu-abierto .app-header, body.menu-abierto .bottom-nav, body.menu-abierto .main-container { display: none !important; }
       /* El fondo del documento también en oscuro: si no, el área segura de
          abajo del iPhone se ve como una franja blanca bajo el menú. */
-      body.menu-abierto, html:has(body.menu-abierto) { background: #0f1115 !important; }
+      body.menu-abierto { background: #0f1115 !important; }
       body.menu-abierto { overflow: hidden; height: 100dvh; }
       #menu-canvas, #menu-imagen { position: absolute; inset: 0; width: 100%; height: 100%; }
       #menu-imagen { background-size: cover; background-position: center; display: none; }
@@ -459,6 +463,8 @@
         </div>
       </div>
     </div>
+
+    <div class="safe-fill no-print"></div>
 
     <!-- CABECERA FIJA SUPERIOR -->
     <header class="app-header no-print">
@@ -832,6 +838,7 @@
             <div class="config-row">
               <label>Tipo de sonido</label>
               <select id="cfg-pack" onchange="guardarCfgFx()">
+                <option value="papel">Papel (por defecto)</option>
                 <option value="suave">Suave</option>
                 <option value="cristal">Cristal</option>
                 <option value="retro">Retro</option>
@@ -849,6 +856,15 @@
             <button onclick="exportarHistorialJSON()" class="btn btn-gray" style="justify-content:center; padding:10px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="8 11 12 15 16 11"/><line x1="12" y1="4" x2="12" y2="15"/></svg>Copia de seguridad completa</button>
             <label class="btn btn-gray" style="justify-content:center; cursor:pointer; padding:10px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="8 8 12 4 16 8"/><line x1="12" y1="4" x2="12" y2="15"/></svg>Restaurar desde copia<input type="file" accept=".json" onchange="importarHistorialJSON(event)" style="display:none;" /></label>
           </div>
+        </div>
+
+        <!-- VERSIÓN -->
+        <div style="margin-top:4px;">
+          <button onclick="mostrarVersion()" class="btn btn-gray" style="width:100%; justify-content:center; padding:10px;">
+            <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><line x1="12" y1="7.6" x2="12.01" y2="7.6"/></svg>
+            Versión
+          </button>
+          <div id="info-version" class="hidden" style="margin-top:8px; font-size:12px; line-height:1.5; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:10px;"></div>
         </div>
 
         <!-- ESTRUCTURA EDICIÓN -->
@@ -896,7 +912,19 @@
         sincronizarLogoMenu();
         // iOS no deja sonar audio sin un gesto previo: arrancamos al primer toque
         document.body.classList.add("menu-abierto");
+        document.documentElement.style.backgroundColor = "#0f1115";
         registrarGestos();
+        // Sonido de lápiz al empezar a escribir en cualquier campo editable
+        document.addEventListener("focusin", (e) => {
+          const t = e.target;
+          if (!t || !t.matches) return;
+          if (t.matches('.editable-span, td [contenteditable="true"], input[type="text"], input[type="number"], .dato-valor')) fx("foco");
+        });
+        // Botones de borrar: sonido de papel estrujado allá donde estén
+        document.addEventListener("click", (e) => {
+          const b = e.target.closest ? e.target.closest(".btn-del-row") : null;
+          if (b) fx("quitar");
+        }, true);
         vigilarBannerSandbox();
         window.addEventListener('resize', autoZoomA4);
         document.addEventListener("visibilitychange", () => {
@@ -961,7 +989,7 @@
       }
 
       function alternarVista() {
-        fx("tap");
+        fx("vista");
         modoVista = modoVista === "a4" ? "movil" : "a4";
         localStorage.setItem("agx_vista", modoVista);
         autoZoomA4();
@@ -992,18 +1020,100 @@
          (sin archivos externos) y ajustes propios. */
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
-      let cfgFx = { sonido: true, vibrar: true, pack: "suave" };
+      /* Control de versiones: sube el número en cada entrega */
+      const VERSION = "1.2.1";
+      const VERSION_FECHA = "10/08/2026";
+      const VERSION_NOTAS = "Sonidos por acción (pack Papel), campos de cliente editables, área segura y audio en iPhone corregidos.";
+
+      function mostrarVersion() {
+        fx("abrir");
+        const c = document.getElementById("info-version");
+        if (!c) return;
+        c.classList.toggle("hidden");
+        c.innerHTML = `<b>Versión ${VERSION}</b><br><span style="color:#6b7280;">${VERSION_FECHA}</span><br><span style="color:#6b7280;">${VERSION_NOTAS}</span>`;
+      }
+
+      let cfgFx = { sonido: true, vibrar: true, pack: "papel" };
+
+      /* Cada acción tiene su propio sonido, como en los menús de consola:
+         una familia coherente donde reconoces qué hiciste solo por el oído.
+         Capas: "t" = tono (semitono, duración, onda), "r" = ruido filtrado. */
+      const EVENTOS = ["nav","abrir","foco","anadir","quitar","guardar","pdf","eco","nuevo","vista","ajustes","arrastrar","ok","error","elegir"];
 
       const PACKS = {
-        // [semitonos, duración, onda]
-        suave:  { tap: [[12, 0.05, "sine"]], ok: [[12, 0.09, "sine"], [19, 0.13, "sine"]], error: [[3, 0.16, "triangle"], [-1, 0.22, "triangle"]] },
-        cristal:{ tap: [[24, 0.05, "triangle"]], ok: [[19, 0.08, "triangle"], [24, 0.1, "triangle"], [28, 0.16, "sine"]], error: [[6, 0.14, "square"], [1, 0.2, "square"]] },
-        retro:  { tap: [[12, 0.04, "square"]], ok: [[12, 0.06, "square"], [16, 0.06, "square"], [19, 0.12, "square"]], error: [[5, 0.1, "square"], [0, 0.18, "square"]] },
-        // Guiño a Dragon Ball: fanfarria ascendente con brillo, como cuando
-        // se carga energía. Melodía original, solo el espíritu.
-        ki:     { tap: [[19, 0.05, "triangle"]],
-                  ok: [[12, 0.07, "sawtooth"], [16, 0.07, "sawtooth"], [19, 0.07, "sawtooth"], [24, 0.1, "triangle"], [28, 0.22, "triangle"]],
-                  error: [[7, 0.12, "sawtooth"], [2, 0.16, "sawtooth"], [-2, 0.26, "triangle"]] },
+        // Golpes de papel y lápiz: la X suena a papel estrujado, tocar un
+        // campo suena a mina de lápiz sobre la hoja.
+        papel: {
+          nav:      [["r", 1400, 0.07, 0.10, "band"]],
+          abrir:    [["r", 900, 0.18, 0.12, "low"], ["t", 12, 0.12, "sine", 0.06]],
+          foco:     [["r", 2600, 0.05, 0.05, "band"], ["r", 3400, 0.06, 0.04, "high"]],
+          anadir:   [["r", 1800, 0.09, 0.09, "band"], ["t", 19, 0.09, "sine", 0.05]],
+          quitar:   [["r", 2200, 0.10, 0.11, "high"], ["r", 1500, 0.13, 0.10, "band"], ["r", 900, 0.16, 0.08, "band"]],
+          guardar:  [["r", 700, 0.13, 0.11, "low"], ["t", 12, 0.10, "sine", 0.07], ["t", 19, 0.14, "sine", 0.06]],
+          pdf:      [["r", 1200, 0.16, 0.10, "band"], ["t", 7, 0.12, "triangle", 0.06], ["t", 14, 0.18, "triangle", 0.05]],
+          eco:      [["r", 800, 0.20, 0.09, "low"], ["t", 16, 0.16, "sine", 0.05]],
+          nuevo:    [["r", 2000, 0.14, 0.09, "high"], ["t", 24, 0.10, "sine", 0.05]],
+          vista:    [["r", 1600, 0.08, 0.09, "band"], ["t", 15, 0.07, "sine", 0.05]],
+          ajustes:  [["r", 1000, 0.07, 0.08, "band"], ["t", 10, 0.07, "sine", 0.05]],
+          arrastrar:[["r", 2800, 0.04, 0.035, "high"]],
+          ok:       [["t", 12, 0.08, "sine", 0.09], ["t", 19, 0.13, "sine", 0.07], ["r", 1500, 0.07, 0.05, "band"]],
+          error:    [["r", 500, 0.18, 0.12, "low"], ["t", 3, 0.16, "triangle", 0.08]],
+          elegir:   [["r", 1900, 0.07, 0.08, "band"], ["t", 21, 0.10, "sine", 0.05]],
+        },
+        suave: {
+          nav: [["t", 12, 0.06, "sine", 0.1]], abrir: [["t", 7, 0.1, "sine", 0.1], ["t", 14, 0.14, "sine", 0.08]],
+          foco: [["t", 21, 0.04, "sine", 0.07]], anadir: [["t", 16, 0.07, "sine", 0.1], ["t", 23, 0.1, "sine", 0.07]],
+          quitar: [["t", 9, 0.08, "sine", 0.1], ["t", 2, 0.12, "sine", 0.08]],
+          guardar: [["t", 12, 0.08, "sine", 0.1], ["t", 19, 0.14, "sine", 0.08]],
+          pdf: [["t", 14, 0.09, "triangle", 0.1], ["t", 21, 0.14, "sine", 0.07]],
+          eco: [["t", 10, 0.12, "sine", 0.09]], nuevo: [["t", 24, 0.09, "sine", 0.09]],
+          vista: [["t", 17, 0.06, "sine", 0.09]], ajustes: [["t", 11, 0.06, "sine", 0.08]],
+          arrastrar: [["t", 26, 0.03, "sine", 0.05]],
+          ok: [["t", 12, 0.09, "sine", 0.1], ["t", 19, 0.13, "sine", 0.08]],
+          error: [["t", 4, 0.14, "triangle", 0.1], ["t", -1, 0.2, "triangle", 0.08]],
+          elegir: [["t", 19, 0.08, "sine", 0.09]],
+        },
+        cristal: {
+          nav: [["t", 24, 0.06, "triangle", 0.09]], abrir: [["t", 19, 0.08, "triangle", 0.09], ["t", 26, 0.14, "sine", 0.07]],
+          foco: [["t", 31, 0.04, "triangle", 0.06]], anadir: [["t", 24, 0.06, "triangle", 0.09], ["t", 31, 0.1, "sine", 0.06]],
+          quitar: [["t", 18, 0.07, "triangle", 0.09], ["t", 11, 0.12, "triangle", 0.07]],
+          guardar: [["t", 19, 0.07, "triangle", 0.09], ["t", 24, 0.08, "triangle", 0.08], ["t", 31, 0.15, "sine", 0.06]],
+          pdf: [["t", 21, 0.08, "triangle", 0.09], ["t", 28, 0.14, "sine", 0.06]],
+          eco: [["t", 16, 0.13, "sine", 0.08]], nuevo: [["t", 33, 0.09, "triangle", 0.07]],
+          vista: [["t", 26, 0.06, "triangle", 0.08]], ajustes: [["t", 20, 0.06, "triangle", 0.07]],
+          arrastrar: [["t", 35, 0.03, "sine", 0.05]],
+          ok: [["t", 24, 0.07, "triangle", 0.09], ["t", 31, 0.13, "sine", 0.07]],
+          error: [["t", 8, 0.12, "square", 0.08], ["t", 2, 0.18, "square", 0.07]],
+          elegir: [["t", 28, 0.08, "triangle", 0.08]],
+        },
+        retro: {
+          nav: [["t", 12, 0.04, "square", 0.08]], abrir: [["t", 7, 0.05, "square", 0.08], ["t", 14, 0.08, "square", 0.07]],
+          foco: [["t", 19, 0.03, "square", 0.06]], anadir: [["t", 16, 0.04, "square", 0.08], ["t", 23, 0.07, "square", 0.06]],
+          quitar: [["t", 10, 0.05, "square", 0.08], ["t", 3, 0.09, "square", 0.07]],
+          guardar: [["t", 12, 0.05, "square", 0.08], ["t", 16, 0.05, "square", 0.08], ["t", 19, 0.1, "square", 0.07]],
+          pdf: [["t", 14, 0.05, "square", 0.08], ["t", 21, 0.1, "square", 0.06]],
+          eco: [["t", 9, 0.1, "square", 0.07]], nuevo: [["t", 24, 0.06, "square", 0.07]],
+          vista: [["t", 17, 0.04, "square", 0.07]], ajustes: [["t", 11, 0.04, "square", 0.07]],
+          arrastrar: [["t", 27, 0.02, "square", 0.04]],
+          ok: [["t", 12, 0.05, "square", 0.08], ["t", 19, 0.09, "square", 0.07]],
+          error: [["t", 5, 0.09, "square", 0.08], ["t", 0, 0.14, "square", 0.07]],
+          elegir: [["t", 21, 0.05, "square", 0.07]],
+        },
+        ki: {
+          nav: [["t", 19, 0.05, "triangle", 0.08]],
+          abrir: [["t", 12, 0.05, "sawtooth", 0.07], ["t", 19, 0.05, "sawtooth", 0.07], ["t", 24, 0.14, "triangle", 0.07]],
+          foco: [["t", 26, 0.04, "triangle", 0.06]],
+          anadir: [["t", 19, 0.05, "sawtooth", 0.08], ["t", 26, 0.1, "triangle", 0.06]],
+          quitar: [["t", 12, 0.06, "sawtooth", 0.08], ["t", 5, 0.12, "sawtooth", 0.07]],
+          guardar: [["t", 12, 0.06, "sawtooth", 0.08], ["t", 16, 0.06, "sawtooth", 0.08], ["t", 19, 0.06, "sawtooth", 0.08], ["t", 24, 0.16, "triangle", 0.07]],
+          pdf: [["t", 14, 0.06, "sawtooth", 0.08], ["t", 21, 0.06, "sawtooth", 0.07], ["t", 28, 0.16, "triangle", 0.06]],
+          eco: [["t", 9, 0.14, "triangle", 0.07]], nuevo: [["t", 28, 0.1, "triangle", 0.07]],
+          vista: [["t", 21, 0.05, "triangle", 0.07]], ajustes: [["t", 14, 0.05, "triangle", 0.07]],
+          arrastrar: [["t", 30, 0.03, "triangle", 0.05]],
+          ok: [["t", 19, 0.06, "sawtooth", 0.08], ["t", 26, 0.14, "triangle", 0.07]],
+          error: [["t", 7, 0.12, "sawtooth", 0.08], ["t", 1, 0.2, "triangle", 0.07]],
+          elegir: [["t", 24, 0.08, "triangle", 0.07]],
+        },
       };
 
       function cargarCfgFx() {
@@ -1015,40 +1125,75 @@
       }
 
       function guardarCfgFx() {
-        cfgFx.sonido = document.getElementById("cfg-sonido").checked;
-        cfgFx.vibrar = document.getElementById("cfg-vibrar").checked;
-        cfgFx.pack = document.getElementById("cfg-pack").value;
+        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar"), c = document.getElementById("cfg-pack");
+        if (a) cfgFx.sonido = a.checked;
+        if (b) cfgFx.vibrar = b.checked;
+        if (c) cfgFx.pack = c.value;
         localStorage.setItem("agx_fx", JSON.stringify(cfgFx));
-        fx("ok");
+        fx("elegir"); // se oye el pack recién elegido
       }
 
-      // Un solo punto de entrada: fx("tap" | "ok" | "error")
-      function fx(tipo) {
-        vibrar(tipo);
+      let bufferRuido = null;
+      function obtenerRuido() {
+        if (bufferRuido || !audioCtx) return bufferRuido;
+        const largo = audioCtx.sampleRate * 0.5;
+        bufferRuido = audioCtx.createBuffer(1, largo, audioCtx.sampleRate);
+        const d = bufferRuido.getChannelData(0);
+        for (let i = 0; i < largo; i++) d[i] = Math.random() * 2 - 1;
+        return bufferRuido;
+      }
+
+      function capaRuido(t, frec, dur, nivel, tipo) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = obtenerRuido();
+        const f = audioCtx.createBiquadFilter();
+        f.type = tipo === "low" ? "lowpass" : tipo === "high" ? "highpass" : "bandpass";
+        f.frequency.value = frec;
+        f.Q.value = tipo === "band" ? 1.4 : 0.8;
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(nivel, t + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0005, t + dur);
+        src.connect(f); f.connect(g); g.connect(audioCtx.destination);
+        src.start(t, Math.random() * 0.3); src.stop(t + dur + 0.05);
+      }
+
+      function capaTono(t, sem, dur, onda, nivel) {
+        const osc = audioCtx.createOscillator();
+        const f = audioCtx.createBiquadFilter();
+        f.type = "lowpass"; f.frequency.value = 6000;
+        const g = audioCtx.createGain();
+        osc.type = onda; osc.frequency.value = 261.63 * Math.pow(2, sem / 12);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(nivel, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0005, t + dur);
+        osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + dur + 0.05);
+      }
+
+      // Punto único de entrada: fx("quitar"), fx("foco"), fx("guardar")...
+      function fx(evento) {
+        vibrar(evento);
         if (!cfgFx.sonido || !gestoUsuario) return;
         iniciarAudio();
         if (!audioCtx) return;
         if (audioCtx.state === "suspended") audioCtx.resume();
-        const secuencia = (PACKS[cfgFx.pack] || PACKS.suave)[tipo] || [];
-        let t = audioCtx.currentTime + 0.01;
-        secuencia.forEach(([sem, dur, onda]) => {
-          const frec = 261.63 * Math.pow(2, sem / 12);
-          const osc = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          const filtro = audioCtx.createBiquadFilter();
-          filtro.type = "lowpass"; filtro.frequency.value = 5200;
-          osc.type = onda; osc.frequency.value = frec;
-          g.gain.setValueAtTime(0, t);
-          g.gain.linearRampToValueAtTime(0.16, t + 0.008);
-          g.gain.setTargetAtTime(0.0001, t + dur * 0.5, dur * 0.35);
-          osc.connect(filtro); filtro.connect(g); g.connect(audioCtx.destination);
-          osc.start(t); osc.stop(t + dur + 0.25);
-          t += dur * 0.75;
+        const pack = PACKS[cfgFx.pack] || PACKS.papel;
+        const capas = pack[evento] || pack.nav || [];
+        let t = audioCtx.currentTime + 0.005;
+        capas.forEach((c) => {
+          if (c[0] === "r") capaRuido(t, c[1], c[2], c[3], c[4]);
+          else capaTono(t, c[1], c[2], c[3], c[4]);
+          t += (c[0] === "r" ? c[2] : c[2]) * 0.42;
         });
       }
 
       // El iPhone no expone la API de vibración en Safari; en Android sí.
-      const PATRONES = { tap: 12, ok: [0, 18, 40, 22], error: [0, 40, 60, 40] };
+      const PATRONES = {
+        nav: 10, abrir: [0, 14, 30, 18], foco: 6, anadir: [0, 12, 24, 14], quitar: [0, 26, 30, 14],
+        guardar: [0, 18, 40, 22], pdf: [0, 16, 30, 16, 30, 20], eco: [0, 16, 40, 16], nuevo: [0, 12, 30, 16],
+        vista: 10, ajustes: 8, arrastrar: 4, ok: [0, 18, 40, 22], error: [0, 40, 60, 40], elegir: [0, 12, 26, 14],
+      };
       function vibrar(tipo) {
         if (!cfgFx.vibrar) return;
         if (navigator.vibrate) { try { navigator.vibrate(PATRONES[tipo] || 12); } catch (e) {} }
@@ -1510,9 +1655,10 @@
 
       /* ---------- Entrar y salir del menú ---------- */
       function irA(tab) {
-        fx("ok");
+        fx("abrir");
         document.getElementById("main-menu").classList.add("oculto");
         document.body.classList.remove("menu-abierto");
+        document.documentElement.style.backgroundColor = "#f3f4f6";
         pararAnimacion();
         if (audioGain && audioCtx) audioGain.gain.setValueAtTime(0, audioCtx.currentTime);
         pararMusica();
@@ -1523,6 +1669,7 @@
       function volverAlMenu() {
         document.getElementById("main-menu").classList.remove("oculto");
         document.body.classList.add("menu-abierto");
+        document.documentElement.style.backgroundColor = "#0f1115";
         sincronizarLogoMenu();
         aplicarCfgMenu();
       }
@@ -1561,8 +1708,9 @@
         }); calcularTotales();
       }
       function agregarServicio() {
-        fx("tap"); servicios.push({ id: Date.now().toString(), desc: "Nuevo Servicio", hours: 1, rate: 32 }); renderizarServicios(); }
-      function eliminarServicio(index) { if (servicios.length <= 1) { mostrarToast("Mínimo 1 servicio"); return; } servicios.splice(index, 1); renderizarServicios(); }
+        fx("anadir"); servicios.push({ id: Date.now().toString(), desc: "Nuevo Servicio", hours: 1, rate: 32 }); renderizarServicios(); }
+      function eliminarServicio(index) {
+        fx("quitar"); if (servicios.length <= 1) { mostrarToast("Mínimo 1 servicio"); return; } servicios.splice(index, 1); renderizarServicios(); }
       // IMPORTANTE: aquí NO se puede llamar a renderizarServicios(), porque
       // regenerar la tabla destruye el campo que estás escribiendo y iOS cierra
       // el teclado en cuanto tecleas la primera letra. Actualizamos solo lo justo.
@@ -1623,6 +1771,7 @@
         label.addEventListener("contextmenu", (e) => e.preventDefault());
         label.addEventListener("selectstart", (e) => { if (editandoPlantillaEstructura) e.preventDefault(); });
         label.addEventListener("touchstart", (e) => { if (editandoPlantillaEstructura) e.preventDefault(); }, { passive: false });
+        label.addEventListener('pointerdown', () => fx("arrastrar"), { passive: true });
         label.addEventListener('pointerdown', (e) => {
           // Solo se puede mover con el Modo Edición de Plantilla activado
           if (!editandoPlantillaEstructura || modoVista === "movil") return;
@@ -1716,6 +1865,7 @@
         if (exportando) return;
         if (typeof html2pdf === "undefined") { mostrarToast("Falta la librería PDF"); return; }
         exportando = true;
+        fx(eco ? "eco" : "pdf");
         mostrarToast(eco ? "Generando PDF Eco..." : "Generando PDF A4...");
 
         const paper = document.querySelector(".a4-paper");
@@ -2038,7 +2188,8 @@
         });
       }
 
-      function abrirModalOpciones() { document.getElementById("modal-opciones").classList.remove("hidden"); }
+      function abrirModalOpciones() {
+        fx("ajustes"); document.getElementById("modal-opciones").classList.remove("hidden"); }
       function cerrarModalOpciones(e) { document.getElementById("modal-opciones").classList.add("hidden"); }
       function cambiarIdioma(lang) { idiomaActual = lang; aplicarIdioma(lang); cerrarModalOpciones(); mostrarToast(`Idioma: ${lang.toUpperCase()}`); }
       
@@ -2064,7 +2215,7 @@
       let pestanaActual = "editor";
 
       function cambiarPestana(tab) {
-        fx("tap");
+        fx("nav");
         pestanaActual = tab;
         const vistas = { editor: "view-editor", datos: "view-datos", history: "view-history" };
         const botones = { editor: "btn-tab-editor", datos: "btn-tab-datos", history: "btn-tab-history" };
@@ -2171,10 +2322,12 @@
         guardarMisDatos(); // no re-renderiza: así no se cierra el teclado
       }
       function anadirDato(seccion) {
+        fx("anadir");
         misDatos.push({ id: "x" + Date.now(), seccion: seccion, label: "NUEVO:", valor: "" });
         guardarMisDatos(); renderizarMisDatos();
       }
       function quitarDato(id) {
+        fx("quitar");
         misDatos = misDatos.filter((x) => x.id !== id);
         guardarMisDatos(); renderizarMisDatos();
       }
@@ -2285,13 +2438,13 @@
         camposCliente.push({ id: "c" + Date.now(), label: "NUEVO" });
         guardarCamposCliente();
         renderizarCamposCliente(leerFormCliente());
-        fx("tap");
+        fx("anadir");
       }
       function quitarCampoCliente(id) {
         camposCliente = camposCliente.filter((x) => x.id !== id);
         guardarCamposCliente();
         renderizarCamposCliente(leerFormCliente());
-        fx("tap");
+        fx("quitar");
       }
 
       function leerFormCliente() {
@@ -2320,7 +2473,7 @@
         const c = clientes.find((x) => x.id === id);
         setVal("cli-id", c ? c.id : "");
         renderizarCamposCliente(c || {});
-        fx("tap");
+        fx("abrir");
       }
       function cerrarFormCliente() { document.getElementById("form-cliente").classList.add("hidden"); }
 
@@ -2337,6 +2490,7 @@
       }
 
       function eliminarCliente(id) {
+        fx("quitar");
         clientes = clientes.filter((c) => c.id !== id);
         persistirClientes(); renderizarClientes(); mostrarToast("Cliente eliminado");
       }
@@ -2414,6 +2568,7 @@
       }
 
       function guardarFacturaActual() {
+        fx("guardar");
         const numFactura = (getVal("invoice-no") || "").trim();
         if (!numFactura || numFactura === "0") { mostrarToast("⚠️ Pon un número de factura válido"); return; }
 
@@ -2464,6 +2619,7 @@
       function eliminarFacturaHistorial(numFactura, event) { event.stopPropagation(); historialFacturas = historialFacturas.filter((f) => f.invoiceNo !== numFactura); localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas)); actualizarBadgeHistorial(); renderizarHistorial(); mostrarToast("Factura eliminada"); }
       // Deja la factura completamente en blanco (todo a cero) con el número siguiente
       function nuevaFactura() {
+        fx("nuevo");
         setVal("invoice-no", siguienteNumeroFactura());
         facturaEnEdicionNo = null;
 
