@@ -324,10 +324,14 @@
       /* El modal de ajustes del menú debe quedar POR ENCIMA del menú (4000),
          si no se abría detrás y parecía que no pasaba nada. */
       #modal-menu { z-index: 5000; }
-      #main-menu { position: fixed; inset: 0; z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1115; overflow: hidden; }
+      #main-menu { position: fixed; inset: 0; min-height: 100dvh; height: 100dvh; z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1115; overflow: hidden; }
       #main-menu.oculto { display: none; }
       /* Con el menú abierto no debe verse nada de la app por debajo */
       body.menu-abierto .app-header, body.menu-abierto .bottom-nav, body.menu-abierto .main-container { display: none !important; }
+      /* El fondo del documento también en oscuro: si no, el área segura de
+         abajo del iPhone se ve como una franja blanca bajo el menú. */
+      body.menu-abierto, html:has(body.menu-abierto) { background: #0f1115 !important; }
+      body.menu-abierto { overflow: hidden; height: 100dvh; }
       #menu-canvas, #menu-imagen { position: absolute; inset: 0; width: 100%; height: 100%; }
       #menu-imagen { background-size: cover; background-position: center; display: none; }
       .menu-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.7)); }
@@ -339,6 +343,7 @@
       .menu-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 14px; border: none; background: rgba(255,255,255,0.94); color: #111827; font-size: 15px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); transition: transform 0.12s; }
       .menu-btn:active { transform: scale(0.97); }
       .menu-btn svg { width: 19px; height: 19px; }
+      .aviso-silencio { position: absolute; right: 0; bottom: 52px; width: 210px; background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.22); color: #e5e7eb; font-size: 11px; line-height: 1.35; padding: 8px 10px; border-radius: 10px; text-align: right; }
       .menu-esquina { position: absolute; z-index: 3; right: 16px; bottom: calc(18px + var(--safe-bottom)); display: flex; gap: 10px; }
       .menu-icono { width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.28); background: rgba(0,0,0,0.45); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
       .menu-icono svg { width: 20px; height: 20px; }
@@ -403,6 +408,7 @@
 
       <div class="menu-esquina">
         <button id="btn-mute" class="menu-icono" onclick="alternarSonido()" title="Silenciar"></button>
+        <span id="aviso-silencio" class="aviso-silencio hidden">¿Sin sonido? Revisa el interruptor lateral del iPhone</span>
         <button class="menu-icono" onclick="abrirAjustesMenu()" title="Ajustes del menú">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         </button>
@@ -1185,7 +1191,7 @@
           t += 1;
           ctx.clearRect(0, 0, W, H);
 
-          const suelo = H * 0.87; // carretera bien abajo, el camión se ve entero
+          const suelo = H * 0.8; // carretera bien abajo, el camión se ve entero
           // cielo
           const g = ctx.createLinearGradient(0, 0, 0, H);
           g.addColorStop(0, "#141a2b"); g.addColorStop(1, "#2a3350");
@@ -1284,11 +1290,35 @@
       // CLAVE en iOS: el AudioContext debe CREARSE dentro de un gesto real.
       // Si se crea al cargar la página queda suspendido y a veces ya no arranca,
       // que es justo el fallo de "unas veces suena y otras no".
+      // WAV de un instante en silencio. Mantenerlo sonando en bucle cambia la
+      // sesión de audio de iOS a "reproducción", que es lo que hace que el
+      // sonido se oiga aunque el interruptor lateral esté en silencio.
+      const SILENCIO_WAV = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQQAAAAAAAAA";
+      let audioSilencioso = null;
+
+      function activarSesionAudio() {
+        // iOS 17+: pedir explícitamente la categoría de reproducción
+        try {
+          if (navigator.audioSession) navigator.audioSession.type = "playback";
+        } catch (e) {}
+        // Respaldo para versiones anteriores: un <audio> en bucle mudo
+        try {
+          if (!audioSilencioso) {
+            audioSilencioso = new Audio(SILENCIO_WAV);
+            audioSilencioso.loop = true;
+            audioSilencioso.volume = 0.001;
+            audioSilencioso.setAttribute("playsinline", "");
+          }
+          audioSilencioso.play().catch(() => {});
+        } catch (e) {}
+      }
+
       function iniciarAudio() {
         if (audioCtx || !gestoUsuario) return;
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return;
-        audioCtx = new AC();
+        activarSesionAudio();
+        audioCtx = new AC({ latencyHint: "interactive" });
         audioGain = audioCtx.createGain();
         audioGain.connect(audioCtx.destination);
         aplicarVolumen();
@@ -1297,6 +1327,7 @@
       function desbloquearAudio() {
         if (!gestoUsuario) return Promise.resolve(false);
         iniciarAudio();
+        activarSesionAudio();
         if (!audioCtx) return Promise.resolve(false);
 
         // Truco estándar de iOS: reproducir un buffer vacío dentro del gesto.
@@ -1436,7 +1467,20 @@
           };
           ciclo();
           loopMusica = setInterval(ciclo, total * 1000);
+          avisarSilencio();
         });
+      }
+
+      // Se muestra una vez por sesión: si el interruptor lateral está en
+      // silencio, iOS puede seguir sin dejar oír nada.
+      let avisoMostrado = false;
+      function avisarSilencio() {
+        if (avisoMostrado) return;
+        avisoMostrado = true;
+        const el = document.getElementById("aviso-silencio");
+        if (!el) return;
+        el.classList.remove("hidden");
+        setTimeout(() => el.classList.add("hidden"), 6000);
       }
 
       // Silencio inmediato: además del bucle, hay que cortar las notas que ya
