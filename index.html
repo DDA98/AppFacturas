@@ -63,6 +63,26 @@
       .logo-agx.con-imagen { padding: 5px 8px; }
       .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
       .btn-group { display: flex; gap: 7px; align-items: center; }
+      /* ===== CABECERA: píldora del número + menú de acciones ===== */
+      .pastilla-num { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px; border: none; background: #111827; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; }
+      .pastilla-num .pn-etq { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+      .pastilla-num:active { transform: scale(0.97); }
+      .pastilla-num.hidden { display: none; }
+
+      .hoja-fondo { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(3px); z-index: 3000; display: flex; align-items: flex-end; }
+      .hoja-fondo.hidden { display: none; }
+      .hoja-panel { width: 100%; background: #ffffff; border-radius: 20px 20px 0 0; padding: 10px 14px calc(18px + var(--safe-bottom)); animation: subir 0.22s ease-out; max-height: 82vh; overflow-y: auto; }
+      @keyframes subir { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      .hoja-tira { width: 38px; height: 4px; background: #d1d5db; border-radius: 2px; margin: 0 auto 12px; }
+      .hoja-titulo { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; padding: 0 4px 10px; }
+      .hoja-item { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none; padding: 14px 6px; font-size: 15px; font-weight: 600; color: #111827; cursor: pointer; border-bottom: 1px solid #f3f4f6; text-align: left; }
+      .hoja-item:last-child { border-bottom: none; }
+      .hoja-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+      .hoja-item .sub { display: block; font-size: 11px; font-weight: 500; color: #9ca3af; margin-top: 1px; }
+      /* La acción principal destaca en negro */
+      .hoja-item.principal { background: #111827; color: #fff; border-radius: 12px; padding: 15px 14px; margin-bottom: 10px; border-bottom: none; }
+      .hoja-item.principal .sub { color: rgba(255,255,255,0.6); }
+
       .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 0 12px; height: 38px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
       .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
       .btn-icon-only { width: 38px; padding: 0; }
@@ -247,6 +267,11 @@
       .btn-del-row { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #ef4444; font-weight: 800; font-size: 15px; line-height: 1; cursor: pointer; flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
       .btn-del-row:active { background: rgba(239,68,68,0.28); }
       .box-black .btn-del-row { color: #fca5a5; background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.45); }
+      .btn-add-col { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4); color: #fff; width: 24px; height: 24px; border-radius: 7px; font-size: 15px; font-weight: 800; line-height: 1; cursor: pointer; }
+      #barra-columnas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      #barra-columnas.hidden { display: none; }
+      .chip-col { display: inline-flex; align-items: center; gap: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 999px; padding: 5px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #374151; cursor: pointer; }
+      .chip-col .x { color: #ef4444; font-weight: 900; }
       .btn-add-field { background: none; border: none; color: #2563eb; font-size: 11px; font-weight: bold; cursor: pointer; text-align: left; padding: 4px 0; }
       .box-black .btn-add-field { color: #60a5fa; }
       .foot-row { display: flex; align-items: center; gap: 4px; }
@@ -466,28 +491,26 @@
 
     <div class="safe-fill no-print"></div>
 
+
+    <!-- HOJA DE ACCIONES -->
+    <div id="hoja-acciones" class="hoja-fondo hidden" onclick="cerrarMenuAcciones(event)">
+      <div class="hoja-panel" onclick="event.stopPropagation()">
+        <div class="hoja-tira"></div>
+        <div id="hoja-titulo" class="hoja-titulo">Factura Nº 1</div>
+        <div id="hoja-lista"></div>
+      </div>
+    </div>
+
     <!-- CABECERA FIJA SUPERIOR -->
     <header class="app-header no-print">
       <div id="app-logo-box" class="logo-agx" onclick="volverAlMenu()" title="Ir al menú principal">AGX</div>
       <div class="btn-group">
-        <button id="hb-ajustes" onclick="abrirModalOpciones()" class="btn btn-gray btn-icon-only" title="Ajustes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        <!-- Píldora con la factura en curso: sustituye al antiguo botón de PDF -->
+        <button id="hb-numero" onclick="abrirMenuAcciones()" class="pastilla-num" title="Factura en curso">
+          <span class="pn-etq">Nº</span><span id="pn-valor">1</span>
         </button>
-        <button id="hb-vista" onclick="alternarVista()" class="btn btn-gray btn-icon-only" title="Cambiar vista">
-          <span id="icono-vista"></span>
-        </button>
-        <button id="hb-nueva" onclick="nuevaFactura()" class="btn btn-gray btn-icon-only" title="Factura nueva en blanco">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        </button>
-        <button id="hb-guardar" onclick="guardarFacturaActual()" class="btn btn-gray btn-icon-only" title="Guardar factura">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </button>
-        <button id="hb-pdf" onclick="descargarPDFDirecto()" class="btn btn-black" title="Descargar PDF">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>PDF</span>
-        </button>
-        <button id="hb-eco" onclick="exportarPDF()" class="btn btn-gray btn-icon-only" title="PDF Eco (sin tintas negras)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+        <button id="hb-menu" onclick="abrirMenuAcciones()" class="btn btn-gray btn-icon-only" title="Acciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
         </button>
       </div>
     </header>
@@ -558,7 +581,7 @@
 
               <!-- METADATOS -->
               <div class="meta-bar">
-                <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-no">Invoice No.</span><span id="invoice-no" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px;">00001220</span></div>
+                <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-no">Invoice No.</span><span id="invoice-no" oninput="sincronizarNumero()" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px;">00001220</span></div>
                 <div class="meta-item"><span class="meta-label" contenteditable="false" id="lbl-meta-issue">Issue Date</span>
                   <div class="fecha-wrap">
                     <span id="issue-date" class="editable-span" style="font-weight: 800; font-size: 13px;">05/08/2026</span>
@@ -577,16 +600,11 @@
               <div>
                 <table>
                   <thead>
-                    <tr>
-                      <th style="width: 45%;" contenteditable="false" id="th-desc">DESCRIPTION</th>
-                      <th style="text-align: center;" contenteditable="false" id="th-hours">HRS</th>
-                      <th style="text-align: right;" contenteditable="false" id="th-rate">RATE (€)</th>
-                      <th class="col-total" style="text-align: right;" contenteditable="false" id="th-amount">TOTAL</th>
-                      <th class="no-print" style="width: 30px;"></th>
-                    </tr>
+                    <tr id="fila-cabecera-tabla"></tr>
                   </thead>
                   <tbody id="items-tbody"></tbody>
                 </table>
+                <div id="barra-columnas" class="no-print hidden"></div>
                 <div class="no-print" style="margin-top: 12px">
                   <button onclick="agregarServicio()" class="btn btn-black" style="padding: 8px 14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span id="txt-add-service">Añadir Servicio</span></button>
                 </div>
@@ -906,6 +924,8 @@
         refrescarBotonesBorrar();
         refrescarEstadoBotones();
         cargarCfgFx();
+        cargarColumnas();
+        renderizarCabeceraTabla();
         cargarCamposCliente();
         aplicarCamposClienteAFactura();
         cargarCfgMenu();
@@ -920,11 +940,6 @@
           if (!t || !t.matches) return;
           if (t.matches('.editable-span, td [contenteditable="true"], input[type="text"], input[type="number"], .dato-valor')) fx("foco");
         });
-        // Botones de borrar: sonido de papel estrujado allá donde estén
-        document.addEventListener("click", (e) => {
-          const b = e.target.closest ? e.target.closest(".btn-del-row") : null;
-          if (b) fx("quitar");
-        }, true);
         vigilarBannerSandbox();
         window.addEventListener('resize', autoZoomA4);
         document.addEventListener("visibilitychange", () => {
@@ -970,22 +985,86 @@
         posicionarTextoBarra();
       }
 
-      // Icono del botón de vista y botones que no aplican a la pestaña actual
-      const ICONO_MOVIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="10" y1="18" x2="14" y2="18"/></svg>';
-      const ICONO_HOJA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>';
 
+      const I = {
+        pdf:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        guardar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+        nuevo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
+        movil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="10" y1="18" x2="14" y2="18"/></svg>',
+        hoja:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>',
+        eco:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
+        ajustes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
+        cliente:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="8.4" cy="7.5" r="3.6"/><line x1="19" y1="6" x2="19" y2="12"/><line x1="16" y1="9" x2="22" y2="9"/></svg>',
+        copia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>',
+      };
+
+      // La cabecera se adapta: la píldora del número solo tiene sentido
+      // en la pestaña Factura; en las demás se oculta.
       function refrescarEstadoBotones() {
-        const btn = document.getElementById("hb-vista");
-        if (btn) {
-          const icono = document.getElementById("icono-vista");
-          if (icono) icono.innerHTML = modoVista === "a4" ? ICONO_MOVIL : ICONO_HOJA;
-          btn.title = modoVista === "a4" ? "Ver en modo móvil" : "Ver como hoja A4";
+        const pastilla = document.getElementById("hb-numero");
+        if (!pastilla) return;
+        const enFactura = pestanaActual === "editor";
+        pastilla.classList.toggle("hidden", !enFactura);
+        if (enFactura) setVal("pn-valor", getVal("invoice-no") || "1");
+      }
+
+      // Cada pestaña ofrece sus propias acciones: nada de botones apagados
+      function accionesDeLaPestana() {
+        if (pestanaActual === "datos") {
+          return [
+            { ico: I.cliente, txt: "Nuevo cliente", sub: "Añadir a tu lista", fn: () => { abrirFormCliente(); } },
+            { ico: I.copia, txt: "Copia de seguridad", sub: "Guardar todos tus datos", fn: exportarHistorialJSON },
+            { ico: I.ajustes, txt: "Ajustes", fn: abrirModalOpciones },
+          ];
         }
-        const soloFactura = ["hb-vista", "hb-nueva", "hb-guardar", "hb-pdf", "hb-eco"];
-        soloFactura.forEach((id) => {
-          const b = document.getElementById(id);
-          if (b) b.classList.toggle("desactivado", pestanaActual !== "editor");
+        if (pestanaActual === "history") {
+          return [
+            { ico: I.copia, txt: "Copia de seguridad", sub: "Exportar todo a un archivo", fn: exportarHistorialJSON, principal: true },
+            { ico: I.nuevo, txt: "Factura nueva", fn: () => { cambiarPestana("editor"); nuevaFactura(); } },
+            { ico: I.ajustes, txt: "Ajustes", fn: abrirModalOpciones },
+          ];
+        }
+        // Pestaña Factura
+        const enA4 = modoVista === "a4";
+        return [
+          { ico: I.pdf, txt: "Descargar PDF", sub: "Hoja A4 lista para enviar", fn: descargarPDFDirecto, principal: true },
+          { ico: I.guardar, txt: "Guardar factura", sub: "Se añade al historial", fn: guardarFacturaActual },
+          { ico: I.nuevo, txt: "Factura nueva", sub: "Empezar una en blanco", fn: nuevaFactura },
+          { ico: enA4 ? I.movil : I.hoja, txt: enA4 ? "Ver en modo móvil" : "Ver como hoja A4",
+            sub: enA4 ? "Más cómodo para escribir" : "Como quedará impresa", fn: alternarVista },
+          { ico: I.eco, txt: "PDF Eco", sub: "Sin fondos negros, ahorra tinta", fn: exportarPDF },
+          { ico: I.ajustes, txt: "Ajustes", fn: abrirModalOpciones },
+        ];
+      }
+
+      // Mantiene la píldora sincronizada con el número real de la factura
+      function sincronizarNumero() { refrescarEstadoBotones(); }
+
+      function abrirMenuAcciones() {
+        fx("desplegar");
+        const lista = document.getElementById("hoja-lista");
+        const titulo = document.getElementById("hoja-titulo");
+        if (!lista) return;
+
+        titulo.innerText = pestanaActual === "editor"
+          ? `Factura Nº ${getVal("invoice-no") || "1"}`
+          : pestanaActual === "datos" ? "Datos" : "Historial";
+
+        lista.innerHTML = "";
+        accionesDeLaPestana().forEach((a) => {
+          const b = document.createElement("button");
+          b.className = "hoja-item" + (a.principal ? " principal" : "");
+          b.innerHTML = `${a.ico}<span>${a.txt}${a.sub ? `<span class="sub">${a.sub}</span>` : ""}</span>`;
+          b.onclick = () => { cerrarMenuAcciones(); setTimeout(a.fn, 120); };
+          lista.appendChild(b);
         });
+        document.getElementById("hoja-acciones").classList.remove("hidden");
+      }
+
+      function cerrarMenuAcciones(e) {
+        if (e && e.target !== e.currentTarget) return;
+        fx("cerrar");
+        document.getElementById("hoja-acciones").classList.add("hidden");
       }
 
       function alternarVista() {
@@ -1021,9 +1100,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "1.2.1";
+      const VERSION = "1.4.0";
       const VERSION_FECHA = "10/08/2026";
-      const VERSION_NOTAS = "Sonidos por acción (pack Papel), campos de cliente editables, área segura y audio en iPhone corregidos.";
+      const VERSION_NOTAS = "Cabecera nueva: píldora con el número de factura y menú de acciones contextual. Columnas de tabla editables.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -1044,6 +1123,8 @@
         // Golpes de papel y lápiz: la X suena a papel estrujado, tocar un
         // campo suena a mina de lápiz sobre la hoja.
         papel: {
+          desplegar:[["r", 1300, 0.10, 0.09, "band"], ["t", 14, 0.08, "sine", 0.05]],
+          cerrar:   [["r", 900, 0.09, 0.08, "low"], ["t", 7, 0.08, "sine", 0.05]],
           nav:      [["r", 1400, 0.07, 0.10, "band"]],
           abrir:    [["r", 900, 0.18, 0.12, "low"], ["t", 12, 0.12, "sine", 0.06]],
           foco:     [["r", 2600, 0.05, 0.05, "band"], ["r", 3400, 0.06, 0.04, "high"]],
@@ -1061,6 +1142,8 @@
           elegir:   [["r", 1900, 0.07, 0.08, "band"], ["t", 21, 0.10, "sine", 0.05]],
         },
         suave: {
+          desplegar: [["t", 14, 0.07, "sine", 0.09], ["t", 19, 0.09, "sine", 0.06]],
+          cerrar: [["t", 14, 0.07, "sine", 0.08], ["t", 9, 0.09, "sine", 0.06]],
           nav: [["t", 12, 0.06, "sine", 0.1]], abrir: [["t", 7, 0.1, "sine", 0.1], ["t", 14, 0.14, "sine", 0.08]],
           foco: [["t", 21, 0.04, "sine", 0.07]], anadir: [["t", 16, 0.07, "sine", 0.1], ["t", 23, 0.1, "sine", 0.07]],
           quitar: [["t", 9, 0.08, "sine", 0.1], ["t", 2, 0.12, "sine", 0.08]],
@@ -1074,6 +1157,8 @@
           elegir: [["t", 19, 0.08, "sine", 0.09]],
         },
         cristal: {
+          desplegar: [["t", 21, 0.06, "triangle", 0.08], ["t", 28, 0.09, "sine", 0.06]],
+          cerrar: [["t", 21, 0.06, "triangle", 0.08], ["t", 16, 0.09, "sine", 0.06]],
           nav: [["t", 24, 0.06, "triangle", 0.09]], abrir: [["t", 19, 0.08, "triangle", 0.09], ["t", 26, 0.14, "sine", 0.07]],
           foco: [["t", 31, 0.04, "triangle", 0.06]], anadir: [["t", 24, 0.06, "triangle", 0.09], ["t", 31, 0.1, "sine", 0.06]],
           quitar: [["t", 18, 0.07, "triangle", 0.09], ["t", 11, 0.12, "triangle", 0.07]],
@@ -1087,6 +1172,8 @@
           elegir: [["t", 28, 0.08, "triangle", 0.08]],
         },
         retro: {
+          desplegar: [["t", 14, 0.04, "square", 0.08], ["t", 19, 0.05, "square", 0.06]],
+          cerrar: [["t", 14, 0.04, "square", 0.08], ["t", 9, 0.05, "square", 0.06]],
           nav: [["t", 12, 0.04, "square", 0.08]], abrir: [["t", 7, 0.05, "square", 0.08], ["t", 14, 0.08, "square", 0.07]],
           foco: [["t", 19, 0.03, "square", 0.06]], anadir: [["t", 16, 0.04, "square", 0.08], ["t", 23, 0.07, "square", 0.06]],
           quitar: [["t", 10, 0.05, "square", 0.08], ["t", 3, 0.09, "square", 0.07]],
@@ -1100,6 +1187,8 @@
           elegir: [["t", 21, 0.05, "square", 0.07]],
         },
         ki: {
+          desplegar: [["t", 16, 0.05, "sawtooth", 0.07], ["t", 23, 0.09, "triangle", 0.06]],
+          cerrar: [["t", 16, 0.05, "sawtooth", 0.07], ["t", 9, 0.09, "triangle", 0.06]],
           nav: [["t", 19, 0.05, "triangle", 0.08]],
           abrir: [["t", 12, 0.05, "sawtooth", 0.07], ["t", 19, 0.05, "sawtooth", 0.07], ["t", 24, 0.14, "triangle", 0.07]],
           foco: [["t", 26, 0.04, "triangle", 0.06]],
@@ -1172,7 +1261,17 @@
       }
 
       // Punto único de entrada: fx("quitar"), fx("foco"), fx("guardar")...
+      // Evita que dos sonidos se pisen: el mismo evento no se repite en 70 ms
+      // y el aviso del toast calla si acaba de sonar la acción que lo provocó.
+      let ultimoFx = { evento: "", t: 0 };
+      const PRIORIDAD_BAJA = ["ok", "error"];
+
       function fx(evento) {
+        const ahora = Date.now();
+        if (ultimoFx.evento === evento && ahora - ultimoFx.t < 70) return;
+        if (PRIORIDAD_BAJA.includes(evento) && ahora - ultimoFx.t < 260) return;
+        ultimoFx = { evento: evento, t: ahora };
+
         vibrar(evento);
         if (!cfgFx.sonido || !gestoUsuario) return;
         iniciarAudio();
@@ -1650,8 +1749,8 @@
         if (b) { b.innerHTML = cfgMenu.mute ? ICO_MUDO : ICO_SONIDO; b.title = cfgMenu.mute ? "Activar sonido" : "Silenciar"; }
       }
 
-      function abrirAjustesMenu() { document.getElementById("modal-menu").classList.remove("hidden"); }
-      function cerrarAjustesMenu() { document.getElementById("modal-menu").classList.add("hidden"); }
+      function abrirAjustesMenu() { fx("ajustes"); document.getElementById("modal-menu").classList.remove("hidden"); }
+      function cerrarAjustesMenu() { fx("cerrar"); document.getElementById("modal-menu").classList.add("hidden"); }
 
       /* ---------- Entrar y salir del menú ---------- */
       function irA(tab) {
@@ -1688,8 +1787,109 @@
       // ACORDEÓN SETTINGS
       function toggleAcc(id) {
         const cont = document.getElementById(id); const arrow = document.getElementById("arrow-" + id);
-        if(cont.style.display === "flex") { cont.style.display = "none"; arrow.style.transform = "rotate(0deg)"; }
-        else { cont.style.display = "flex"; arrow.style.transform = "rotate(180deg)"; }
+        if(cont.style.display === "flex") { cont.style.display = "none"; arrow.style.transform = "rotate(0deg)"; fx("cerrar"); }
+        else { cont.style.display = "flex"; arrow.style.transform = "rotate(180deg)"; fx("desplegar"); }
+      }
+
+
+      /* ============ COLUMNAS DE LA TABLA DE ARTÍCULOS ============
+         Se pueden renombrar, quitar y añadir nuevas desde el modo edición.
+         Las columnas "hours" y "rate" alimentan el total; las que añadas tú
+         son de texto libre. */
+      const COLUMNAS_BASE = [
+        { id: "desc",  label: "DESCRIPCIÓN", tipo: "desc",  ancho: "45%", fija: true },
+        { id: "hours", label: "HRS",         tipo: "num",   ancho: "12%" },
+        { id: "rate",  label: "RATE (€)",    tipo: "num",   ancho: "18%" },
+        { id: "total", label: "TOTAL",       tipo: "total", ancho: "25%", fija: true },
+      ];
+      let columnas = [];
+
+      function cargarColumnas() {
+        try {
+          const g = localStorage.getItem("agx_columnas");
+          columnas = g ? JSON.parse(g) : JSON.parse(JSON.stringify(COLUMNAS_BASE));
+        } catch (e) { columnas = JSON.parse(JSON.stringify(COLUMNAS_BASE)); }
+        if (!Array.isArray(columnas) || !columnas.length) columnas = JSON.parse(JSON.stringify(COLUMNAS_BASE));
+        // La descripción y el total no se pueden perder nunca
+        if (!columnas.some((c) => c.id === "desc")) columnas.unshift(JSON.parse(JSON.stringify(COLUMNAS_BASE[0])));
+        if (!columnas.some((c) => c.id === "total")) columnas.push(JSON.parse(JSON.stringify(COLUMNAS_BASE[3])));
+      }
+
+      function guardarColumnas() {
+        localStorage.setItem("agx_columnas", JSON.stringify(columnas));
+        renderizarCabeceraTabla();
+        renderizarServicios();
+        calcularTotales();
+        refrescarEstadoBotones();
+      }
+
+      function renombrarColumna(id, valor) {
+        const c = columnas.find((x) => x.id === id);
+        if (!c) return;
+        c.label = valor;
+        c.personalizado = true;
+        localStorage.setItem("agx_columnas", JSON.stringify(columnas));
+      }
+
+      function quitarColumna(id) {
+        const c = columnas.find((x) => x.id === id);
+        if (!c || c.fija) { mostrarToast("Esa columna no se puede quitar"); return; }
+        fx("quitar");
+        columnas = columnas.filter((x) => x.id !== id);
+        guardarColumnas();
+      }
+
+      function anadirColumna() {
+        fx("anadir");
+        const nueva = { id: "x" + Date.now(), label: "NUEVA", tipo: "texto", ancho: "15%" };
+        columnas.splice(columnas.length - 1, 0, nueva); // antes de TOTAL
+        guardarColumnas();
+      }
+
+      function renderizarCabeceraTabla() {
+        const tr = document.getElementById("fila-cabecera-tabla");
+        if (!tr) return;
+        tr.innerHTML = "";
+        columnas.forEach((c) => {
+          const th = document.createElement("th");
+          th.style.width = c.ancho || "auto";
+          th.id = "th-" + c.id;
+          if (c.id === "total") th.className = "col-total";
+          if (c.tipo === "num" || c.tipo === "total") th.style.textAlign = c.tipo === "total" ? "right" : "center";
+          th.contentEditable = editandoPlantillaEstructura ? "true" : "false";
+          th.innerText = c.label;
+          th.addEventListener("input", () => renombrarColumna(c.id, th.innerText));
+          tr.appendChild(th);
+        });
+        // Columna extra para los botones de acción
+        const thAcc = document.createElement("th");
+        thAcc.className = "no-print";
+        thAcc.style.width = "34px";
+        if (editandoPlantillaEstructura) {
+          const b = document.createElement("button");
+          b.className = "btn-add-col";
+          b.innerHTML = "+";
+          b.title = "Añadir columna";
+          b.onclick = anadirColumna;
+          thAcc.appendChild(b);
+        }
+        tr.appendChild(thAcc);
+
+        // Botones de quitar bajo cada cabecera quitable
+        const barra = document.getElementById("barra-columnas");
+        if (barra) {
+          barra.innerHTML = "";
+          barra.classList.toggle("hidden", !editandoPlantillaEstructura);
+          if (editandoPlantillaEstructura) {
+            columnas.filter((c) => !c.fija).forEach((c) => {
+              const b = document.createElement("button");
+              b.className = "chip-col";
+              b.innerHTML = `${c.label} <span class="x">✕</span>`;
+              b.onclick = () => quitarColumna(c.id);
+              barra.appendChild(b);
+            });
+          }
+        }
       }
 
       function renderizarServicios() {
@@ -1698,13 +1898,22 @@
         servicios.forEach((item, index) => {
           const totalFila = (Number(item.hours) || 0) * (Number(item.rate) || 0);
           const tr = document.createElement("tr");
-          tr.innerHTML = `
-          <td class="col-desc" data-label="${etq.thDesc}"><div class="editable-span" contenteditable="true" oninput="actualizarServicio(${index}, 'desc', this.innerText, this)" style="font-weight:600;">${item.desc}</div></td>
-          <td data-label="${etq.thHours}" style="text-align:center;"><input type="number" step="0.1" value="${item.hours}" oninput="actualizarServicio(${index}, 'hours', this.value, this)" style="text-align:center; width:40px;"></td>
-          <td data-label="${etq.thRate}" style="text-align:right;"><input type="number" step="0.01" value="${item.rate}" oninput="actualizarServicio(${index}, 'rate', this.value, this)" style="text-align:right; width:50px;"></td>
-          <td class="col-total" data-label="${etq.thAmount}" style="text-align:right; font-weight:800; font-variant-numeric: tabular-nums;">${formatEuro(totalFila)}</td>
-          <td class="no-print col-actions" style="text-align:center; vertical-align:middle;"><button class="btn-del-row" title="Eliminar artículo" onclick="eliminarServicio(${index})">✕</button></td>
-        `; tbody.appendChild(tr);
+          let html = "";
+          columnas.forEach((c) => {
+            if (c.tipo === "desc") {
+              html += `<td class="col-desc" data-label="${c.label}"><div class="editable-span" contenteditable="true" oninput="actualizarServicio(${index}, 'desc', this.innerText, this)" style="font-weight:600;">${item.desc || ""}</div></td>`;
+            } else if (c.tipo === "total") {
+              html += `<td class="col-total" data-label="${c.label}" style="text-align:right; font-weight:800; font-variant-numeric: tabular-nums;">${formatEuro(totalFila)}</td>`;
+            } else if (c.tipo === "num") {
+              const val = item[c.id] !== undefined ? item[c.id] : 0;
+              html += `<td data-label="${c.label}" style="text-align:center;"><input type="number" step="0.01" value="${val}" oninput="actualizarServicio(${index}, '${c.id}', this.value, this)" style="text-align:center; width:56px;"></td>`;
+            } else {
+              const val = item[c.id] !== undefined ? item[c.id] : "";
+              html += `<td data-label="${c.label}" style="text-align:center;"><input type="text" value="${String(val).replace(/"/g, "&quot;")}" oninput="actualizarServicio(${index}, '${c.id}', this.value, this)" style="text-align:center; width:100%;"></td>`;
+            }
+          });
+          html += `<td class="no-print col-actions" style="text-align:center; vertical-align:middle;"><button class="btn-del-row" title="Eliminar artículo" onclick="eliminarServicio(${index})">✕</button></td>`;
+          tr.innerHTML = html; tbody.appendChild(tr);
         }); calcularTotales();
       }
       function agregarServicio() {
@@ -2010,6 +2219,7 @@
               historialFacturas = contenido;
               localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas));
               actualizarBadgeHistorial();
+        refrescarEstadoBotones();
               renderizarHistorial();
               mostrarToast("Facturas importadas");
               return;
@@ -2136,7 +2346,7 @@
       }
 
       function cargarLogoGuardado() { try { const saved = localStorage.getItem("agx_custom_logo"); if (saved) { const obj = JSON.parse(saved); aplicarLogo(obj); if (obj.type === "text") setVal("input-logo-text", obj.val); } } catch (err) {} }
-      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.body.classList.add("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.body.classList.remove("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); mostrarToast("Estructura Bloqueada"); } }
+      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.body.classList.add("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); renderizarCabeceraTabla(); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.body.classList.remove("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); renderizarCabeceraTabla(); mostrarToast("Estructura Bloqueada"); } }
       // Crea una fila nueva (con etiqueta) en las cajas superiores
       function nuevaFilaEtiquetada(container, blanco) {
         const div = document.createElement("div");
@@ -2190,7 +2400,7 @@
 
       function abrirModalOpciones() {
         fx("ajustes"); document.getElementById("modal-opciones").classList.remove("hidden"); }
-      function cerrarModalOpciones(e) { document.getElementById("modal-opciones").classList.add("hidden"); }
+      function cerrarModalOpciones(e) { fx("cerrar"); document.getElementById("modal-opciones").classList.add("hidden"); }
       function cambiarIdioma(lang) { idiomaActual = lang; aplicarIdioma(lang); cerrarModalOpciones(); mostrarToast(`Idioma: ${lang.toUpperCase()}`); }
       
       function aplicarIdioma(lang) {
@@ -2198,8 +2408,12 @@
         setVal("lbl-inv-to", t.invTo); setVal("lbl-c-name", t.cName); setVal("lbl-c-vat", t.cVat);
         setVal("lbl-c-street", t.cStreet); setVal("lbl-c-city", t.cCity); setVal("lbl-c-country", t.cCountry); setVal("lbl-inv-from", t.invFrom);
         setVal("lbl-m-company", t.mCompany); setVal("lbl-m-vat", t.mVat); setVal("lbl-m-kvk", t.mKvk); setVal("lbl-m-status", t.mStatus);
-        setVal("lbl-meta-no", t.metaNo); setVal("lbl-meta-issue", t.metaIssue); setVal("lbl-meta-due", t.metaDue); setVal("th-desc", t.thDesc);
-        setVal("th-hours", t.thHours); setVal("th-rate", t.thRate); setVal("th-amount", t.thAmount); setVal("txt-add-service", t.addService);
+        setVal("lbl-meta-no", t.metaNo); setVal("lbl-meta-issue", t.metaIssue); setVal("lbl-meta-due", t.metaDue);
+        // Cabeceras de la tabla: se traducen salvo que las hayas renombrado
+        const mapaCol = { desc: t.thDesc, hours: t.thHours, rate: t.thRate, total: t.thAmount };
+        columnas.forEach((c) => { if (mapaCol[c.id] && !c.personalizado) c.label = mapaCol[c.id]; });
+        renderizarCabeceraTabla();
+        setVal("txt-add-service", t.addService);
         setVal("lbl-subtotal", t.subtotal); setVal("lbl-tax", t.tax); setVal("lbl-total", t.total); 
         setVal("txt-hist-title", t.histTitle); setVal("txt-hist-desc", t.histDesc); setVal("txt-tab-template", t.tabTemplate); setVal("txt-tab-history", t.tabHistory); setVal("txt-tab-datos", t.tabDatos);
         setVal("menu-txt-factura", t.tabTemplate); setVal("menu-txt-datos", t.tabDatos); setVal("menu-txt-historial", t.tabHistory);
@@ -2260,6 +2474,7 @@
       let misDatos = [];
 
       function toggleMisDatos() {
+        fx(document.getElementById("cuerpo-mis-datos").classList.contains("hidden") ? "desplegar" : "cerrar");
         const c = document.getElementById("cuerpo-mis-datos");
         const f = document.getElementById("flecha-mis-datos");
         const abierto = !c.classList.contains("hidden");
@@ -2475,7 +2690,8 @@
         renderizarCamposCliente(c || {});
         fx("abrir");
       }
-      function cerrarFormCliente() { document.getElementById("form-cliente").classList.add("hidden"); }
+      function cerrarFormCliente() {
+        fx("cerrar"); document.getElementById("form-cliente").classList.add("hidden"); }
 
       function guardarCliente() {
         const valores = leerFormCliente();
@@ -2591,6 +2807,7 @@
         localStorage.setItem("agx_facturas_iphone", JSON.stringify(historialFacturas));
         facturaEnEdicionNo = numFactura;
         actualizarBadgeHistorial();
+        refrescarEstadoBotones();
         mostrarToast(`Guardada: N° ${numFactura}`);
       }
 
