@@ -102,6 +102,8 @@
       }
 
       /* BARRA NEGRA LATERAL (Separada y redondeada) */
+      .sidebar-text, .invoice-sidebar .sidebar-text { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      body.editando-plantilla .sidebar-text { cursor: grab; touch-action: none; }
       .invoice-sidebar {
         width: 70px; background-color: #000000; border-radius: 16px;
         display: flex; flex-direction: column; align-items: center; padding: 20px 0; overflow: hidden;
@@ -131,7 +133,10 @@
       .box-white .box-header { color: #000000; } .box-black .box-header { color: #ffffff; }
 
       .field-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; margin-bottom: 2px;}
-      .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; padding-top: 2px; }
+      /* Ancho fijo: así los textos editables arrancan todos en la misma
+         columna aunque la etiqueta sea corta ("NAME:") o larga ("KVK NO:"). */
+      .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; padding-top: 2px; width: 74px; flex-shrink: 0; }
+      .field-row { display: grid; grid-template-columns: 74px 1fr; align-items: start; gap: 6px; }
       .box-white .field-label { color: #6b7280; } .box-black .field-label { color: #9ca3af; }
 
       /* CAMPOS MULTILÍNEA */
@@ -314,16 +319,19 @@
       body.exportando .editable-span { background: transparent !important; border-color: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
       body.vista-movil #tax-rate { font-size: 16px; width: 44px !important; }
 
+
       /* ================= MENÚ PRINCIPAL ================= */
       /* El modal de ajustes del menú debe quedar POR ENCIMA del menú (4000),
          si no se abría detrás y parecía que no pasaba nada. */
       #modal-menu { z-index: 5000; }
       #main-menu { position: fixed; inset: 0; z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1115; overflow: hidden; }
       #main-menu.oculto { display: none; }
+      /* Con el menú abierto no debe verse nada de la app por debajo */
+      body.menu-abierto .app-header, body.menu-abierto .bottom-nav, body.menu-abierto .main-container { display: none !important; }
       #menu-canvas, #menu-imagen { position: absolute; inset: 0; width: 100%; height: 100%; }
       #menu-imagen { background-size: cover; background-position: center; display: none; }
       .menu-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.7)); }
-      .menu-contenido { position: relative; z-index: 2; width: 100%; max-width: 380px; padding: 0 24px; text-align: center; }
+      .menu-contenido { position: relative; z-index: 2; width: 100%; max-width: 380px; padding: 0 24px 190px; text-align: center; }
       .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
       .menu-logo img { max-height: 56px; max-width: 220px; object-fit: contain; display: block; }
       .menu-sub { color: rgba(255,255,255,0.72); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 28px; }
@@ -350,6 +358,9 @@
       .dato-row { display: grid; grid-template-columns: 104px 1fr auto; gap: 8px; align-items: center; }
       .dato-row input { font-size: 15px; padding: 9px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #111827; width: 100%; }
       .dato-row .dato-label { font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.12); color: #e5e7eb; border-color: rgba(255,255,255,0.25); }
+      .dato-row-claro .dato-label { background: #eef0f3; color: #4b5563; border-color: #d1d5db; }
+      .dato-row-claro .dato-label[readonly] { background: transparent; border-color: transparent; color: #6b7280; }
+      .btn-extra-claro { background: #eef0f3; color: #374151; border-color: #cbd5e1; }
       .dato-row .dato-label[readonly] { background: transparent; border-color: transparent; padding-left: 0; }
       .cliente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
@@ -357,8 +368,10 @@
       .btn-cliente-factura { background: #000; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
 
       /* BARRA DE EDICIÓN RÁPIDA (faltaba en el HTML original) */
-      #barra-edicion-rapida { position: fixed; top: calc(64px + var(--safe-top)); left: 12px; right: 12px; background: #111827; color: #fff; padding: 10px 12px; font-size: 12px; font-weight: 600; border-radius: 12px; z-index: 2500; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-      #barra-edicion-rapida button { background: #ffffff; color: #111827; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
+      /* Pastilla compacta abajo a la derecha: ya no tapa el contenido */
+      #barra-edicion-rapida { position: fixed; right: 12px; bottom: calc(74px + var(--safe-bottom)); left: auto; background: #111827; color: #fff; padding: 8px 12px; font-size: 11px; font-weight: 700; border-radius: 999px; z-index: 2500; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+      #barra-edicion-rapida .txt-edicion { display: none; }
+      #barra-edicion-rapida button { background: #ffffff; color: #111827; border: none; border-radius: 999px; padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -471,7 +484,7 @@
 
     <!-- BARRA DE EDICIÓN RÁPIDA (referenciada por el JS, faltaba en el HTML) -->
     <div id="barra-edicion-rapida" class="no-print hidden">
-      <span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>Modo edición activo</span>
+      <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>
       <button onclick="toggleEdicionPlantilla()">Finalizar</button>
     </div>
 
@@ -673,13 +686,7 @@
 
           <div id="form-cliente" class="hidden" style="border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; background:#f9fafb;">
             <input type="hidden" id="cli-id" />
-            <div class="datos-grid">
-              <div class="config-row"><label>Nombre</label><input id="cli-name" type="text" placeholder="Nombre del cliente" /></div>
-              <div class="config-row"><label>BTW / VAT</label><input id="cli-vat" type="text" /></div>
-              <div class="config-row"><label>Calle</label><input id="cli-address" type="text" /></div>
-              <div class="config-row"><label>Ciudad / CP</label><input id="cli-city" type="text" /></div>
-              <div class="config-row"><label>País</label><input id="cli-country" type="text" /></div>
-            </div>
+            <div id="campos-cliente" class="datos-seccion"></div>
             <div style="display:flex; gap:8px; margin-top:10px;">
               <button onclick="guardarCliente()" class="btn btn-black" style="flex:1; justify-content:center; padding:10px;">Guardar cliente</button>
               <button onclick="cerrarFormCliente()" class="btn btn-gray" style="padding:10px 14px;">Cancelar</button>
@@ -804,6 +811,31 @@
           </div>
         </div>
         
+        <!-- ACORDEÓN: SONIDO Y VIBRACIÓN -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAcc('acc-fx')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Sonido y Vibración</span> <span id="arrow-acc-fx" style="transition:0.3s">▼</span></button>
+          <div id="acc-fx" class="accordion-content" style="gap:8px;">
+            <div class="config-row config-check">
+              <label for="cfg-sonido">Sonidos de acción</label>
+              <input id="cfg-sonido" type="checkbox" checked onchange="guardarCfgFx()" />
+            </div>
+            <div class="config-row config-check">
+              <label for="cfg-vibrar">Vibración</label>
+              <input id="cfg-vibrar" type="checkbox" checked onchange="guardarCfgFx()" />
+            </div>
+            <div class="config-row">
+              <label>Tipo de sonido</label>
+              <select id="cfg-pack" onchange="guardarCfgFx()">
+                <option value="suave">Suave</option>
+                <option value="cristal">Cristal</option>
+                <option value="retro">Retro</option>
+                <option value="ki">Energía (guiño anime)</option>
+              </select>
+            </div>
+            <p class="datos-hint">La vibración funciona en Android. Safari en iPhone no permite que una web la controle.</p>
+          </div>
+        </div>
+
         <!-- ACORDEÓN 4: COPIAS DE SEGURIDAD -->
         <div class="accordion-item">
           <button class="accordion-btn" onclick="toggleAcc('acc-backup')"><span class="acc-tit"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Copias de Seguridad</span> <span id="arrow-acc-backup" style="transition:0.3s">▼</span></button>
@@ -851,9 +883,13 @@
         sincronizarSelectoresFecha();
         refrescarBotonesBorrar();
         refrescarEstadoBotones();
+        cargarCfgFx();
+        cargarCamposCliente();
+        aplicarCamposClienteAFactura();
         cargarCfgMenu();
         sincronizarLogoMenu();
         // iOS no deja sonar audio sin un gesto previo: arrancamos al primer toque
+        document.body.classList.add("menu-abierto");
         registrarGestos();
         vigilarBannerSandbox();
         window.addEventListener('resize', autoZoomA4);
@@ -919,6 +955,7 @@
       }
 
       function alternarVista() {
+        fx("tap");
         modoVista = modoVista === "a4" ? "movil" : "a4";
         localStorage.setItem("agx_vista", modoVista);
         autoZoomA4();
@@ -947,6 +984,70 @@
       /* ==================== MENÚ PRINCIPAL ====================
          Fondo animado en canvas, música generada con Web Audio
          (sin archivos externos) y ajustes propios. */
+      /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
+         Comparte el mismo AudioContext que la música del menú. */
+      let cfgFx = { sonido: true, vibrar: true, pack: "suave" };
+
+      const PACKS = {
+        // [semitonos, duración, onda]
+        suave:  { tap: [[12, 0.05, "sine"]], ok: [[12, 0.09, "sine"], [19, 0.13, "sine"]], error: [[3, 0.16, "triangle"], [-1, 0.22, "triangle"]] },
+        cristal:{ tap: [[24, 0.05, "triangle"]], ok: [[19, 0.08, "triangle"], [24, 0.1, "triangle"], [28, 0.16, "sine"]], error: [[6, 0.14, "square"], [1, 0.2, "square"]] },
+        retro:  { tap: [[12, 0.04, "square"]], ok: [[12, 0.06, "square"], [16, 0.06, "square"], [19, 0.12, "square"]], error: [[5, 0.1, "square"], [0, 0.18, "square"]] },
+        // Guiño a Dragon Ball: fanfarria ascendente con brillo, como cuando
+        // se carga energía. Melodía original, solo el espíritu.
+        ki:     { tap: [[19, 0.05, "triangle"]],
+                  ok: [[12, 0.07, "sawtooth"], [16, 0.07, "sawtooth"], [19, 0.07, "sawtooth"], [24, 0.1, "triangle"], [28, 0.22, "triangle"]],
+                  error: [[7, 0.12, "sawtooth"], [2, 0.16, "sawtooth"], [-2, 0.26, "triangle"]] },
+      };
+
+      function cargarCfgFx() {
+        try { Object.assign(cfgFx, JSON.parse(localStorage.getItem("agx_fx") || "{}")); } catch (e) {}
+        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar"), c = document.getElementById("cfg-pack");
+        if (a) a.checked = cfgFx.sonido;
+        if (b) b.checked = cfgFx.vibrar;
+        if (c) c.value = cfgFx.pack;
+      }
+
+      function guardarCfgFx() {
+        cfgFx.sonido = document.getElementById("cfg-sonido").checked;
+        cfgFx.vibrar = document.getElementById("cfg-vibrar").checked;
+        cfgFx.pack = document.getElementById("cfg-pack").value;
+        localStorage.setItem("agx_fx", JSON.stringify(cfgFx));
+        fx("ok");
+      }
+
+      // Un solo punto de entrada: fx("tap" | "ok" | "error")
+      function fx(tipo) {
+        vibrar(tipo);
+        if (!cfgFx.sonido || !gestoUsuario) return;
+        iniciarAudio();
+        if (!audioCtx) return;
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const secuencia = (PACKS[cfgFx.pack] || PACKS.suave)[tipo] || [];
+        let t = audioCtx.currentTime + 0.01;
+        secuencia.forEach(([sem, dur, onda]) => {
+          const frec = 261.63 * Math.pow(2, sem / 12);
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          const filtro = audioCtx.createBiquadFilter();
+          filtro.type = "lowpass"; filtro.frequency.value = 5200;
+          osc.type = onda; osc.frequency.value = frec;
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(0.16, t + 0.008);
+          g.gain.setTargetAtTime(0.0001, t + dur * 0.5, dur * 0.35);
+          osc.connect(filtro); filtro.connect(g); g.connect(audioCtx.destination);
+          osc.start(t); osc.stop(t + dur + 0.25);
+          t += dur * 0.75;
+        });
+      }
+
+      // El iPhone no expone la API de vibración en Safari; en Android sí.
+      const PATRONES = { tap: 12, ok: [0, 18, 40, 22], error: [0, 40, 60, 40] };
+      function vibrar(tipo) {
+        if (!cfgFx.vibrar) return;
+        if (navigator.vibrate) { try { navigator.vibrate(PATRONES[tipo] || 12); } catch (e) {} }
+      }
+
       let cfgMenu = { fondo: "animado", cancion: "alegre", vol: 30, imagen: "", mute: false, lema: "Facturación profesional" };
       let vocesActivas = []; // osciladores en curso, para poder callarlos al instante
       let animID = null, audioCtx = null, audioGain = null, loopMusica = null;
@@ -1084,7 +1185,7 @@
           t += 1;
           ctx.clearRect(0, 0, W, H);
 
-          const suelo = H * 0.72;
+          const suelo = H * 0.87; // carretera bien abajo, el camión se ve entero
           // cielo
           const g = ctx.createLinearGradient(0, 0, 0, H);
           g.addColorStop(0, "#141a2b"); g.addColorStop(1, "#2a3350");
@@ -1197,36 +1298,50 @@
         if (!gestoUsuario) return Promise.resolve(false);
         iniciarAudio();
         if (!audioCtx) return Promise.resolve(false);
+
+        // Truco estándar de iOS: reproducir un buffer vacío dentro del gesto.
+        // Sin esto Safari deja el contexto "running" pero mudo.
+        try {
+          const buf = audioCtx.createBuffer(1, 1, 22050);
+          const src = audioCtx.createBufferSource();
+          src.buffer = buf;
+          src.connect(audioCtx.destination);
+          src.start(0);
+        } catch (e) {}
+
         if (audioCtx.state === "running") { audioDesbloqueado = true; return Promise.resolve(true); }
         return audioCtx.resume()
           .then(() => (audioDesbloqueado = audioCtx.state === "running"))
           .catch(() => false);
       }
 
-      // Cualquier tipo de interacción sirve como gesto de desbloqueo
+      // Cualquier interacción sirve de desbloqueo; se mantiene activo hasta
+      // que el contexto esté realmente sonando.
       function registrarGestos() {
         const manejar = () => {
           gestoUsuario = true;
-          if (menuVisible() && !cfgMenu.mute && cfgMenu.cancion !== "off") arrancarMusica();
-          if (audioDesbloqueado || audioPropio) quitar();
+          desbloquearAudio().then((ok) => {
+            if (ok && menuVisible() && !cfgMenu.mute && cfgMenu.cancion !== "off") arrancarMusica();
+            if (ok) eventos.forEach((e) => document.removeEventListener(e, manejar, true));
+          });
         };
         const eventos = ["pointerdown", "touchend", "click", "keydown"];
-        const quitar = () => eventos.forEach((e) => document.removeEventListener(e, manejar, true));
         eventos.forEach((e) => document.addEventListener(e, manejar, true));
       }
 
-      // El banner "Open Sandbox" lo añade el entorno de vista previa por encima
-      // de la página. Lo ocultamos si aparece dentro de nuestro documento.
+      // El banner "Open Sandbox" lo inyecta el entorno de vista previa.
+      // Si aparece dentro de nuestro documento, lo ocultamos.
       function vigilarBannerSandbox() {
+        if (!document.body) return;
         const limpiar = () => {
           document.querySelectorAll("body > *").forEach((el) => {
+            if (el.id === "main-menu" || el.tagName === "SCRIPT" || el.closest(".main-container")) return;
             const t = (el.innerText || "").trim().toLowerCase();
-            if (el.id === "main-menu" || el.closest(".main-container")) return;
             if (t === "open sandbox" || t === "open in sandbox") el.style.display = "none";
           });
         };
         limpiar();
-        new MutationObserver(limpiar).observe(document.body, { childList: true });
+        try { new MutationObserver(limpiar).observe(document.body, { childList: true }); } catch (e) {}
       }
 
       function menuVisible() {
@@ -1351,7 +1466,9 @@
 
       /* ---------- Entrar y salir del menú ---------- */
       function irA(tab) {
+        fx("ok");
         document.getElementById("main-menu").classList.add("oculto");
+        document.body.classList.remove("menu-abierto");
         pararAnimacion();
         if (audioGain && audioCtx) audioGain.gain.setValueAtTime(0, audioCtx.currentTime);
         pararMusica();
@@ -1361,6 +1478,7 @@
 
       function volverAlMenu() {
         document.getElementById("main-menu").classList.remove("oculto");
+        document.body.classList.add("menu-abierto");
         sincronizarLogoMenu();
         aplicarCfgMenu();
       }
@@ -1398,7 +1516,8 @@
         `; tbody.appendChild(tr);
         }); calcularTotales();
       }
-      function agregarServicio() { servicios.push({ id: Date.now().toString(), desc: "Nuevo Servicio", hours: 1, rate: 32 }); renderizarServicios(); }
+      function agregarServicio() {
+        fx("tap"); servicios.push({ id: Date.now().toString(), desc: "Nuevo Servicio", hours: 1, rate: 32 }); renderizarServicios(); }
       function eliminarServicio(index) { if (servicios.length <= 1) { mostrarToast("Mínimo 1 servicio"); return; } servicios.splice(index, 1); renderizarServicios(); }
       // IMPORTANTE: aquí NO se puede llamar a renderizarServicios(), porque
       // regenerar la tabla destruye el campo que estás escribiendo y iOS cierra
@@ -1456,6 +1575,10 @@
           posicionarTextoBarra();
         };
 
+        // Evita que iOS interprete el arrastre como selección de texto
+        label.addEventListener("contextmenu", (e) => e.preventDefault());
+        label.addEventListener("selectstart", (e) => { if (editandoPlantillaEstructura) e.preventDefault(); });
+        label.addEventListener("touchstart", (e) => { if (editandoPlantillaEstructura) e.preventDefault(); }, { passive: false });
         label.addEventListener('pointerdown', (e) => {
           // Solo se puede mover con el Modo Edición de Plantilla activado
           if (!editandoPlantillaEstructura || modoVista === "movil") return;
@@ -1819,7 +1942,7 @@
       }
 
       function cargarLogoGuardado() { try { const saved = localStorage.getItem("agx_custom_logo"); if (saved) { const obj = JSON.parse(saved); aplicarLogo(obj); if (obj.type === "text") setVal("input-logo-text", obj.val); } } catch (err) {} }
-      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); mostrarToast("Estructura Bloqueada"); } }
+      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.body.classList.add("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.body.classList.remove("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); mostrarToast("Estructura Bloqueada"); } }
       // Crea una fila nueva (con etiqueta) en las cajas superiores
       function nuevaFilaEtiquetada(container, blanco) {
         const div = document.createElement("div");
@@ -1897,6 +2020,7 @@
       let pestanaActual = "editor";
 
       function cambiarPestana(tab) {
+        fx("tap");
         pestanaActual = tab;
         const vistas = { editor: "view-editor", datos: "view-datos", history: "view-history" };
         const botones = { editor: "btn-tab-editor", datos: "btn-tab-datos", history: "btn-tab-history" };
@@ -2056,22 +2180,112 @@
       }
       function persistirClientes() { localStorage.setItem("agx_clientes", JSON.stringify(clientes)); }
 
+
+      /* ====== CAMPOS DE CLIENTE (editables como los de la empresa) ====== */
+      const CAMPOS_CLIENTE_BASE = [
+        { id: "name",    label: "Nombre",      destino: "client-name" },
+        { id: "vat",     label: "BTW / VAT",   destino: "client-vat" },
+        { id: "address", label: "Calle",       destino: "client-address" },
+        { id: "city",    label: "Ciudad / CP", destino: "client-city" },
+        { id: "country", label: "País",        destino: "client-country" },
+      ];
+      let camposCliente = [];
+
+      function cargarCamposCliente() {
+        try {
+          const g = localStorage.getItem("agx_campos_cliente");
+          camposCliente = g ? JSON.parse(g) : JSON.parse(JSON.stringify(CAMPOS_CLIENTE_BASE));
+        } catch (e) { camposCliente = JSON.parse(JSON.stringify(CAMPOS_CLIENTE_BASE)); }
+        if (!Array.isArray(camposCliente) || !camposCliente.length) camposCliente = JSON.parse(JSON.stringify(CAMPOS_CLIENTE_BASE));
+      }
+
+      function guardarCamposCliente() {
+        localStorage.setItem("agx_campos_cliente", JSON.stringify(camposCliente));
+        aplicarCamposClienteAFactura();
+      }
+
+      function renderizarCamposCliente(valores) {
+        const cont = document.getElementById("campos-cliente");
+        if (!cont) return;
+        cont.innerHTML = "";
+        camposCliente.forEach((c) => {
+          const fila = document.createElement("div");
+          fila.className = "dato-row dato-row-claro";
+          fila.innerHTML = `
+            <input class="dato-label" type="text" value="${(c.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarCampoCliente('${c.id}', this.value)" />
+            <input class="dato-valor" id="cli-${c.id}" type="text" value="${((valores && valores[c.id]) || "").replace(/"/g, "&quot;")}" />`;
+          if (editandoPlantillaEstructura) {
+            const b = document.createElement("button");
+            b.className = "btn-del-row"; b.innerHTML = "✕"; b.title = "Quitar campo";
+            b.onclick = () => quitarCampoCliente(c.id);
+            fila.appendChild(b);
+          }
+          cont.appendChild(fila);
+        });
+        if (editandoPlantillaEstructura) {
+          const add = document.createElement("button");
+          add.className = "btn-extra btn-extra-claro";
+          add.innerText = "+ Añadir campo";
+          add.onclick = anadirCampoCliente;
+          cont.appendChild(add);
+        }
+      }
+
+      function editarCampoCliente(id, valor) {
+        const c = camposCliente.find((x) => x.id === id);
+        if (!c) return;
+        c.label = valor; c.personalizado = true;
+        guardarCamposCliente();
+      }
+      function anadirCampoCliente() {
+        camposCliente.push({ id: "c" + Date.now(), label: "NUEVO" });
+        guardarCamposCliente();
+        renderizarCamposCliente(leerFormCliente());
+        fx("tap");
+      }
+      function quitarCampoCliente(id) {
+        camposCliente = camposCliente.filter((x) => x.id !== id);
+        guardarCamposCliente();
+        renderizarCamposCliente(leerFormCliente());
+        fx("tap");
+      }
+
+      function leerFormCliente() {
+        const v = {};
+        camposCliente.forEach((c) => { v[c.id] = getVal("cli-" + c.id) || ""; });
+        return v;
+      }
+
+      // Refleja etiquetas y campos borrados en la caja blanca de la factura
+      function aplicarCamposClienteAFactura() {
+        CAMPOS_CLIENTE_BASE.forEach((base) => {
+          const el = document.getElementById(base.destino);
+          if (!el) return;
+          const fila = el.closest(".field-row");
+          const c = camposCliente.find((x) => x.id === base.id);
+          if (fila) fila.style.display = c ? "" : "none";
+          if (c) {
+            const etq = fila ? fila.querySelector(".field-label") : null;
+            if (etq && c.personalizado) etq.innerText = (c.label || "").toUpperCase() + ":";
+          }
+        });
+      }
+
       function abrirFormCliente(id) {
         document.getElementById("form-cliente").classList.remove("hidden");
         const c = clientes.find((x) => x.id === id);
         setVal("cli-id", c ? c.id : "");
-        ["name", "vat", "address", "city", "country"].forEach((k) => setVal("cli-" + k, c ? (c[k] || "") : ""));
+        renderizarCamposCliente(c || {});
+        fx("tap");
       }
       function cerrarFormCliente() { document.getElementById("form-cliente").classList.add("hidden"); }
 
       function guardarCliente() {
-        const nombre = (getVal("cli-name") || "").trim();
+        const valores = leerFormCliente();
+        const nombre = (valores.name || "").trim();
         if (!nombre) { mostrarToast("El cliente necesita un nombre"); return; }
         const id = getVal("cli-id") || Date.now().toString();
-        const cliente = {
-          id: id, name: nombre, vat: getVal("cli-vat"), address: getVal("cli-address"),
-          city: getVal("cli-city"), country: getVal("cli-country"),
-        };
+        const cliente = Object.assign({ id: id }, valores, { name: nombre });
         const i = clientes.findIndex((c) => c.id === id);
         if (i >= 0) clientes[i] = cliente; else clientes.push(cliente);
         persistirClientes(); renderizarClientes(); cerrarFormCliente();
@@ -2124,9 +2338,22 @@
       function insertarClienteEnFactura(id) {
         const c = clientes.find((x) => x.id === id);
         if (!c) return;
-        setVal("client-name", c.name); setVal("client-vat", c.vat || "");
-        setVal("client-address", c.address || ""); setVal("client-city", c.city || "");
-        setVal("client-country", c.country || "");
+        // Vuelca cada campo (también los que hayas añadido tú) a la factura
+        camposCliente.forEach((campo) => {
+          const base = CAMPOS_CLIENTE_BASE.find((b) => b.id === campo.id);
+          if (base) { setVal(base.destino, c[campo.id] || ""); return; }
+          const cont = document.getElementById("container-client-fields");
+          if (!cont) return;
+          let fila = cont.querySelector(`[data-campo="${campo.id}"]`);
+          if (!fila) {
+            fila = document.createElement("div");
+            fila.className = "field-row";
+            fila.dataset.campo = campo.id;
+            fila.innerHTML = `<span class="field-label">${(campo.label || "").toUpperCase()}:</span><span class="editable-span" contenteditable="true"></span>`;
+            cont.appendChild(fila);
+          }
+          fila.querySelector(".editable-span").innerText = c[campo.id] || "";
+        });
         cerrarSelectorClientes();
         mostrarToast(`Cliente ${c.name} añadido`);
       }
@@ -2224,6 +2451,7 @@
         const aviso = /⚠|no se pudo|falta|error|ya existe|mínimo|válido/i.test(msg);
         document.getElementById("toast-icon").innerHTML = aviso ? ICO_ALERTA : ICO_CHECK;
         setVal("toast-text", msg.replace("⚠️", "").trim());
+        fx(aviso ? "error" : "ok");
         toast.classList.add("show");
         clearTimeout(toast._t);
         toast._t = setTimeout(() => toast.classList.remove("show"), 2200);
