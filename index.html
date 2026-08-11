@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Facturas AGX" />
-    <meta name="theme-color" content="#111827" />
+    <meta name="theme-color" content="#000000" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
@@ -34,7 +34,7 @@
       /* SCROLL NATIVO Y FIJO */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f3f4f6; color: #111827; -webkit-tap-highlight-color: transparent;
+        background-color: #f3f4f6; color: #000000; -webkit-tap-highlight-color: transparent;
         /* Márgenes para que la cabecera y el footer no tapen la factura al hacer scroll */
         padding-top: calc(60px + var(--safe-top));
         padding-bottom: calc(72px + var(--safe-bottom));
@@ -58,27 +58,45 @@
       }
 
       /* BOTONERA Y LOGO */
-      .logo-agx { cursor: pointer; background-color: #111827; color: #ffffff; font-weight: 900; font-size: 13px; letter-spacing: 2px; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; height: 32px; min-width: 56px; overflow: hidden; }
+      .logo-agx { cursor: pointer; background-color: #000000; color: #ffffff; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; padding: 0 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center; height: 42px; min-width: 56px; overflow: hidden; }
       /* Con imagen: el logo se encaja centrado y sin deformarse dentro del rectángulo negro */
       .logo-agx.con-imagen { padding: 5px 8px; }
       .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
       .btn-group { display: flex; gap: 7px; align-items: center; }
       /* ===== Asistente en línea (dentro de la pestaña "Añadir") ===== */
-      .art-asistente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
-      .pt-cab-inline { border-radius: 14px 14px 0 0; padding: 12px 12px; }
-      .ast-pasos-wrap-inline { min-height: 220px; position: relative; overflow: hidden; }
-      .ast-pie-inline { border-radius: 0 0 14px 14px; padding: 12px; }
+      /* ================= PATRÓN COMPARTIDO: "hoja" + barra de título =====
+         Misma estructura que usa la propia factura en modo móvil: una hoja
+         blanca con relleno, y la barra negra como PRIMER elemento dentro,
+         no pegada al borde — con las medidas exactas de esa referencia
+         (altura 42px, radio 10px, letter-spacing 4px). */
+      .pagina-app { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; }
+      .barra-titulo {
+        width: 100%; height: 42px; border-radius: 10px; background: #000; color: #fff;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-weight: 900; letter-spacing: 4px; font-size: 15px; text-transform: uppercase;
+        margin-bottom: 12px; border: none; cursor: default; flex-shrink: 0;
+      }
+      .barra-titulo svg { width: 16px; height: 16px; flex-shrink: 0; }
+      button.barra-titulo { cursor: pointer; }
+      /* Se queda fija arriba al hacer scroll dentro de su hoja */
+      /* Se queda fija arriba al hacer scroll dentro de su hoja */
+      .pagina-app > .barra-titulo:first-child { position: sticky; top: calc(60px + var(--safe-top)); z-index: 60; }
+      /* La barra de Historial flota fuera de cualquier hoja: se ancla ella
+         misma, junto con el botón cuadrado que la acompaña */
+      .fila-barra-historial { position: sticky; top: calc(60px + var(--safe-top) + 5px); z-index: 60; }
+
+      .ast-pasos-wrap-inline { min-height: 190px; position: relative; overflow: hidden; }
       .pt-cab { background: #fff; border-bottom: 1px solid #e5e7eb; padding: calc(10px + var(--safe-top)) 12px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
       .pt-atras { background: none; border: none; font-size: 26px; line-height: 1; color: #6b7280; cursor: pointer; padding: 0 4px; }
       .pt-tit { font-size: 15px; font-weight: 800; flex: 1; text-align: center; }
-      .pt-listo { margin-left: auto; background: #111827; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 12px; font-weight: 800; cursor: pointer; }
+      .pt-listo { margin-left: auto; background: #000000; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 12px; font-weight: 800; cursor: pointer; }
       .pt-cuerpo { flex: 1; overflow-y: auto; padding: 14px 12px 16px; }
       .pt-sec { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; margin: 20px 2px 4px; }
       .pt-sec:first-child { margin-top: 0; }
       .pt-ayuda { font-size: 11.5px; color: #9ca3af; margin: 0 2px 10px; line-height: 1.4; }
 
       /* ===== Barra negra fija + franjas grises por categoría ===== */
-      .barra-negra-articulos { background: #111827; color: #fff; border-radius: 10px 10px 0 0; padding: 9px 12px; display: grid; grid-template-columns: 2fr 1fr 1fr; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+      .barra-negra-articulos { background: #000000; color: #fff; border-radius: 10px 10px 0 0; padding: 9px 12px; display: grid; grid-template-columns: 2fr 1fr 1fr; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
       .barra-negra-articulos span:nth-child(2), .barra-negra-articulos span:nth-child(3) { text-align: right; }
 
       /* Cada grupo (categoría) es un bloque independiente y redondeado,
@@ -103,7 +121,7 @@
       .grupo-cab-fijo.grupo-cab-lectura { grid-template-columns: 1.6fr 1.8fr 0.9fr; }
       /* Modo "un artículo": esta ES la cabecera principal, en negro,
          igual de protagonista que antes lo era la barra genérica */
-      .grupo-cab-negra { background: #111827; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; border-radius: 11px 11px 0 0; }
+      .grupo-cab-negra { background: #000000; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; border-radius: 11px 11px 0 0; }
       .grupo-solo { border: none; border-radius: 11px; }
       .grupo-cab span { text-align: center; }
       .gc-desc { text-align: left !important; }
@@ -123,7 +141,7 @@
       .grupo-fila-lectura .gf-cant, .grupo-fila-lectura .gf-precio { text-align: center; font-size: 12px; border: none; background: none; padding: 5px 3px; }
 
       .btn-anadir-articulo {
-        width: 100%; margin-top: 4px; background: #111827; color: #fff; border: none;
+        width: 100%; margin-top: 4px; background: #000000; color: #fff; border: none;
         border-radius: 11px; padding: 13px; font-size: 13.5px; font-weight: 700;
         display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer;
       }
@@ -135,15 +153,15 @@
          nativo. Solo una página es visible cada vez. */
       .ast-pasos-wrap { flex: 1; overflow: hidden; position: relative; }
       .ast-pasos { height: 100%; }
-      .ast-paso { width: 100%; height: 100%; overflow-y: auto; padding: 18px 16px 24px; box-sizing: border-box; }
+      .ast-paso { width: 100%; height: 100%; overflow-y: auto; padding: 14px 16px 16px; box-sizing: border-box; }
 
-      .ast-preg { font-size: 17px; font-weight: 800; color: #111827; margin-bottom: 4px; }
+      .ast-preg { font-size: 17px; font-weight: 800; color: #000000; margin-bottom: 4px; }
       .ast-sub { font-size: 12px; color: #9ca3af; margin-bottom: 18px; }
 
       /* Lista de categorías: rectángulos negros, uno debajo de otro */
       .ast-lista-cat { display: flex; flex-direction: column; gap: 9px; }
       .ast-cat-btn {
-        background: #111827; color: #fff; border: none; border-radius: 13px;
+        background: #000000; color: #fff; border: none; border-radius: 13px;
         padding: 15px 16px; font-size: 14px; font-weight: 700; text-align: left;
         cursor: pointer; display: flex; align-items: center; justify-content: space-between;
         transition: transform 0.12s ease, background 0.25s ease, color 0.25s ease;
@@ -154,18 +172,18 @@
          cabecera: las píldoras de categoría se quedan negras en "un
          artículo", y pasan a gris (el mismo tono que la barra de las
          tablas agrupadas) en "multiartículos". */
-      .art-asistente-card.modo-uno .ast-cat-btn { background: #111827; color: #fff; }
-      .art-asistente-card.modo-multi .ast-cat-btn { background: #eef0f3; color: #4b5563; }
-      .art-asistente-card.modo-multi .ast-cat-btn .flecha { opacity: 0.4; }
+      #view-articulos.modo-uno .ast-cat-btn { background: #000000; color: #fff; }
+      #view-articulos.modo-multi .ast-cat-btn { background: #eef0f3; color: #4b5563; }
+      #view-articulos.modo-multi .ast-cat-btn .flecha { opacity: 0.4; }
 
       /* Campos del asistente (cantidad, precio, descripción...) */
-      .ast-campo { margin-bottom: 16px; }
+      .ast-campo { margin-bottom: 12px; }
       .ast-campo label { display: block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #9ca3af; margin-bottom: 7px; }
       .ast-campo input, .ast-campo [contenteditable] {
         width: 100%; box-sizing: border-box; background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px;
-        padding: 13px 14px; font-size: 16px; font-weight: 600; color: #111827;
+        padding: 13px 14px; font-size: 16px; font-weight: 600; color: #000000;
       }
-      .ast-campo input:focus, .ast-campo [contenteditable]:focus { outline: none; border-color: #111827; background: #fff; }
+      .ast-campo input:focus, .ast-campo [contenteditable]:focus { outline: none; border-color: #000000; background: #fff; }
       .ast-campo [contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; font-weight: 500; }
 
       /* Pasos de cantidad/precio: un único número, grande y centrado, tipo
@@ -182,7 +200,7 @@
       .ast-resumen div:last-child { border-bottom: none; font-weight: 800; }
 
       .ast-pie { flex-shrink: 0; padding: 12px 16px calc(14px + var(--safe-bottom)); background: #fff; border-top: 1px solid #e5e7eb; }
-      .ast-btn-siguiente { width: 100%; background: #111827; color: #fff; border: none; border-radius: 13px; padding: 15px; font-size: 14px; font-weight: 800; cursor: pointer; }
+      .ast-btn-siguiente { width: 100%; background: #000000; color: #fff; border: none; border-radius: 13px; padding: 15px; font-size: 14px; font-weight: 800; cursor: pointer; }
       .ast-btn-siguiente:active { transform: scale(0.98); }
 
 
@@ -192,39 +210,157 @@
       /* Selector pequeño para elegir el tipo de una línea cuando hay más
          de un tipo activo en la factura */
       .chip-tipo-linea { display: block; margin-bottom: 4px; font-size: 9.5px; font-weight: 700; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 5px; background: #f9fafb; color: #6b7280; max-width: 140px; }
-      .pt-add-linea { width: 30px; height: 30px; border-radius: 9px; background: #111827; color: #fff; border: none; font-size: 18px; font-weight: 800; line-height: 1; cursor: pointer; }
+      .pt-add-linea { width: 30px; height: 30px; border-radius: 9px; background: #000000; color: #fff; border: none; font-size: 18px; font-weight: 800; line-height: 1; cursor: pointer; }
       .pt-previa { background: #fff; border: 1px solid #e5e7eb; border-radius: 11px; overflow: hidden; max-height: 30vh; overflow-y: auto; }
       .pt-previa table { width: 100%; border-collapse: collapse; font-size: 10px; }
-      .pt-previa th { background: #111827; color: #fff; padding: 8px 6px; font-size: 8.5px; text-transform: uppercase; text-align: left; position: sticky; top: 0; }
+      .pt-previa th { background: #000000; color: #fff; padding: 8px 6px; font-size: 8.5px; text-transform: uppercase; text-align: left; position: sticky; top: 0; }
       .pt-previa td { padding: 8px 6px; border-bottom: 1px solid #f3f4f6; color: #374151; }
 
 
       /* ===== CABECERA: píldora del número + menú de acciones ===== */
-      .pastilla-num { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; width: 38px; padding: 0; border-radius: 10px; border: none; background: #111827; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; }
+      .pastilla-num { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; width: 42px; padding: 0; border-radius: 10px; border: none; background: #000000; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; }
       .pastilla-num svg { width: 19px; height: 19px; }
       .pastilla-num:active { transform: scale(0.97); }
       .pastilla-num.hidden { display: none; }
 
       /* ===== HISTORIAL: barra negra + búsqueda por fechas ===== */
-      .barra-historial { background: #111827; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; min-height: 58px; display: flex; align-items: center; }
-      .bh-titulo { display: flex; align-items: center; gap: 12px; width: 100%; }
-      .bh-logo { background: #ffffff; color: #111827; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; padding: 7px 10px; border-radius: 8px; flex-shrink: 0; }
-      .bh-h2 { font-size: 15px; font-weight: 800; color: #ffffff; }
-      .bh-p { font-size: 11px; color: #9ca3af; margin-top: 1px; }
-      .bh-busqueda { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; }
-      .bh-busqueda.hidden { display: none; }
-      .bh-fecha { display: flex; flex-direction: column; gap: 3px; align-items: center; }
-      .bh-fecha label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; }
-      .bh-fecha input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); color: #fff; border-radius: 8px; padding: 6px 9px; font-size: 12px; color-scheme: dark; }
-      .bh-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
-      .bh-search { flex: 1; padding: 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; }
-      .pie-historial { position: sticky; bottom: 0; background: #111827; color: #fff; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-top: 12px; }
+      /* Fila: barra de búsqueda + botón cuadrado de vista, aparte. Flota
+         sin tarjeta blanca detrás, y deja un hueco amplio antes de la
+         hoja de resultados de abajo. */
+      .fila-barra-historial { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+      .fila-barra-historial .barra-titulo { flex: 1; margin-bottom: 0; }
+      .btn-vista-cuadrado {
+        flex-shrink: 0; width: 42px; height: 42px; border-radius: 10px;
+        background: #000; color: #fff; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18); transition: transform 0.12s ease;
+      }
+      .btn-vista-cuadrado:active { transform: scale(0.93); }
+      .btn-vista-cuadrado svg { width: 17px; height: 17px; }
+      @keyframes girarIconoVista { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(0.75); } 100% { transform: rotate(360deg) scale(1); } }
+      .btn-vista-cuadrado.girando #ico-vista-lista { display: inline-flex; animation: girarIconoVista 0.45s cubic-bezier(.34,1.56,.64,1); }
+      #ico-vista-lista { display: inline-flex; }
+
+      /* La barra del buscador necesita relleno propio: los demás textos de
+         cabecera solo llevan una palabra centrada, pero aquí hay campos de
+         verdad que no deben tocar el borde redondeado. */
+      /* Relleno propio para que los campos no toquen el borde redondeado
+         de la barra — antes iban pegados a los extremos */
+      .barra-historial { position: relative; overflow: hidden; padding: 0 8px; justify-content: flex-start; }
+      /* ===== TRANSFORMACIÓN REAL de la barra de búsqueda =====
+         No hay dos elementos superpuestos: hay UNA fila con dos mitades.
+         En modo búsqueda, la mitad derecha tiene ancho 0 y la izquierda
+         ocupa todo — se ve como un único campo. Al pasar a calendario,
+         la derecha crece y la izquierda cede espacio: el propio campo se
+         parte en dos. Los textos internos (lupa/etiquetas) se cruzan en
+         opacidad durante el movimiento, así nunca se ve el placeholder
+         "flotando" encima de los selectores ya colocados. */
+      .bh-morph { position: relative; display: flex; align-items: center; width: 100%; height: 100%; gap: 0; transition: gap 0.42s cubic-bezier(.34,1.56,.64,1); }
+      .barra-historial.modo-fechas .bh-morph { gap: 10px; }
+
+      /* Capa del buscador: se superpone a las dos mitades cuando están
+         unidas, dando la ilusión de un único campo continuo */
+      .bh-capa-busqueda {
+        position: absolute; inset: 0; z-index: 2;
+        display: flex; align-items: center; gap: 8px; padding: 0 10px;
+        transition: opacity 0.2s ease;
+      }
+      .barra-historial.modo-fechas .bh-capa-busqueda { opacity: 0; pointer-events: none; transition: opacity 0.14s ease; }
+
+      /* Las DOS mitades existen siempre y miden lo mismo. Unidas, sus
+         bordes interiores son rectos y no hay hueco: se ven como UNA sola
+         pieza. Al separarse, aparece el hueco y las esquinas interiores
+         se redondean — como una gota que se parte en dos. */
+      .bh-mitad {
+        display: flex; align-items: center; gap: 6px; min-width: 0; height: 26px; flex: 1 1 50%;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        overflow: hidden;
+        transition: padding 0.42s cubic-bezier(.34,1.56,.64,1), border-radius 0.42s cubic-bezier(.34,1.56,.64,1),
+                    border-color 0.36s ease;
+      }
+      /* Unidas: la izquierda redondea solo por fuera, la derecha igual, y
+         se quita el borde que las separaría por dentro */
+      .bh-mitad-izq { border-radius: 7px 0 0 7px; border-right: none; padding: 0 0 0 10px; }
+      .bh-mitad-der { border-radius: 0 7px 7px 0; border-left: none; padding: 0 10px 0 0; }
+      /* Separadas: cada una es una pieza completa y redondeada */
+      .barra-historial.modo-fechas .bh-mitad-izq { border-radius: 7px; border-right: 1px solid rgba(255,255,255,0.2); padding: 0 10px; }
+      .barra-historial.modo-fechas .bh-mitad-der { border-radius: 7px; border-left: 1px solid rgba(255,255,255,0.2); padding: 0 10px; }
+
+      .bh-lupa { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.5; transition: opacity 0.2s ease, width 0.3s ease; }
+      .barra-historial.modo-fechas .bh-lupa { opacity: 0; width: 0; }
+
+      .bh-etq { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap; opacity: 0; width: 0; overflow: hidden; transition: opacity 0.22s ease 0.14s, width 0.3s ease; }
+      .barra-historial.modo-fechas .bh-etq { opacity: 1; width: auto; }
+
+      .bh-campo {
+        flex: 1; min-width: 0; background: none; border: none; color: #fff;
+        font-size: 13px; letter-spacing: normal; font-weight: 500; text-transform: none;
+        padding: 0; height: 100%; color-scheme: dark;
+        transition: opacity 0.2s ease, width 0.3s ease;
+      }
+      .bh-campo:focus { outline: none; }
+      .bh-campo::placeholder { color: rgba(255,255,255,0.45); }
+      /* Los selectores de fecha aparecen solo cuando la barra ya se ha
+         separado — antes de eso están ocultos bajo la capa del buscador */
+      .bh-campo-fecha { font-size: 11px; opacity: 0; transition: opacity 0.22s ease 0.16s; }
+      .barra-historial.modo-fechas .bh-campo-fecha { opacity: 1; }
+
+      /* position:fixed de verdad, no sticky: con pocas facturas la lista
+         cabe en una pantalla y "sticky" nunca llega a activarse porque no
+         hay nada que desplazar — se queda en su sitio normal, lejos del
+         fondo. "Fixed" la ancla siempre, haya o no scroll. Como sale del
+         flujo del documento, hay que replicarle a mano el mismo ancho y
+         centrado que ya tiene .main-container. */
+      .pie-historial {
+        position: fixed; bottom: calc(66px + var(--safe-bottom) + 5px);
+        left: 50%; transform: translateX(-50%);
+        width: min(calc(900px - 24px), calc(100% - 24px));
+        background: #000; color: #fff; border-radius: 12px; padding: 12px 16px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 13px; font-weight: 800; box-shadow: 0 -6px 14px rgba(0,0,0,0.12);
+        z-index: 900;
+      }
       .pie-historial.hidden { display: none; }
+      /* Hueco al final de la lista para que la barra fija no tape la
+         última factura */
+      #pagina-resultados-historial.con-pie-fijo { margin-bottom: 70px; }
       #pie-hist-cuenta { color: #d1d5db; font-weight: 600; font-size: 12px; }
-      /* Vista lista: filas compactas en vez de tarjetas */
-      .history-grid.vista-lista { display: flex; flex-direction: column; gap: 0; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
-      .history-grid.vista-lista .history-card { border-radius: 0; border: none; border-bottom: 1px solid #f3f4f6; padding: 10px 14px; }
-      .history-grid.vista-lista .history-card:last-child { border-bottom: none; }
+      /* Vista lista: cada factura sigue siendo una barra INDEPENDIENTE,
+         con su propio fondo y borde — antes el contenedor las agrupaba en
+         un bloque único con un borde compartido, por eso se veían pegadas
+         entre sí en vez de separadas. */
+      .history-grid.vista-lista { display: flex; flex-direction: column; gap: 5px; background: none; border: none; border-radius: 0; }
+      .history-grid.vista-lista .history-card { border-radius: 9px; border: 1px solid #e5e7eb; padding: 8px 12px; }
+
+      /* ===== Contenido interno de cada factura del historial =====
+         La MISMA estructura de texto sirve para tarjeta y lista — solo
+         cambian tamaños y espaciados por CSS, con transición, nunca las
+         palabras ni los elementos. */
+      /* En tarjeta el número va arriba, en su propia línea (así un número
+         largo como 00001220 no descoloca nada); en lista pasa a la
+         izquierda de la fila. */
+      .hc-badge { align-self: flex-start; background: #000; color: #fff; font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; flex-shrink: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: font-size 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1); }
+      .vista-lista .hc-badge { align-self: flex-start; font-size: 7.5px; padding: 1.5px 4px; }
+      .vista-lista .hc-cuerpo { min-width: 0; }
+      .vista-lista .hc-info { gap: 1px; }
+      .hc-info { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; transition: gap 0.3s ease; }
+      .hc-nombre { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: font-size 0.3s ease; }
+      .hc-fechas { font-size: 11px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: font-size 0.3s ease; }
+      .hc-total { font-size: 16px; font-weight: 900; color: #000; flex-shrink: 0; transition: font-size 0.3s ease; }
+      .hc-eliminar {
+        flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+        background: #fef2f2; color: #ef4444; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; font-size: 13px;
+        transition: width 0.3s ease, height 0.3s ease, font-size 0.3s ease;
+      }
+      .hc-eliminar:active { transform: scale(0.9); }
+
+      /* En lista: la MISMA fila, encogida — nada de texto se pierde,
+         solo se hace más pequeño y compacto */
+      .vista-lista .hc-nombre { font-size: 12px; }
+      .vista-lista .hc-fechas { font-size: 9px; }
+      .vista-lista .hc-total { font-size: 12.5px; }
+      .vista-lista .hc-eliminar { width: 22px; height: 22px; font-size: 10px; }
 
       .hoja-fondo { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(3px); z-index: 3000; display: flex; align-items: flex-end; }
       .hoja-fondo.hidden { display: none; }
@@ -241,21 +377,26 @@
          basta para separarlos sin dejar un hueco grande. */
       #modal-clientes .modal-header { margin-top: 30px; }
       .hoja-titulo { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; padding: 0 4px 10px; margin-top: 6px; }
-      .hoja-item { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none; padding: 14px 6px; font-size: 15px; font-weight: 600; color: #111827; cursor: pointer; border-bottom: 1px solid #f3f4f6; text-align: left; }
+      .hoja-item { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none; padding: 14px 6px; font-size: 15px; font-weight: 600; color: #000000; cursor: pointer; border-bottom: 1px solid #f3f4f6; text-align: left; }
       .hoja-item:last-child { border-bottom: none; }
       .hoja-item svg { width: 20px; height: 20px; flex-shrink: 0; }
       .hoja-item .sub { display: block; font-size: 11px; font-weight: 500; color: #9ca3af; margin-top: 1px; }
       /* La acción principal destaca en negro */
-      .hoja-item.principal { background: #111827; color: #fff; border-radius: 12px; padding: 15px 14px; margin-bottom: 10px; border-bottom: none; }
+      .hoja-item.principal { background: #000000; color: #fff; border-radius: 12px; padding: 15px 14px; margin-bottom: 10px; border-bottom: none; }
       .hoja-item.principal .sub { color: rgba(255,255,255,0.6); }
 
       .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 0 12px; height: 38px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+      /* El botón de los tres puntos, en la cabecera, es del mismo tamaño
+         exacto que el resto de botones de cabecera y que el cuadrado
+         negro de vista tarjeta/lista — 42x42, para quedar perfectamente
+         alineados entre sí */
+      #hb-menu { width: 42px; height: 42px; border-radius: 10px; }
       .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
       .btn-icon-only { width: 38px; padding: 0; }
       /* Botones que no aplican a la pestaña actual: apagados y no pulsables */
       .btn.desactivado { opacity: 0.35; pointer-events: none; filter: grayscale(1); }
       .btn:active { transform: scale(0.95); }
-      .btn-black { background-color: #111827; color: #ffffff; }
+      .btn-black { background-color: #000000; color: #ffffff; }
       .btn-gray { background-color: #e5e7eb; color: #374151; }
             .nav-grid { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; height: 44px; }
             .nav-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
@@ -264,7 +405,7 @@
       .nav-btn { border-radius: 12px; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; height: 100%;}
       .nav-grid-4 .nav-btn { font-size: 9.5px; gap: 3px; padding: 0 2px; }
       .nav-grid-4 .nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-      .nav-btn.active { background-color: #111827; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+      .nav-btn.active { background-color: #000000; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
       .nav-btn.inactive { background-color: #e5e7eb; color: #4b5563; }
 
       .main-container { max-width: 900px; margin: 0 auto; padding: 12px; }
@@ -301,7 +442,7 @@
       .sidebar-text, .invoice-sidebar .sidebar-text { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
       body.editando-plantilla .sidebar-text { cursor: grab; touch-action: none; }
       .invoice-sidebar {
-        width: 70px; background-color: #111827; border-radius: 16px;
+        width: 70px; background-color: #000000; border-radius: 16px;
         display: flex; flex-direction: column; align-items: center; padding: 20px 0; overflow: hidden;
       }
       
@@ -322,11 +463,11 @@
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
       .box { border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
       .box-white { border: 1px solid #d1d5db; }
-      .box-black { background-color: #111827; color: #ffffff; border: 1px solid #111827; }
+      .box-black { background-color: #000000; color: #ffffff; border: 1px solid #000000; }
       
       .box-header { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid rgba(156, 163, 175, 0.25); padding-bottom: 6px; margin-bottom: 4px;}
       .box-header-title { display: flex; align-items: center; gap: 8px; }
-      .box-white .box-header { color: #111827; } .box-black .box-header { color: #ffffff; }
+      .box-white .box-header { color: #000000; } .box-black .box-header { color: #ffffff; }
 
       .field-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; margin-bottom: 2px;}
       /* Ancho fijo: así los textos editables arrancan todos en la misma
@@ -337,10 +478,10 @@
 
       /* CAMPOS MULTILÍNEA */
       .editable-span { font-family: inherit; font-size: 12px; border-bottom: 1px solid transparent; outline: none; display: inline-block; width: 100%; min-height: 16px; word-wrap: break-word; white-space: pre-wrap; transition: border-color 0.2s; cursor: text; padding: 2px 0; }
-      .editable-span:focus { border-bottom-color: #111827; }
+      .editable-span:focus { border-bottom-color: #000000; }
       .box-black .editable-span { color: #ffffff; } .box-black .editable-span:focus { border-bottom-color: #ffffff; }
       input[type="number"] { font-family: inherit; font-size: 12px; border: none; border-bottom: 1px solid transparent; background: transparent; outline: none; width: 100%; padding: 2px 0; }
-      input[type="number"]:focus { border-bottom-color: #111827; }
+      input[type="number"]:focus { border-bottom-color: #000000; }
 
       body.template-editing-mode .field-label, body.template-editing-mode .box-header span, body.template-editing-mode th { outline: none; background: rgba(59, 130, 246, 0.08); cursor: text; border-bottom: 1px dashed #3b82f6 !important; }
       body.template-editing-mode .editable-span { border-bottom: 1px dashed #3b82f6; }
@@ -351,7 +492,7 @@
       .meta-label { font-size: 10px; font-weight: 700; color: #6b7280; display: block; margin-bottom: 4px; text-transform: uppercase; }
 
       table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 16px;}
-      th { background-color: #111827; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 12px 10px; text-align: left; }
+      th { background-color: #000000; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 12px 10px; text-align: left; }
       th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
       td.col-actions { text-align: center; vertical-align: middle; padding-left: 4px; padding-right: 0; }
       th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px;}
@@ -366,10 +507,10 @@
          y con el importe de la barra negra (mismo padding derecho de 16px). */
       .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 10px; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 16px; }
       .subtotals-grid > div { display: flex; align-items: center; justify-content: flex-end; }
-      .amount-align { font-weight: 700; color: #111827; font-variant-numeric: tabular-nums; text-align: right; }
+      .amount-align { font-weight: 700; color: #000000; font-variant-numeric: tabular-nums; text-align: right; }
       
       /* BARRA TOTAL (Mismo ancho que la tabla) */
-      .total-bar { background-color: #111827; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
+      .total-bar { background-color: #000000; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
       .total-label { font-size: 14px; font-weight: 900; text-transform: uppercase; text-align: right; }
       .total-value { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
 
@@ -384,7 +525,7 @@
       .ico-banco { transform: translateY(-2px); }
       /* Sin caja gris: el icono solo, más grande (ocupa lo que antes
          ocupaba el rectángulo entero) */
-      .footer-icon { display: flex; align-items: center; justify-content: center; color: #111827; flex-shrink: 0; }
+      .footer-icon { display: flex; align-items: center; justify-content: center; color: #000000; flex-shrink: 0; }
       .box-black .footer-icon { color: #ffffff; }
       .footer-content { width: 100%; display: flex; flex-direction: column; gap: 2px; align-items: center; }
       .footer-content .editable-span { padding: 0; min-height: 0; line-height: 1.45; }
@@ -408,8 +549,23 @@
         .editable-span { background: transparent !important; border: none !important; }
       }
 
-      .history-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-      .history-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
+      /* Modo tarjeta: dos por fila, más rectangulares. Modo lista: una
+         sola columna de barras apiladas con 5px entre ellas. */
+      .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .history-card {
+        background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px;
+        display: flex; flex-direction: column; align-items: stretch; gap: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        transition: padding 0.4s cubic-bezier(.34,1.56,.64,1), border-radius 0.4s cubic-bezier(.34,1.56,.64,1), gap 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      /* Al pasar a lista, cada tarjeta se contrae a una barra horizontal:
+         el cuerpo pasa de apilado a una sola fila */
+      .history-grid.vista-lista { transition: gap 0.3s ease; }
+      .hc-cuerpo { display: flex; align-items: center; gap: 10px; min-width: 0; transition: gap 0.3s ease; }
+      /* En lista se conserva la MISMA estructura que en tarjeta: el número
+         arriba a la izquierda en su propia línea, y debajo el resto. Antes
+         se forzaba todo a una sola fila y por eso un número largo empujaba
+         y descolocaba el nombre del cliente. */
+      .vista-lista .history-card { flex-direction: column; align-items: stretch; gap: 5px; }
 
       .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
       /* Ajustes debe quedar SIEMPRE por encima de cualquier hoja/panel,
@@ -423,7 +579,7 @@
       .ico-ui { width: 17px; height: 17px; flex-shrink: 0; }
       .acc-tit { display: flex; align-items: center; gap: 9px; }
       .modal-title .ico-ui, .datos-card-header .ico-ui { width: 18px; height: 18px; }
-      .accordion-btn { width: 100%; padding: 12px 14px; background: #f9fafb; border: none; text-align: left; font-size: 12px; font-weight: 700; color: #111827; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+      .accordion-btn { width: 100%; padding: 12px 14px; background: #f9fafb; border: none; text-align: left; font-size: 12px; font-weight: 700; color: #000000; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
       .accordion-content { padding: 14px; border-top: 1px solid #e5e7eb; display: none; flex-direction: column; gap: 12px; background: #ffffff; }
       .config-row { display: flex; flex-direction: column; gap: 4px; }
       .config-row label { font-size: 11px; font-weight: 600; color: #4b5563; }
@@ -431,10 +587,10 @@
       
       .lang-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
       .lang-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; font-size: 11px; font-weight: 600; }
-      .lang-item.active { border-color: #111827; background: #111827; color: #ffffff; }
+      .lang-item.active { border-color: #000000; background: #000000; color: #ffffff; }
 
       .toast #toast-icon { display: flex; }
-      .toast { position: fixed; top: calc(70px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-150px); background: #111827; color: #ffffff; padding: 12px 20px; border-radius: 24px; font-size: 12px; font-weight: 600; z-index: 3000; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+      .toast { position: fixed; top: calc(70px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-150px); background: #000000; color: #ffffff; padding: 12px 20px; border-radius: 24px; font-size: 12px; font-weight: 600; z-index: 3000; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
       .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
       .hidden { display: none !important; }
 
@@ -513,7 +669,7 @@
       /* Recuadros guía en AMBAS vistas. Nunca salen en el PDF ni al imprimir. */
       .editable-span { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 6px; }
       .box-black .editable-span, .invoice-sidebar .editable-span { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.22); }
-      .editable-span:focus { background: #ffffff; border-color: #111827; }
+      .editable-span:focus { background: #ffffff; border-color: #000000; }
       .box-black .editable-span:focus { background: rgba(255,255,255,0.16); border-color: #ffffff; }
       body.vista-movil .editable-span { border-radius: 8px; }
       body.exportando .editable-span { background: transparent !important; border-color: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
@@ -536,11 +692,11 @@
       #menu-imagen { background-size: cover; background-position: center; display: none; }
       .menu-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.7)); }
       .menu-contenido { position: relative; z-index: 2; width: 100%; max-width: 380px; padding: 0 24px 190px; text-align: center; }
-      .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #111827; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
+      .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #000000; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
       .menu-logo img { max-height: 56px; max-width: 220px; object-fit: contain; display: block; }
       .menu-sub { color: rgba(255,255,255,0.72); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 28px; }
       .menu-botones { display: flex; flex-direction: column; gap: 10px; }
-      .menu-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 14px; border: none; background: rgba(255,255,255,0.94); color: #111827; font-size: 15px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); transition: transform 0.12s; }
+      .menu-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 14px; border: none; background: rgba(255,255,255,0.94); color: #000000; font-size: 15px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); transition: transform 0.12s; }
       .menu-btn:active { transform: scale(0.97); }
       .menu-btn svg { width: 19px; height: 19px; }
       .aviso-silencio { position: absolute; right: 0; bottom: 52px; width: 210px; background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.22); color: #e5e7eb; font-size: 11px; line-height: 1.35; padding: 8px 10px; border-radius: 10px; text-align: right; }
@@ -550,18 +706,18 @@
 
       /* TARJETAS DE LA PESTAÑA DATOS */
       .datos-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-      .datos-card-negra { background: #111827; border-color: #111827; color: #ffffff; }
+      .datos-card-negra { background: #000000; border-color: #000000; color: #ffffff; }
       .datos-card-header { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
       .datos-hint { font-size: 11px; color: #9ca3af; margin-bottom: 12px; }
       .datos-grid { display: flex; flex-direction: column; gap: 10px; }
       .datos-sep { font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.6; margin-top: 6px; border-top: 1px solid rgba(156,163,175,0.35); padding-top: 8px; }
-      .datos-card input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 16px; background: #fff; color: #111827; }
+      .datos-card input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 16px; background: #fff; color: #000000; }
       .datos-card-negra label { color: #9ca3af; font-size: 11px; font-weight: 600; }
       .datos-toggle { width: 100%; background: none; border: none; color: inherit; font-size: 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0; }
       .btn-extra { background: rgba(255,255,255,0.12); color: #fff; border: 1px dashed rgba(255,255,255,0.45); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 6px; }
       .datos-seccion { display: flex; flex-direction: column; gap: 8px; }
       .dato-row { display: grid; grid-template-columns: 104px 1fr auto; gap: 8px; align-items: center; }
-      .dato-row input { font-size: 15px; padding: 9px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #111827; width: 100%; }
+      .dato-row input { font-size: 15px; padding: 9px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #000000; width: 100%; }
       .dato-row .dato-label { font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.12); color: #e5e7eb; border-color: rgba(255,255,255,0.25); }
       .dato-row-claro .dato-label { background: #eef0f3; color: #4b5563; border-color: #d1d5db; }
       .dato-row-claro .dato-label[readonly] { background: transparent; border-color: transparent; color: #6b7280; }
@@ -570,13 +726,13 @@
       .cliente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
       /* Botón para insertar un cliente guardado en la factura */
-      .btn-cliente-factura { background: #111827; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
+      .btn-cliente-factura { background: #000; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
 
       /* BARRA DE EDICIÓN RÁPIDA (faltaba en el HTML original) */
       /* Pastilla compacta abajo a la derecha: ya no tapa el contenido */
-      #barra-edicion-rapida { position: fixed; right: 12px; bottom: calc(74px + var(--safe-bottom)); left: auto; background: #111827; color: #fff; padding: 8px 12px; font-size: 11px; font-weight: 700; border-radius: 999px; z-index: 2500; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+      #barra-edicion-rapida { position: fixed; right: 12px; bottom: calc(74px + var(--safe-bottom)); left: auto; background: #000000; color: #fff; padding: 8px 12px; font-size: 11px; font-weight: 700; border-radius: 999px; z-index: 2500; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
       #barra-edicion-rapida .txt-edicion { display: none; }
-      #barra-edicion-rapida button { background: #ffffff; color: #111827; border: none; border-radius: 999px; padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
+      #barra-edicion-rapida button { background: #ffffff; color: #000000; border: none; border-radius: 999px; padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -703,22 +859,21 @@
     <div class="main-container" id="main-scroll-area">
     <!-- PESTAÑA "AÑADIR": asistente en línea + lista editable de lo ya añadido -->
     <section id="view-articulos" class="hidden">
-      <div class="art-asistente-card">
-        <div class="pt-cab pt-cab-inline">
-          <button id="ast-atras" onclick="asistenteAtras()" class="pt-atras">‹</button>
-          <span id="ast-titulo" class="pt-tit">Añadir artículo</span>
-          <span style="width:26px;"></span>
-        </div>
+      <div class="pagina-app">
+        <button id="ast-barra-titulo" onclick="asistenteAtras()" class="barra-titulo">
+          <span id="ast-atras-ico" style="display:none; font-size:18px; font-weight:400;">‹</span>
+          <span id="ast-titulo">¿Qué quieres añadir?</span>
+        </button>
         <div class="ast-pasos-wrap-inline">
           <div id="ast-pasos" class="ast-pasos"></div>
         </div>
         <div class="ast-pie ast-pie-inline">
           <button id="ast-btn-siguiente" onclick="asistenteSiguiente()" class="ast-btn-siguiente">Siguiente</button>
         </div>
-      </div>
 
-      <p class="pt-sec" style="margin: 20px 2px 8px;">Lo que llevas añadido</p>
-      <div id="zona-articulos-editable"></div>
+        <p class="pt-sec" style="margin: 16px 2px 6px;">Lo que llevas añadido</p>
+        <div id="zona-articulos-editable"></div>
+      </div>
     </section>
 
       
@@ -748,7 +903,7 @@
                     </div>
                   </div>
                   <div id="container-client-fields">
-                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-name">NOMBRE / EMPRESA:</span><span id="client-name" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px; color: #111827;">Client Name</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-name">NOMBRE / EMPRESA:</span><span id="client-name" class="editable-span" contenteditable="true" style="font-weight: 800; font-size: 13px; color: #000000;">Client Name</span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-vat">NIF / VAT:</span><span id="client-vat" class="editable-span" contenteditable="true" style="font-weight: 600;">NL123456789B01</span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-street">CALLE:</span><span id="client-address" class="editable-span" contenteditable="true">Straatnaam 123</span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-city">CIUDAD:</span><span id="client-city" class="editable-span" contenteditable="true">Amsterdam</span></div>
@@ -883,13 +1038,13 @@
       <!-- VISTA: DATOS (MIS DATOS + CLIENTES) -->
       <section id="view-datos" class="hidden">
 
-        <!-- TARJETA NEGRA: MIS DATOS (PLEGABLE) -->
-        <div class="datos-card datos-card-negra">
-          <button onclick="toggleMisDatos()" class="datos-toggle">
-            <span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.6" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="6.6" y="13" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="13" width="1.8" height="1.8" rx="0.5"/></svg>Mis Datos (Emisor)</span>
-            <span id="flecha-mis-datos" style="transition:0.3s">▼</span>
-          </button>
-          <div id="cuerpo-mis-datos" class="hidden">
+        <!-- TARJETA 1: MIS DATOS — barra fija, siempre visible, sin desplegar -->
+        <div class="pagina-app">
+          <div class="barra-titulo">
+            <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.6" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="6.6" y="13" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="13" width="1.8" height="1.8" rx="0.5"/></svg>
+            <span>Mis Datos</span>
+          </div>
+          <div id="cuerpo-mis-datos">
             <p class="datos-hint">Se aplica automáticamente a la factura. Para añadir, quitar o renombrar campos, activa el Modo Edición desde Ajustes.</p>
             <div id="seccion-empresa" class="datos-seccion"></div>
             <div id="seccion-direccion" class="datos-seccion"></div>
@@ -898,12 +1053,15 @@
           </div>
         </div>
 
-        <!-- TARJETA BLANCA: CLIENTES -->
-        <div class="datos-card">
-          <div class="datos-card-header" style="color:#111827; display:flex; align-items:center; gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg>Clientes</div>
-          <p class="datos-hint" style="color:#6b7280;">Guarda tus clientes y añádelos a la factura con un toque.</p>
+        <!-- TARJETA 2: CLIENTES — aparte -->
+        <div class="pagina-app" style="margin-top: 12px;">
+          <div class="barra-titulo">
+            <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg>
+            <span>Clientes</span>
+          </div>
+          <p class="datos-hint" style="text-align:center;">Guarda tus clientes y añádelos a la factura con un toque.</p>
 
-          <div id="form-cliente" class="hidden" style="border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; background:#f9fafb;">
+          <div id="form-cliente" class="hidden" style="border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; margin-top:10px; background:#f9fafb;">
             <input type="hidden" id="cli-id" />
             <div id="campos-cliente" class="datos-seccion"></div>
             <div style="display:flex; gap:8px; margin-top:10px;">
@@ -912,42 +1070,48 @@
             </div>
           </div>
 
-          <div id="clientes-container" class="history-grid"></div>
+          <div id="clientes-container" class="history-grid" style="margin-top: 10px;"></div>
         </div>
       </section>
 
       <!-- VISTA 2: HISTORIAL -->
       <section id="view-history" class="hidden">
-        <!-- Barra negra: nombre por defecto, se convierte en buscador por
-             fechas al tocar el botón de la cabecera -->
-        <div id="barra-historial" class="barra-historial">
-          <div id="modo-titulo-historial" class="bh-titulo">
-            <div id="bh-logo" class="bh-logo">AGX</div>
-            <div>
-              <h2 id="txt-hist-title" class="bh-h2">Facturas Guardadas</h2>
-              <p id="txt-hist-desc" class="bh-p">Historial en el dispositivo</p>
+        <!-- La barra flota directamente sobre el fondo, sin tarjeta blanca
+             detrás — y se queda fija arriba al hacer scroll -->
+        <div class="fila-barra-historial">
+          <div id="barra-historial" class="barra-titulo barra-historial">
+            <!-- UN SOLO contenedor que se transforma: el campo de búsqueda
+                 se parte físicamente en dos mitades (DESDE / HASTA). No son
+                 elementos distintos superpuestos — es el mismo campo el que
+                 se divide, por eso la transición se ve continua. -->
+            <div class="bh-morph">
+              <!-- El buscador se superpone a las DOS mitades unidas: así
+                   parece un único campo. Al separarse, se desvanece y cada
+                   mitad muestra su propio selector de fecha. -->
+              <div class="bh-capa-busqueda">
+                <svg class="bh-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" class="bh-campo bh-campo-busqueda" />
+              </div>
+              <div class="bh-mitad bh-mitad-izq">
+                <label class="bh-etq">Desde</label>
+                <input id="hist-fecha-desde" type="date" oninput="filtrarHistorialPorFecha()" class="bh-campo bh-campo-fecha" />
+              </div>
+              <div class="bh-mitad bh-mitad-der">
+                <label class="bh-etq">Hasta</label>
+                <input id="hist-fecha-hasta" type="date" oninput="filtrarHistorialPorFecha()" class="bh-campo bh-campo-fecha" />
+              </div>
             </div>
           </div>
-          <div id="modo-busqueda-historial" class="bh-busqueda hidden">
-            <div class="bh-fecha">
-              <label>Desde</label>
-              <input id="hist-fecha-desde" type="date" oninput="filtrarHistorialPorFecha()" />
-            </div>
-            <div class="bh-fecha">
-              <label>Hasta</label>
-              <input id="hist-fecha-hasta" type="date" oninput="filtrarHistorialPorFecha()" />
-            </div>
-          </div>
-        </div>
-
-        <div class="bh-toolbar">
-          <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" class="bh-search" />
-          <button id="btn-vista-lista" onclick="alternarVistaHistorial()" class="btn btn-gray btn-icon-only" title="Cambiar a vista de lista">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          <button id="btn-vista-lista" onclick="alternarVistaHistorial()" class="btn-vista-cuadrado" title="Cambiar a vista de lista">
+            <span id="ico-vista-lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span>
           </button>
         </div>
 
-        <div id="history-container" class="history-grid"></div>
+        <!-- Sin tarjeta blanca envolvente: cada factura flota como su
+             propia tarjeta, con el mismo ancho que las barras de arriba -->
+        <div id="pagina-resultados-historial">
+          <div id="history-container" class="history-grid"></div>
+        </div>
 
         <!-- Pie fijo: nº de facturas del rango a la izquierda, importe total
              a la derecha. Solo tiene datos cuando hay un rango de fechas. -->
@@ -977,7 +1141,7 @@
         <button id="btn-tab-history" onclick="cambiarPestana('history')" class="nav-btn inactive">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
           <span id="txt-tab-history">Historial</span>
-          <span id="history-badge" style="background: #ffffff; color: #111827; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">0</span>
+          <span id="history-badge" style="background: #ffffff; color: #000000; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">0</span>
         </button>
       </div>
     </nav>
@@ -1061,7 +1225,7 @@
             </div>
             <div class="config-row hidden" id="logo-preview-box">
               <label>Vista previa sobre la caja negra:</label>
-              <div style="background:#111827; border-radius:8px; padding:10px; display:flex; justify-content:center;"><img id="logo-preview" alt="preview" style="max-height:40px; max-width:100%; object-fit:contain;" /></div>
+              <div style="background:#000; border-radius:8px; padding:10px; display:flex; justify-content:center;"><img id="logo-preview" alt="preview" style="max-height:40px; max-width:100%; object-fit:contain;" /></div>
             </div>
           </div>
         </div>
@@ -1223,6 +1387,7 @@
         refrescarEstadoBotones();
         cargarCfgFx();
         try { modoArticulos = localStorage.getItem("agx_modo_articulos") === "uno" ? "uno" : "multi"; } catch (e) {}
+        try { vistaHistorial = localStorage.getItem("agx_vista_historial") === "lista" ? "lista" : "tarjeta"; } catch (e) {}
         cargarCfgMenu();
         sincronizarLogoMenu();
         // iOS no deja sonar audio sin un gesto previo: arrancamos al primer toque
@@ -1288,7 +1453,12 @@
         // escala salía negativa: la hoja desaparecía. Usamos un ancho de respaldo.
         let ancho = wrapper.parentElement.clientWidth;
         if (!ancho) ancho = document.querySelector(".main-container").clientWidth || window.innerWidth;
-        const escala = Math.min(1, Math.max(0.1, (ancho - 24) / 794));
+        // Antes se restaban 24px EXTRA aquí, además del padding que ya
+        // aporta .main-container — por eso la hoja quedaba más estrecha y
+        // más metida hacia dentro que el resto de pestañas. Ahora usa el
+        // mismo ancho disponible que Datos, Historial y Artículos, para
+        // que todas las "páginas" midan exactamente lo mismo.
+        const escala = Math.min(1, Math.max(0.1, ancho / 794));
         wrapper.classList.add("fit");
         aplicarEscalaPapel(escala);
         posicionarTextoBarra();
@@ -1427,11 +1597,14 @@
           wrap.style.opacity = "1";
         });
 
-        document.getElementById("ast-atras").style.visibility = astPaso === 0 ? "hidden" : "visible";
-        document.getElementById("ast-titulo").innerText = T().titulo;
+        // La pregunta de cada paso vive en la propia barra negra — ya no
+        // se repite dentro del contenido, como pasaba antes.
+        document.getElementById("ast-atras-ico").style.display = astPaso === 0 ? "none" : "inline";
+        const titulosPaso = { categoria: T().pregCat, etiquetas: T().pregEtqOtros, cantidad: T().pregCant, precio: T().pregPrecio, descripcion: T().pregDesc, confirmar: T().titulo };
+        document.getElementById("ast-titulo").innerText = titulosPaso[nombrePaso] || T().titulo;
 
         if (nombrePaso === "categoria") {
-          let html = `<p class="ast-preg">${T().pregCat}</p><div class="ast-lista-cat">`;
+          let html = `<div class="ast-lista-cat">`;
           Object.keys(CATALOGO_ARTICULOS).forEach((cat) => {
             const t = CATALOGO_ARTICULOS[cat][idiomaActual] || CATALOGO_ARTICULOS[cat].es;
             html += `<button class="ast-cat-btn" onclick="elegirCategoria('${cat}')"><span>${t.nombre}</span><span class="flecha">›</span></button>`;
@@ -1440,23 +1613,21 @@
           paso.innerHTML = html;
           document.getElementById("ast-btn-siguiente").style.display = "none";
         } else if (nombrePaso === "etiquetas") {
-          paso.innerHTML = `<p class="ast-preg">${T().pregEtqOtros}</p>
-            <div class="ast-campo"><label>${T().etqCantOtros}</label><input id="ast-in-etqcant" type="text" value="${astDatos.etqCant}" placeholder="Cajas" /></div>
+          paso.innerHTML = `<div class="ast-campo"><label>${T().etqCantOtros}</label><input id="ast-in-etqcant" type="text" value="${astDatos.etqCant}" placeholder="Cajas" /></div>
             <div class="ast-campo"><label>${T().etqPrecioOtros}</label><input id="ast-in-etqprecio" type="text" value="${astDatos.etqPrecio}" placeholder="€/Caja" /></div>`;
           mostrarBotonSiguiente();
         } else if (nombrePaso === "cantidad") {
           const et = astCategoria === "otros" ? astDatos.etqCant : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es).cant;
-          paso.innerHTML = `<p class="ast-preg">${T().pregCant}</p><p class="ast-sub-grande">${et}</p>
+          paso.innerHTML = `<p class="ast-sub-grande">${et}</p>
             <div class="ast-campo ast-campo-grande"><input id="ast-in-cant" type="number" step="0.01" value="${astDatos.cant}" placeholder="0" inputmode="decimal" /></div>`;
           mostrarBotonSiguiente();
         } else if (nombrePaso === "precio") {
           const et = astCategoria === "otros" ? astDatos.etqPrecio : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es).precio;
-          paso.innerHTML = `<p class="ast-preg">${T().pregPrecio}</p><p class="ast-sub-grande">${et}</p>
+          paso.innerHTML = `<p class="ast-sub-grande">${et}</p>
             <div class="ast-campo ast-campo-grande"><input id="ast-in-precio" type="number" step="0.01" value="${astDatos.precio}" placeholder="0" inputmode="decimal" /></div>`;
           mostrarBotonSiguiente();
         } else if (nombrePaso === "descripcion") {
-          paso.innerHTML = `<p class="ast-preg">${T().pregDesc}</p>
-            <div class="ast-campo"><div id="ast-in-desc" contenteditable="true" data-placeholder="${T().descPlaceholder}">${astDatos.desc}</div></div>`;
+          paso.innerHTML = `<div class="ast-campo"><div id="ast-in-desc" contenteditable="true" data-placeholder="${T().descPlaceholder}">${astDatos.desc}</div></div>`;
           mostrarBotonSiguiente();
         } else if (nombrePaso === "confirmar") {
           const et = astCategoria === "otros" ? { cant: astDatos.etqCant, precio: astDatos.etqPrecio } : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es);
@@ -1465,7 +1636,7 @@
           if (astCategoria !== "fijo") filas += `<div><span>${et.cant}</span><span>${astDatos.cant || 0}</span></div>`;
           filas += `<div><span>${et.precio}</span><span>${astDatos.precio || 0}</span></div>`;
           filas += `<div><span>TOTAL</span><span>${formatEuro(total)}</span></div>`;
-          paso.innerHTML = `<p class="ast-preg">${T().titulo}</p><div class="ast-resumen">${filas}</div>`;
+          paso.innerHTML = `<div class="ast-resumen">${filas}</div>`;
           const btn = document.getElementById("ast-btn-siguiente");
           btn.style.display = "block";
           btn.innerText = T().insertar;
@@ -1664,9 +1835,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.2.0";
+      const VERSION = "2.7.1";
       const VERSION_FECHA = "11/08/2026";
-      const VERSION_NOTAS = "Consistencia visual: un único negro (#111827) en toda la app, arreglado el hueco sin espacio entre etiqueta e importe en los totales, redondeo reforzado en la barra negra, y arreglado el zoom atascado en modo móvil (el CSS que lo prevenía apuntaba a una tabla que ya no existe). Añadir ahora tiene la misma altura mínima que Datos e Historial.";
+      const VERSION_NOTAS = "Los cuatro botones de la cabecera (logo AGX, calendario, tres puntos) miden ahora exactamente 42x42 con 10px de radio, igual que el cuadrado de vista tarjeta/lista — antes estaban en 38px (32px el logo). Confirmado también que el hueco entre columnas de tarjetas coincide con el de la barra: los dos usan 10px.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -1700,6 +1871,16 @@
           ok: [["t", 24, 0.07, "triangle", 0.09], ["t", 31, 0.13, "sine", 0.07]],
           error: [["t", 8, 0.12, "square", 0.08], ["t", 2, 0.18, "square", 0.07]],
           elegir: [["t", 28, 0.08, "triangle", 0.08]],
+          // Gotas de agua: dos "blop" separados, uno por cada mitad que se
+          // aparta. El seno puro con caída rápida es lo que da ese timbre
+          // redondo de gota, en vez del tintineo cristalino del resto.
+          gotaSepara: [["t", 26, 0.09, "sine", 0.1], ["t", 21, 0.13, "sine", 0.09]],
+          // Al unirse, los dos blops convergen hacia la misma nota
+          gotaUne: [["t", 19, 0.1, "sine", 0.09], ["t", 24, 0.14, "sine", 0.1]],
+          // Muchas gotas pequeñas dispersándose (tarjetas separándose)
+          gotasDispersan: [["t", 22, 0.06, "sine", 0.07], ["t", 27, 0.09, "sine", 0.07], ["t", 31, 0.12, "sine", 0.06]],
+          // Muchas gotas juntándose en una (tarjetas apilándose)
+          gotasJuntan: [["t", 31, 0.06, "sine", 0.06], ["t", 26, 0.09, "sine", 0.07], ["t", 20, 0.13, "sine", 0.08]],
         },
       };
 
@@ -1793,6 +1974,9 @@
         nav: 10, abrir: [0, 14, 30, 18], foco: 6, anadir: [0, 12, 24, 14], quitar: [0, 26, 30, 14],
         guardar: [0, 18, 40, 22], pdf: [0, 16, 30, 16, 30, 20], eco: [0, 16, 40, 16], nuevo: [0, 12, 30, 16],
         vista: 10, ajustes: 8, arrastrar: 4, ok: [0, 18, 40, 22], error: [0, 40, 60, 40], elegir: [0, 12, 26, 14],
+        // Dos toques separados = dos gotas; tres = varias dispersándose
+        gotaSepara: [0, 10, 60, 10], gotaUne: [0, 10, 40, 14],
+        gotasDispersan: [0, 8, 30, 8, 30, 8], gotasJuntan: [0, 8, 30, 8, 30, 12],
       };
       function vibrar(tipo) {
         if (!cfgFx.vibrar) return;
@@ -2281,8 +2465,6 @@
         if (!origen) return;
         const menu = document.getElementById("menu-logo");
         if (menu) menu.innerHTML = origen.innerHTML;
-        const hist = document.getElementById("bh-logo");
-        if (hist) hist.innerHTML = origen.innerHTML;
       }
 
       function formatEuro(monto) { return "€" + (Number(monto) || 0).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -2368,7 +2550,7 @@
       }
 
       function sincronizarClaseModoAsistente() {
-        const card = document.querySelector(".art-asistente-card");
+        const card = document.getElementById("view-articulos");
         if (!card) return;
         card.classList.toggle("modo-uno", modoArticulos === "uno");
         card.classList.toggle("modo-multi", modoArticulos !== "uno");
@@ -2983,7 +3165,7 @@
         // cada categoría (Horas, Kilómetros...) al idioma nuevo
         renderizarServicios();
         setVal("lbl-subtotal", t.subtotal); setVal("lbl-tax", t.tax); setVal("lbl-total", t.total); 
-        setVal("txt-hist-title", t.histTitle); setVal("txt-hist-desc", t.histDesc); setVal("txt-tab-template", t.tabTemplate); setVal("txt-tab-history", t.tabHistory); setVal("txt-tab-datos", t.tabDatos);
+        setVal("txt-tab-template", t.tabTemplate); setVal("txt-tab-history", t.tabHistory); setVal("txt-tab-datos", t.tabDatos);
         setVal("menu-txt-factura", t.tabTemplate); setVal("menu-txt-datos", t.tabDatos); setVal("menu-txt-historial", t.tabHistory);
         // Etiquetas de Empresa y Banco: si las renombraste EN ESTE idioma se
         // respeta tu texto; si no, se traducen solas.
@@ -3081,15 +3263,6 @@
       };
 
       let misDatos = [];
-
-      function toggleMisDatos() {
-        fx(document.getElementById("cuerpo-mis-datos").classList.contains("hidden") ? "desplegar" : "cerrar");
-        const c = document.getElementById("cuerpo-mis-datos");
-        const f = document.getElementById("flecha-mis-datos");
-        const abierto = !c.classList.contains("hidden");
-        c.classList.toggle("hidden", abierto);
-        f.style.transform = abierto ? "rotate(0deg)" : "rotate(180deg)";
-      }
 
       function cargarMisDatos(aplicar = true) {
         try {
@@ -3447,22 +3620,50 @@
 
       function toggleBusquedaHistorial() {
         busquedaHistorialAbierta = !busquedaHistorialAbierta;
-        fx(busquedaHistorialAbierta ? "desplegar" : "cerrar");
-        document.getElementById("modo-titulo-historial").classList.toggle("hidden", busquedaHistorialAbierta);
-        document.getElementById("modo-busqueda-historial").classList.toggle("hidden", !busquedaHistorialAbierta);
+        fx(busquedaHistorialAbierta ? "gotaSepara" : "gotaUne");
+        // Recorte animado: se abren o cierran como una puerta de dos
+        // hojas desde el centro, en vez de aparecer/desaparecer de golpe
+        // Una sola clase sobre la barra: el CSS se encarga de que el campo
+        // se parta en dos o se vuelva a unir. No hay elementos que ocultar.
+        document.getElementById("barra-historial").classList.toggle("modo-fechas", busquedaHistorialAbierta);
         if (!busquedaHistorialAbierta) {
           setVal("hist-fecha-desde", ""); setVal("hist-fecha-hasta", "");
           document.getElementById("pie-historial").classList.add("hidden");
+          document.getElementById("pagina-resultados-historial").classList.remove("con-pie-fijo");
         }
         renderizarHistorial();
       }
 
       function filtrarHistorialPorFecha() { renderizarHistorial(); }
 
+      // Cambiar de tarjeta a lista NO reconstruye nada: si se recreara el
+      // HTML, las tarjetas nuevas aparecerían ya en su tamaño final y
+      // ninguna transición CSS llegaría a animar (mismo motivo por el que
+      // no había animación en el asistente de artículos hace unas rondas).
+      // Aquí solo se cambia la clase sobre los nodos que ya existen.
       function alternarVistaHistorial() {
-        fx("vista");
         vistaHistorial = vistaHistorial === "tarjeta" ? "lista" : "tarjeta";
-        renderizarHistorial();
+        // Gotas que se juntan al apilarse en lista, y que se dispersan al
+        // volver a extenderse en tarjetas
+        fx(vistaHistorial === "lista" ? "gotasJuntan" : "gotasDispersan");
+        const btn = document.getElementById("btn-vista-lista");
+        if (btn) { btn.classList.remove("girando"); void btn.offsetWidth; btn.classList.add("girando"); }
+        const container = document.getElementById("history-container");
+        if (container) container.classList.toggle("vista-lista", vistaHistorial === "lista");
+        actualizarIconoVista();
+        try { localStorage.setItem("agx_vista_historial", vistaHistorial); } catch (e) {}
+      }
+
+      function actualizarIconoVista() {
+        const btnVista = document.getElementById("btn-vista-lista");
+        if (!btnVista) return;
+        btnVista.title = vistaHistorial === "lista" ? "Ver como tarjetas" : "Ver como lista";
+        const ico = document.getElementById("ico-vista-lista");
+        if (ico) {
+          ico.innerHTML = vistaHistorial === "lista"
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
+        }
       }
 
       function renderizarHistorial() {
@@ -3484,29 +3685,46 @@
             });
           }
           const pie = document.getElementById("pie-historial");
+          const pagina = document.getElementById("pagina-resultados-historial");
           if (desde || hasta) {
             const total = filtradas.reduce((sum, f) => sum + (Number(f.total) || 0), 0);
             setVal("pie-hist-cuenta", `${filtradas.length} factura${filtradas.length === 1 ? "" : "s"}`);
             setVal("pie-hist-total", formatEuro(total));
             pie.classList.remove("hidden");
+            // Como la barra ahora es "fixed" (fuera del flujo normal), hay
+            // que dejarle hueco a la lista para que no tape la última
+            // factura al hacer scroll hasta el final.
+            pagina.classList.add("con-pie-fijo");
           } else {
             pie.classList.add("hidden");
+            pagina.classList.remove("con-pie-fijo");
           }
         }
 
         container.className = "history-grid" + (vistaHistorial === "lista" ? " vista-lista" : "");
         const btnVista = document.getElementById("btn-vista-lista");
-        if (btnVista) btnVista.title = vistaHistorial === "lista" ? "Ver como tarjetas" : "Ver como lista";
+        if (btnVista) actualizarIconoVista();
 
         if (filtradas.length === 0) { container.innerHTML = `<div style="background:#ffffff; padding:20px; border-radius:12px; text-align:center; color:#6b7280; font-size:12px;">No hay facturas guardadas.</div>`; return; }
         container.innerHTML = "";
-        filtradas.forEach((f) => {
+        filtradas.forEach((f, i) => {
           const div = document.createElement("div"); div.className = "history-card"; div.onclick = () => cargarFactura(f.invoiceNo);
-          if (vistaHistorial === "lista") {
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><div style="min-width:0;"><span style="font-weight:800; font-size:13px;">N° ${f.invoiceNo} · ${f.clientName}</span><p style="font-size:10.5px; color:#6b7280;">${f.issueDate}</p></div><div style="display:flex; align-items:center; gap:10px; flex-shrink:0;"><span style="font-size:14px; font-weight:900;">${formatEuro(f.total)}</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">✕</button></div></div>`;
-          } else {
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#111827; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`;
-          }
+          div.style.transitionDelay = Math.min(i * 0.03, 0.3) + "s";
+          // Una única fila — la misma en los dos modos — así pasar de
+          // tarjeta a lista es literalmente esta barra encogiéndose, no
+          // un cambio de estructura. Sin "Toca para cargar": la propia
+          // tarjeta ya es el botón para cargarla, no hace falta decirlo.
+          // El número va en su propia línea arriba: si es muy largo
+          // (p.ej. 00001220) ya no empuja ni descoloca el resto del texto.
+          div.innerHTML = `<span class="hc-badge">N° ${f.invoiceNo}</span>
+            <div class="hc-cuerpo">
+              <div class="hc-info">
+                <h3 class="hc-nombre">${f.clientName || "Sin nombre"}</h3>
+                <p class="hc-fechas">${f.issueDate} • Vence: ${f.dueDate || ""}</p>
+              </div>
+              <span class="hc-total">${formatEuro(f.total)}</span>
+              <button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" class="hc-eliminar" title="Eliminar">✕</button>
+            </div>`;
           container.appendChild(div);
         });
       }
