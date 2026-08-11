@@ -63,34 +63,141 @@
       .logo-agx.con-imagen { padding: 5px 8px; }
       .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
       .btn-group { display: flex; gap: 7px; align-items: center; }
-      /* ===== Pantalla de configuración de la tabla ===== */
-      .pantalla-full { position: fixed; inset: 0; background: #f3f4f6; z-index: 3500; display: flex; flex-direction: column; }
-      .pantalla-full.hidden { display: none; }
+      /* ===== Asistente en línea (dentro de la pestaña "Añadir") ===== */
+      .art-asistente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+      .pt-cab-inline { border-radius: 14px 14px 0 0; padding: 12px 12px; }
+      .ast-pasos-wrap-inline { min-height: 220px; position: relative; overflow: hidden; }
+      .ast-pie-inline { border-radius: 0 0 14px 14px; padding: 12px; }
       .pt-cab { background: #fff; border-bottom: 1px solid #e5e7eb; padding: calc(10px + var(--safe-top)) 12px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
       .pt-atras { background: none; border: none; font-size: 26px; line-height: 1; color: #6b7280; cursor: pointer; padding: 0 4px; }
-      .pt-tit { font-size: 15px; font-weight: 800; }
+      .pt-tit { font-size: 15px; font-weight: 800; flex: 1; text-align: center; }
       .pt-listo { margin-left: auto; background: #111827; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 12px; font-weight: 800; cursor: pointer; }
-      .pt-cuerpo { flex: 1; overflow-y: auto; padding: 14px 12px calc(30px + var(--safe-bottom)); }
+      .pt-cuerpo { flex: 1; overflow-y: auto; padding: 14px 12px 16px; }
       .pt-sec { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; margin: 20px 2px 4px; }
       .pt-sec:first-child { margin-top: 0; }
       .pt-ayuda { font-size: 11.5px; color: #9ca3af; margin: 0 2px 10px; line-height: 1.4; }
-      .pt-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .pt-tipo { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 11px; padding: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; text-align: left; color: #111827; }
-      .pt-tipo small { display: block; font-size: 10px; font-weight: 500; color: #9ca3af; margin-top: 2px; }
-      .pt-tipo.on { background: #111827; border-color: #111827; color: #fff; }
-      .pt-tipo.on small { color: rgba(255,255,255,0.6); }
-      .pt-col { background: #fff; border: 1px solid #e5e7eb; border-radius: 11px; padding: 10px 12px; margin-bottom: 7px; display: flex; align-items: center; gap: 10px; }
-      .pt-col input { flex: 1; min-width: 0; border: none; background: none; font-size: 13px; font-weight: 700; color: #111827; padding: 2px 0; }
-      .pt-col input:disabled { color: #6b7280; }
-      .pt-col .et { font-size: 9px; font-weight: 700; text-transform: uppercase; background: #eef0f3; color: #6b7280; padding: 3px 7px; border-radius: 5px; flex-shrink: 0; }
-      .pt-col .et.calc { background: #111827; color: #fff; }
-      .pt-col.apagada { opacity: 0.5; }
-      .et-candado { color: #9ca3af; flex-shrink: 0; display: flex; }
-      .pt-anadir { width: 100%; border: 1.5px dashed #cbd5e1; background: none; border-radius: 11px; padding: 12px; font-size: 12px; font-weight: 700; color: #6b7280; cursor: pointer; }
-      .pt-previa { background: #fff; border: 1px solid #e5e7eb; border-radius: 11px; overflow: hidden; }
+
+      /* ===== Barra negra fija + franjas grises por categoría ===== */
+      .barra-negra-articulos { background: #111827; color: #fff; border-radius: 10px 10px 0 0; padding: 9px 12px; display: grid; grid-template-columns: 2fr 1fr 1fr; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+      .barra-negra-articulos span:nth-child(2), .barra-negra-articulos span:nth-child(3) { text-align: right; }
+
+      /* Cada grupo (categoría) es un bloque independiente y redondeado,
+         con su propio hueco respecto al siguiente — ya no cuelgan todos
+         de una barra negra compartida, así nada puede desalinearse. */
+      .grupo-articulos { border: 1px solid #e5e7eb; border-radius: 11px; overflow: hidden; margin-bottom: 8px; }
+      .grupo-articulos:last-child { margin-bottom: 0; }
+      .grupo-cab {
+        background: #eef0f3; color: #4b5563;
+        display: grid; grid-template-columns: 1.6fr 0.9fr 0.9fr 0.9fr 26px; gap: 6px;
+        padding: 7px 10px; font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      /* La cabecera reservaba siempre 26px para la columna de la ✕, pero en
+         modo lectura esa columna no existe y las filas no la reservan —
+         eso descuadraba los números respecto a su etiqueta. Ahora la
+         cabecera usa exactamente la MISMA rejilla que sus propias filas,
+         tanto si hay ✕ como si no, y tanto si es "Importe fijo" (3
+         columnas reales) como el resto (4). */
+      .grupo-cab-lectura { grid-template-columns: 1.6fr 0.9fr 0.9fr 0.9fr; }
+      .grupo-cab-fijo { grid-template-columns: 1.6fr 1.8fr 0.9fr 26px; }
+      .grupo-cab-fijo.grupo-cab-lectura { grid-template-columns: 1.6fr 1.8fr 0.9fr; }
+      /* Modo "un artículo": esta ES la cabecera principal, en negro,
+         igual de protagonista que antes lo era la barra genérica */
+      .grupo-cab-negra { background: #111827; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; }
+      .grupo-solo { border: none; border-radius: 11px; }
+      .grupo-cab span { text-align: center; }
+      .gc-desc { text-align: left !important; }
+      .grupo-fila {
+        display: grid; grid-template-columns: 1.6fr 0.9fr 0.9fr 0.9fr 26px; gap: 6px; align-items: center;
+        padding: 8px 10px; border-bottom: 1px solid #f3f4f6; background: #fff;
+      }
+      .grupo-fila-fijo { grid-template-columns: 1.6fr 1.8fr 0.9fr 26px; }
+      .grupo-fila:last-child { border-bottom: none; }
+      .gf-desc { font-size: 12px; font-weight: 600; padding: 5px 6px; min-width: 0; }
+      .gf-cant, .gf-precio { width: 100%; text-align: center; font-size: 12px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 5px 3px; min-width: 0; }
+      .gf-total { text-align: right; font-weight: 800; font-size: 12px; font-variant-numeric: tabular-nums; }
+      .gf-x { width: 22px; height: 22px; font-size: 11px; }
+      /* Solo lectura (Factura): sin recuadro de input, texto plano */
+      .grupo-fila-lectura { grid-template-columns: 1.6fr 0.9fr 0.9fr 0.9fr; }
+      .grupo-fila-lectura.grupo-fila-fijo { grid-template-columns: 1.6fr 1.8fr 0.9fr; }
+      .grupo-fila-lectura .gf-cant, .grupo-fila-lectura .gf-precio { text-align: center; font-size: 12px; border: none; background: none; padding: 5px 3px; }
+
+      .btn-anadir-articulo {
+        width: 100%; margin-top: 4px; background: #111827; color: #fff; border: none;
+        border-radius: 11px; padding: 13px; font-size: 13.5px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer;
+      }
+      .btn-anadir-articulo:active { transform: scale(0.98); }
+
+      /* ================= ASISTENTE POR PASOS =================
+         Cada paso es una "página" a ancho completo; avanzar/retroceder
+         desliza horizontalmente con una transición suave, como un stepper
+         nativo. Solo una página es visible cada vez. */
+      .ast-pasos-wrap { flex: 1; overflow: hidden; position: relative; }
+      .ast-pasos { height: 100%; }
+      .ast-paso { width: 100%; height: 100%; overflow-y: auto; padding: 18px 16px 24px; box-sizing: border-box; }
+
+      .ast-preg { font-size: 17px; font-weight: 800; color: #111827; margin-bottom: 4px; }
+      .ast-sub { font-size: 12px; color: #9ca3af; margin-bottom: 18px; }
+
+      /* Lista de categorías: rectángulos negros, uno debajo de otro */
+      .ast-lista-cat { display: flex; flex-direction: column; gap: 9px; }
+      .ast-cat-btn {
+        background: #111827; color: #fff; border: none; border-radius: 13px;
+        padding: 15px 16px; font-size: 14px; font-weight: 700; text-align: left;
+        cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+        transition: transform 0.12s ease, background 0.25s ease, color 0.25s ease;
+      }
+      .ast-cat-btn:active { transform: scale(0.98); }
+      .ast-cat-btn .flecha { opacity: 0.5; font-size: 16px; }
+      /* Truco visual para saber en qué modo estás sin mirar el icono de la
+         cabecera: las píldoras de categoría se quedan negras en "un
+         artículo", y pasan a gris (el mismo tono que la barra de las
+         tablas agrupadas) en "multiartículos". */
+      .art-asistente-card.modo-uno .ast-cat-btn { background: #111827; color: #fff; }
+      .art-asistente-card.modo-multi .ast-cat-btn { background: #eef0f3; color: #4b5563; }
+      .art-asistente-card.modo-multi .ast-cat-btn .flecha { opacity: 0.4; }
+
+      /* Campos del asistente (cantidad, precio, descripción...) */
+      .ast-campo { margin-bottom: 16px; }
+      .ast-campo label { display: block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #9ca3af; margin-bottom: 7px; }
+      .ast-campo input, .ast-campo [contenteditable] {
+        width: 100%; box-sizing: border-box; background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px;
+        padding: 13px 14px; font-size: 16px; font-weight: 600; color: #111827;
+      }
+      .ast-campo input:focus, .ast-campo [contenteditable]:focus { outline: none; border-color: #111827; background: #fff; }
+      .ast-campo [contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; font-weight: 500; }
+
+      /* Pasos de cantidad/precio: un único número, grande y centrado, tipo
+         calculadora — es el dato más importante del paso, debe notarse. */
+      .ast-campo-grande input {
+        font-size: 34px; font-weight: 800; text-align: center; padding: 20px 14px;
+        border-radius: 16px; letter-spacing: 0.5px;
+      }
+      .ast-sub-grande { font-size: 14px; font-weight: 700; color: #6b7280; text-align: center; margin-bottom: 16px; }
+
+      /* Resumen del último paso, antes de insertar */
+      .ast-resumen { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; font-size: 13px; }
+      .ast-resumen div { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+      .ast-resumen div:last-child { border-bottom: none; font-weight: 800; }
+
+      .ast-pie { flex-shrink: 0; padding: 12px 16px calc(14px + var(--safe-bottom)); background: #fff; border-top: 1px solid #e5e7eb; }
+      .ast-btn-siguiente { width: 100%; background: #111827; color: #fff; border: none; border-radius: 13px; padding: 15px; font-size: 14px; font-weight: 800; cursor: pointer; }
+      .ast-btn-siguiente:active { transform: scale(0.98); }
+
+
+      /* Vista previa: fija al pie de la pantalla, no se mueve con el scroll */
+      .pt-previa-fija { flex-shrink: 0; background: #f3f4f6; border-top: 1px solid #e5e7eb; padding: 10px 12px calc(12px + var(--safe-bottom)); }
+      .pt-previa-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+      /* Selector pequeño para elegir el tipo de una línea cuando hay más
+         de un tipo activo en la factura */
+      .chip-tipo-linea { display: block; margin-bottom: 4px; font-size: 9.5px; font-weight: 700; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 5px; background: #f9fafb; color: #6b7280; max-width: 140px; }
+      .pt-add-linea { width: 30px; height: 30px; border-radius: 9px; background: #111827; color: #fff; border: none; font-size: 18px; font-weight: 800; line-height: 1; cursor: pointer; }
+      .pt-previa { background: #fff; border: 1px solid #e5e7eb; border-radius: 11px; overflow: hidden; max-height: 30vh; overflow-y: auto; }
       .pt-previa table { width: 100%; border-collapse: collapse; font-size: 10px; }
-      .pt-previa th { background: #111827; color: #fff; padding: 8px 6px; font-size: 8.5px; text-transform: uppercase; text-align: left; }
+      .pt-previa th { background: #111827; color: #fff; padding: 8px 6px; font-size: 8.5px; text-transform: uppercase; text-align: left; position: sticky; top: 0; }
       .pt-previa td { padding: 8px 6px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+
 
       /* ===== CABECERA: píldora del número + menú de acciones ===== */
       .pastilla-num { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; width: 38px; padding: 0; border-radius: 10px; border: none; background: #111827; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; }
@@ -98,12 +205,42 @@
       .pastilla-num:active { transform: scale(0.97); }
       .pastilla-num.hidden { display: none; }
 
+      /* ===== HISTORIAL: barra negra + búsqueda por fechas ===== */
+      .barra-historial { background: #111827; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; min-height: 58px; display: flex; align-items: center; }
+      .bh-titulo { display: flex; align-items: center; gap: 12px; width: 100%; }
+      .bh-logo { background: #ffffff; color: #111827; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; padding: 7px 10px; border-radius: 8px; flex-shrink: 0; }
+      .bh-h2 { font-size: 15px; font-weight: 800; color: #ffffff; }
+      .bh-p { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+      .bh-busqueda { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; }
+      .bh-busqueda.hidden { display: none; }
+      .bh-fecha { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+      .bh-fecha label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; }
+      .bh-fecha input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); color: #fff; border-radius: 8px; padding: 6px 9px; font-size: 12px; color-scheme: dark; }
+      .bh-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+      .bh-search { flex: 1; padding: 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; }
+      .pie-historial { position: sticky; bottom: 0; background: #111827; color: #fff; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-top: 12px; }
+      .pie-historial.hidden { display: none; }
+      #pie-hist-cuenta { color: #d1d5db; font-weight: 600; font-size: 12px; }
+      /* Vista lista: filas compactas en vez de tarjetas */
+      .history-grid.vista-lista { display: flex; flex-direction: column; gap: 0; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
+      .history-grid.vista-lista .history-card { border-radius: 0; border: none; border-bottom: 1px solid #f3f4f6; padding: 10px 14px; }
+      .history-grid.vista-lista .history-card:last-child { border-bottom: none; }
+
       .hoja-fondo { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(3px); z-index: 3000; display: flex; align-items: flex-end; }
       .hoja-fondo.hidden { display: none; }
-      .hoja-panel { width: 100%; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: #ffffff; border-radius: 20px 20px 0 0; padding: 10px 14px calc(18px + var(--safe-bottom)); animation: subir 0.22s ease-out; max-height: 82vh; overflow-y: auto; }
+      /* Botón de Ajustes flotante: aparece en TODOS los paneles, esquina
+         superior derecha, por encima del contenido y separado del borde.
+         Rojo oscuro, del mismo tono que los negros de la app. */
+      .btn-ajustes-flotante { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 10px; border: none; background: #7f1d1d; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+      .btn-ajustes-flotante svg { width: 18px; height: 18px; }
+      .hoja-panel { position: relative; width: 100%; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: #ffffff; border-radius: 20px 20px 0 0; padding: 10px 14px calc(18px + var(--safe-bottom)); animation: subir 0.22s ease-out; max-height: 82vh; overflow-y: auto; }
       @keyframes subir { from { transform: translateY(100%); } to { transform: translateY(0); } }
       .hoja-tira { width: 38px; height: 4px; background: #d1d5db; border-radius: 2px; margin: 0 auto 12px; }
-      .hoja-titulo { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; padding: 0 4px 10px; }
+      /* El botón rojo flotante y la cabecera del modal chocaban (la ✕ de
+         cerrar quedaba justo debajo/al lado del rojo). Un pequeño margen
+         basta para separarlos sin dejar un hueco grande. */
+      #modal-clientes .modal-header { margin-top: 30px; }
+      .hoja-titulo { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; padding: 0 4px 10px; margin-top: 6px; }
       .hoja-item { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none; padding: 14px 6px; font-size: 15px; font-weight: 600; color: #111827; cursor: pointer; border-bottom: 1px solid #f3f4f6; text-align: left; }
       .hoja-item:last-child { border-bottom: none; }
       .hoja-item svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -121,9 +258,12 @@
       .btn-black { background-color: #000000; color: #ffffff; }
       .btn-gray { background-color: #e5e7eb; color: #374151; }
             .nav-grid { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; height: 44px; }
+            .nav-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
       .nav-btn span { white-space: nowrap; }
       .nav-btn svg { width: 17px; height: 17px; }
       .nav-btn { border-radius: 12px; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; height: 100%;}
+      .nav-grid-4 .nav-btn { font-size: 9.5px; gap: 3px; padding: 0 2px; }
+      .nav-grid-4 .nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
       .nav-btn.active { background-color: #000000; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
       .nav-btn.inactive { background-color: #e5e7eb; color: #4b5563; }
 
@@ -191,8 +331,8 @@
       .field-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; margin-bottom: 2px;}
       /* Ancho fijo: así los textos editables arrancan todos en la misma
          columna aunque la etiqueta sea corta ("NAME:") o larga ("KVK NO:"). */
-      .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; padding-top: 2px; width: 74px; flex-shrink: 0; }
-      .field-row { display: grid; grid-template-columns: 74px 1fr; align-items: start; gap: 6px; }
+      .field-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; padding-top: 2px; line-height: 1.25; word-break: break-word; }
+      .field-row { display: grid; grid-template-columns: minmax(58px, 82px) 1fr; align-items: start; gap: 6px; }
       .box-white .field-label { color: #6b7280; } .box-black .field-label { color: #9ca3af; }
 
       /* CAMPOS MULTILÍNEA */
@@ -244,6 +384,7 @@
       .footer-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 9px; }
       .ico-box { width: 14px; height: 14px; }
       .ico-pie { width: 34px; height: 34px; }
+      .ico-banco { transform: translateY(-2px); }
       /* Sin caja gris: el icono solo, más grande (ocupa lo que antes
          ocupaba el rectángulo entero) */
       .footer-icon { display: flex; align-items: center; justify-content: center; color: #111827; flex-shrink: 0; }
@@ -274,7 +415,10 @@
       .history-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
 
       .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-      .modal-card { overscroll-behavior: contain; background: #ffffff; border-radius: 18px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 8px; max-height: 85vh; overflow-y: auto; }
+      /* Ajustes debe quedar SIEMPRE por encima de cualquier hoja/panel,
+         nunca tapado por ellos (z-index de .hoja-fondo es 3000). */
+      #modal-opciones.modal-overlay { z-index: 4200; }
+      .modal-card { position: relative; overscroll-behavior: contain; background: #ffffff; border-radius: 18px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 8px; max-height: 85vh; overflow-y: auto; }
       .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 8px; }
       .modal-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
       
@@ -528,32 +672,11 @@
 
 
 
-    <!-- CONFIGURAR TABLA -->
-    <div id="pantalla-tabla" class="pantalla-full hidden">
-      <div class="pt-cab">
-        <button onclick="cerrarConfigTabla()" class="pt-atras">‹</button>
-        <span class="pt-tit">Configurar tabla</span>
-        <button onclick="cerrarConfigTabla()" class="pt-listo">Listo</button>
-      </div>
-      <div class="pt-cuerpo">
-        <p class="pt-sec">Tipos de línea</p>
-        <p class="pt-ayuda">Activa todos los que necesites. Si eliges varios, cada línea de la factura podrá ser de un tipo distinto.</p>
-        <div id="pt-tipos" class="pt-tipos"></div>
-
-        <p class="pt-sec">Columnas</p>
-        <p class="pt-ayuda">Apágalas para ocultarlas sin perderlas. Toca el nombre para cambiarlo.</p>
-        <div id="pt-columnas"></div>
-        <button onclick="anadirColumnaTexto()" class="pt-anadir">+ Añadir columna de texto</button>
-
-        <p class="pt-sec">Así quedará</p>
-        <div id="pt-previa" class="pt-previa"></div>
-      </div>
-    </div>
-
     <!-- HOJA DE ACCIONES -->
     <div id="hoja-acciones" class="hoja-fondo hidden" onclick="cerrarMenuAcciones(event)">
       <div class="hoja-panel" onclick="event.stopPropagation()">
         <div class="hoja-tira"></div>
+        <button class="btn-ajustes-flotante no-print" onclick="abrirAjustesDesdePanel()" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
         <div id="hoja-titulo" class="hoja-titulo">Factura Nº 1</div>
         <div id="hoja-lista"></div>
       </div>
@@ -563,9 +686,12 @@
     <header class="app-header no-print">
       <div id="app-logo-box" class="logo-agx" onclick="volverAlMenu()" title="Ir al menú principal">AGX</div>
       <div class="btn-group">
-        <!-- Ajustes: disponible en todas las pestañas, con peso visual -->
-        <button id="hb-ajustes" onclick="abrirModalOpciones()" class="pastilla-num" title="Ajustes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        <!-- Este botón cambia de función según dónde estés: en Factura
+             alterna la vista, en Datos activa/bloquea la edición, en
+             Historial abre la búsqueda por fechas. Los ajustes generales
+             se han movido a un icono propio dentro de cada panel. -->
+        <button id="hb-accion" onclick="accionCabecera()" class="pastilla-num" title="Acción">
+          <span id="ico-accion-cabecera"></span>
         </button>
         <button id="hb-menu" onclick="abrirMenuAcciones()" class="btn btn-gray btn-icon-only" title="Acciones">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
@@ -583,6 +709,26 @@
 
     <!-- ÁREA DE SCROLL LIBRE (FACTURA O HISTORIAL) -->
     <div class="main-container" id="main-scroll-area">
+    <!-- PESTAÑA "AÑADIR": asistente en línea + lista editable de lo ya añadido -->
+    <section id="view-articulos" class="hidden">
+      <div class="art-asistente-card">
+        <div class="pt-cab pt-cab-inline">
+          <button id="ast-atras" onclick="asistenteAtras()" class="pt-atras">‹</button>
+          <span id="ast-titulo" class="pt-tit">Añadir artículo</span>
+          <span style="width:26px;"></span>
+        </div>
+        <div class="ast-pasos-wrap-inline">
+          <div id="ast-pasos" class="ast-pasos"></div>
+        </div>
+        <div class="ast-pie ast-pie-inline">
+          <button id="ast-btn-siguiente" onclick="asistenteSiguiente()" class="ast-btn-siguiente">Siguiente</button>
+        </div>
+      </div>
+
+      <p class="pt-sec" style="margin: 20px 2px 8px;">Lo que llevas añadido</p>
+      <div id="zona-articulos-editable"></div>
+    </section>
+
       
       <div id="view-editor">
         
@@ -614,7 +760,7 @@
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-vat">NIF / VAT:</span><span id="client-vat" class="editable-span" contenteditable="true" style="font-weight: 600;">NL123456789B01</span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-street">CALLE:</span><span id="client-address" class="editable-span" contenteditable="true">Straatnaam 123</span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-city">CIUDAD:</span><span id="client-city" class="editable-span" contenteditable="true">Amsterdam</span></div>
-                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-postal">CÓDIGO POSTAL:</span><span id="client-postal" class="editable-span" contenteditable="true">1234 AB</span></div>
+                    <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-postal">CÓDIGO POSTAL:</span><span id="client-postal" class="editable-span" contenteditable="true"></span></div>
                     <div class="field-row"><span class="field-label" contenteditable="false" id="lbl-c-country">PAÍS:</span><span id="client-country" class="editable-span" contenteditable="true">Netherlands</span></div>
                   </div>
                 </div>
@@ -655,18 +801,10 @@
                 </div>
               </div>
 
-              <!-- TABLA Y AÑADIR SERVICIOS -->
+              <!-- ARTÍCULOS: solo lectura. Cada categoría lleva su propia
+                   cabecera; se edita y se añade desde la pestaña "Añadir" -->
               <div>
-                <table>
-                  <thead>
-                    <tr id="fila-cabecera-tabla"></tr>
-                  </thead>
-                  <tbody id="items-tbody"></tbody>
-                </table>
-                <div id="barra-columnas" class="no-print hidden"></div>
-                <div class="no-print" style="margin-top: 12px">
-                  <button onclick="agregarServicio()" class="btn btn-black" style="padding: 8px 14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span id="txt-add-service">Añadir Servicio</span></button>
-                </div>
+                <div id="zona-articulos"></div>
               </div>
 
               <!-- TOTALES -->
@@ -724,7 +862,7 @@
                 <!-- BANCO (Icono Templo Griego) -->
                 <div class="footer-box">
                   <div class="footer-icon">
-                    <svg class="ico-pie" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 9.9 12 4.3l8.6 5.6"/><line x1="3.4" y1="9.9" x2="20.6" y2="9.9"/><rect x="5.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="10.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="15.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="3.6" y="19.6" width="16.8" height="2.1" rx="1"/></svg>
+                    <svg class="ico-pie ico-banco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 9.9 12 4.3l8.6 5.6"/><line x1="3.4" y1="9.9" x2="20.6" y2="9.9"/><rect x="5.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="10.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="15.6" y="12.1" width="2.9" height="6.1" rx="0.6"/><rect x="3.6" y="19.6" width="16.8" height="2.1" rx="1"/></svg>
                   </div>
                   <div class="footer-content footer-bank" id="container-bank-fields">
                     <div class="bank-row"><span id="bank-name" class="editable-span" contenteditable="true" style="font-weight: 600;">ING Bank N.V.</span></div>
@@ -788,18 +926,54 @@
 
       <!-- VISTA 2: HISTORIAL -->
       <section id="view-history" class="hidden">
-        <div style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;">
-          <div><h2 style="font-size: 16px; font-weight: 800; color: #111827" id="txt-hist-title">Facturas Guardadas</h2><p style="font-size: 11px; color: #6b7280" id="txt-hist-desc">Historial en el dispositivo</p></div>
-          <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" style="padding: 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; width: 100%; background: #f9fafb;" />
+        <!-- Barra negra: nombre por defecto, se convierte en buscador por
+             fechas al tocar el botón de la cabecera -->
+        <div id="barra-historial" class="barra-historial">
+          <div id="modo-titulo-historial" class="bh-titulo">
+            <div id="bh-logo" class="bh-logo">AGX</div>
+            <div>
+              <h2 id="txt-hist-title" class="bh-h2">Facturas Guardadas</h2>
+              <p id="txt-hist-desc" class="bh-p">Historial en el dispositivo</p>
+            </div>
+          </div>
+          <div id="modo-busqueda-historial" class="bh-busqueda hidden">
+            <div class="bh-fecha">
+              <label>Desde</label>
+              <input id="hist-fecha-desde" type="date" oninput="filtrarHistorialPorFecha()" />
+            </div>
+            <div class="bh-fecha">
+              <label>Hasta</label>
+              <input id="hist-fecha-hasta" type="date" oninput="filtrarHistorialPorFecha()" />
+            </div>
+          </div>
         </div>
+
+        <div class="bh-toolbar">
+          <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" class="bh-search" />
+          <button id="btn-vista-lista" onclick="alternarVistaHistorial()" class="btn btn-gray btn-icon-only" title="Cambiar a vista de lista">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+        </div>
+
         <div id="history-container" class="history-grid"></div>
+
+        <!-- Pie fijo: nº de facturas del rango a la izquierda, importe total
+             a la derecha. Solo tiene datos cuando hay un rango de fechas. -->
+        <div id="pie-historial" class="pie-historial hidden">
+          <span id="pie-hist-cuenta">0 facturas</span>
+          <span id="pie-hist-total">0,00 €</span>
+        </div>
       </section>
 
     </div> <!-- FIN ÁREA SCROLLABLE -->
 
     <!-- BOTONERA INFERIOR FIJA -->
     <nav class="bottom-nav no-print">
-      <div class="nav-grid">
+      <div class="nav-grid nav-grid-4">
+        <button id="btn-tab-articulos" onclick="cambiarPestana('articulos')" class="nav-btn inactive">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Artículos</span>
+        </button>
         <button id="btn-tab-editor" onclick="cambiarPestana('editor')" class="nav-btn active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
           <span id="txt-tab-template">Factura</span>
@@ -818,7 +992,8 @@
 
     <!-- MODAL: ELEGIR CLIENTE GUARDADO -->
     <div id="modal-clientes" class="modal-overlay hidden" onclick="cerrarSelectorClientes()">
-      <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-card" onclick="event.stopPropagation()" style="position:relative;">
+        <button class="btn-ajustes-flotante no-print" onclick="abrirAjustesDesdePanel()" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
         <div class="modal-header">
           <div class="modal-title"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg><span>Elegir cliente</span></div>
           <button onclick="cerrarSelectorClientes()" style="background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
@@ -911,16 +1086,7 @@
               <label for="cfg-vibrar">Vibración</label>
               <input id="cfg-vibrar" type="checkbox" checked onchange="guardarCfgFx()" />
             </div>
-            <div class="config-row">
-              <label>Tipo de sonido</label>
-              <select id="cfg-pack" onchange="guardarCfgFx()">
-                <option value="papel">Papel (por defecto)</option>
-                <option value="suave">Suave</option>
-                <option value="cristal">Cristal</option>
-                <option value="retro">Retro</option>
-                <option value="ki">Energía (guiño anime)</option>
-              </select>
-            </div>
+
             <p class="datos-hint">La vibración funciona en Android. Safari en iPhone no permite que una web la controle.</p>
           </div>
         </div>
@@ -944,7 +1110,7 @@
         </div>
 
         <!-- ESTRUCTURA EDICIÓN -->
-        <div><button id="btn-toggle-edit-template" onclick="toggleEdicionPlantilla()" class="btn btn-gray" style="width: 100%; justify-content: center; font-size: 12px; padding:10px;"><span style="display:flex;align-items:center;gap:8px;"><svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>Activar Edición de Plantilla</span></button></div>
+        <p class="datos-hint" style="margin-top:2px;">Para editar los campos de la factura, usa el lápiz de la cabecera dentro de la pestaña Datos.</p>
         
       </div>
     </div>
@@ -963,6 +1129,80 @@
       let historialFacturas = []; let idiomaActual = "es"; let editandoPlantillaEstructura = false;
       let sidebarConfig = { ori: "stack", size: 42, gap: 36, posY: 50 };
 
+      /* ================= CATÁLOGO DE ARTÍCULOS =================
+         Único punto de traducción de verdad: para que una etiqueta se
+         pueda traducir, tiene que ser un texto fijo y conocido de
+         antemano — nunca texto libre. Por eso el asistente ofrece estas
+         seis categorías predefinidas en vez de dejar renombrar columnas
+         libremente. "Otros" es la única excepción: si el catálogo no
+         cubre lo que necesitas, escribes tú la unidad, pero entonces esa
+         etiqueta concreta no se traduce sola (no hay forma de traducir
+         texto libre sin un servicio externo).
+         orden decide en qué orden aparecen las franjas grises en la factura. */
+      const CATALOGO_ARTICULOS = {
+        horas: {
+          orden: 1,
+          es: { nombre: "Horas", cant: "HORAS", precio: "€/HORA" },
+          en: { nombre: "Hours", cant: "HOURS", precio: "€/HOUR" },
+          nl: { nombre: "Uren", cant: "UREN", precio: "€/UUR" },
+          de: { nombre: "Stunden", cant: "STUNDEN", precio: "€/STUNDE" },
+          ro: { nombre: "Ore", cant: "ORE", precio: "€/ORĂ" },
+        },
+        km: {
+          orden: 2,
+          es: { nombre: "Kilómetros", cant: "KILÓMETROS", precio: "€/KM" },
+          en: { nombre: "Kilometers", cant: "KILOMETERS", precio: "€/KM" },
+          nl: { nombre: "Kilometers", cant: "KILOMETERS", precio: "€/KM" },
+          de: { nombre: "Kilometer", cant: "KILOMETER", precio: "€/KM" },
+          ro: { nombre: "Kilometri", cant: "KILOMETRI", precio: "€/KM" },
+        },
+        viajes: {
+          orden: 3,
+          es: { nombre: "Viajes", cant: "VIAJES", precio: "€/VIAJE" },
+          en: { nombre: "Trips", cant: "TRIPS", precio: "€/TRIP" },
+          nl: { nombre: "Ritten", cant: "RITTEN", precio: "€/RIT" },
+          de: { nombre: "Fahrten", cant: "FAHRTEN", precio: "€/FAHRT" },
+          ro: { nombre: "Călătorii", cant: "CĂLĂTORII", precio: "€/CĂLĂTORIE" },
+        },
+        bultos: {
+          orden: 4,
+          es: { nombre: "Bultos", cant: "BULTOS", precio: "€/BULTO" },
+          en: { nombre: "Packages", cant: "PACKAGES", precio: "€/PACKAGE" },
+          nl: { nombre: "Pakketten", cant: "PAKKETTEN", precio: "€/PAKKET" },
+          de: { nombre: "Pakete", cant: "PAKETE", precio: "€/PAKET" },
+          ro: { nombre: "Colete", cant: "COLETE", precio: "€/COLET" },
+        },
+        fijo: {
+          orden: 5,
+          // Sin cantidad: un único valor
+          es: { nombre: "Importe fijo", precio: "IMPORTE (€)" },
+          en: { nombre: "Fixed amount", precio: "AMOUNT (€)" },
+          nl: { nombre: "Vast bedrag", precio: "BEDRAG (€)" },
+          de: { nombre: "Festbetrag", precio: "BETRAG (€)" },
+          ro: { nombre: "Sumă fixă", precio: "SUMĂ (€)" },
+        },
+        otros: {
+          orden: 6,
+          // El nombre de la categoría sí se traduce; las etiquetas que
+          // escriba el usuario dentro, no.
+          es: { nombre: "Otros (introduce tú)" },
+          en: { nombre: "Other (type your own)" },
+          nl: { nombre: "Anders (zelf invullen)" },
+          de: { nombre: "Andere (selbst eingeben)" },
+          ro: { nombre: "Altele (introdu tu)" },
+        },
+      };
+
+      // Textos fijos de la interfaz del asistente, también traducidos
+      const TXT_ASISTENTE = {
+        es: { titulo: "Añadir artículo", pregCat: "¿Qué quieres añadir?", pregCant: "¿Cuántos/as?", pregPrecio: "¿Cuánto cuesta cada uno?", pregEtqOtros: "¿Qué quieres multiplicar por qué?", etqCantOtros: "Nombre de la cantidad (p.ej. Cajas)", etqPrecioOtros: "Nombre del precio (p.ej. €/Caja)", pregDesc: "Nombre del artículo", descPlaceholder: "p.ej. Transporte semana 32", atras: "Atrás", siguiente: "Siguiente", insertar: "Insertar" },
+        en: { titulo: "Add item", pregCat: "What do you want to add?", pregCant: "How many?", pregPrecio: "How much does each cost?", pregEtqOtros: "What do you want to multiply by what?", etqCantOtros: "Quantity name (e.g. Boxes)", etqPrecioOtros: "Price name (e.g. €/Box)", pregDesc: "Item name", descPlaceholder: "e.g. Transport week 32", atras: "Back", siguiente: "Next", insertar: "Insert" },
+        nl: { titulo: "Artikel toevoegen", pregCat: "Wat wil je toevoegen?", pregCant: "Hoeveel?", pregPrecio: "Wat kost elk stuk?", pregEtqOtros: "Wat wil je vermenigvuldigen met wat?", etqCantOtros: "Naam aantal (bv. Dozen)", etqPrecioOtros: "Naam prijs (bv. €/Doos)", pregDesc: "Naam artikel", descPlaceholder: "bv. Transport week 32", atras: "Terug", siguiente: "Volgende", insertar: "Invoegen" },
+        de: { titulo: "Artikel hinzufügen", pregCat: "Was möchtest du hinzufügen?", pregCant: "Wie viele?", pregPrecio: "Was kostet jedes Stück?", pregEtqOtros: "Was möchtest du womit multiplizieren?", etqCantOtros: "Name der Menge (z.B. Kisten)", etqPrecioOtros: "Name des Preises (z.B. €/Kiste)", pregDesc: "Artikelname", descPlaceholder: "z.B. Transport Woche 32", atras: "Zurück", siguiente: "Weiter", insertar: "Einfügen" },
+        ro: { titulo: "Adaugă articol", pregCat: "Ce vrei să adaugi?", pregCant: "Câte/câți?", pregPrecio: "Cât costă fiecare?", pregEtqOtros: "Ce vrei să înmulțești cu ce?", etqCantOtros: "Numele cantității (ex. Cutii)", etqPrecioOtros: "Numele prețului (ex. €/Cutie)", pregDesc: "Numele articolului", descPlaceholder: "ex. Transport săptămâna 32", atras: "Înapoi", siguiente: "Următorul", insertar: "Inserează" },
+      };
+
+
       const i18n = {
         es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE / EMPRESA:", cVat: "NIF / VAT:", cStreet: "CALLE:", cCity: "CIUDAD:", cPostal: "CÓDIGO POSTAL:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos" },
         en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME / COMPANY:", cVat: "VAT NUMBER:", cStreet: "STREET:", cCity: "CITY:", cPostal: "POSTAL CODE:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data" },
@@ -972,9 +1212,17 @@
       };
 
       window.onload = function () {
-        cargarConfigBarra(); cargarHistorialLocal(); renderizarServicios(); renderizarHistorial(); aplicarIdioma("es"); cargarLogoGuardado();
+        /* IMPORTANTE: hay que cargar TODOS los datos guardados (misDatos,
+           clientes, tabla...) ANTES de aplicarIdioma(). aplicarIdioma()
+           traduce esos mismos datos y los vuelve a guardar; si corriera
+           antes de cargarlos, pisaría lo guardado con arrays vacíos y
+           además dejaba etiquetas como "COMPANY:" en inglés hasta que
+           cambiabas de idioma a mano. */
+        cargarConfigBarra(); cargarHistorialLocal(); renderizarServicios(); renderizarHistorial(); cargarLogoGuardado();
         cargarClientes();
-        cargarMisDatos(true);
+        cargarMisDatos(false);
+        cargarCamposCliente();
+        aplicarIdioma("es"); // traduce y ya deja aplicado todo lo anterior
         renderizarClientes();
         // Si no hay ninguna factura guardada, empezamos en blanco desde el número 1
         if (historialFacturas.length === 0) nuevaFactura();
@@ -982,10 +1230,7 @@
         refrescarBotonesBorrar();
         refrescarEstadoBotones();
         cargarCfgFx();
-        cargarTabla();
-        renderizarCabeceraTabla();
-        cargarCamposCliente();
-        aplicarCamposClienteAFactura();
+        try { modoArticulos = localStorage.getItem("agx_modo_articulos") === "uno" ? "uno" : "multi"; } catch (e) {}
         cargarCfgMenu();
         sincronizarLogoMenu();
         // iOS no deja sonar audio sin un gesto previo: arrancamos al primer toque
@@ -1059,8 +1304,42 @@
 
       // La cabecera se adapta: la píldora del número solo tiene sentido
       // en la pestaña Factura; en las demás se oculta.
-      // Ajustes está siempre disponible, así que la cabecera no cambia
-      function refrescarEstadoBotones() {}
+      const ICO_VISTA_A4  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>';
+      const ICO_VISTA_MOVIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="10" y1="18" x2="14" y2="18"/></svg>';
+      const ICO_EDITAR   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></svg>';
+      const ICO_CANDADO2 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/></svg>';
+      const ICO_CALENDARIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="17" rx="2.2"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="7.5" y1="2.5" x2="7.5" y2="6.5"/><line x1="16.5" y1="2.5" x2="16.5" y2="6.5"/></svg>';
+      // Un solo círculo relleno = "un artículo"; tres apilados = "multiartículos"
+      const ICO_MODO_UNO  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>';
+      const ICO_MODO_MULTI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>';
+
+      // El botón de la cabecera adapta icono y acción a la pestaña actual
+      function refrescarEstadoBotones() {
+        const ico = document.getElementById("ico-accion-cabecera");
+        const btn = document.getElementById("hb-accion");
+        if (!ico || !btn) return;
+        if (pestanaActual === "editor") {
+          ico.innerHTML = modoVista === "a4" ? ICO_VISTA_MOVIL : ICO_VISTA_A4;
+          btn.title = modoVista === "a4" ? "Ver en modo móvil" : "Ver como hoja A4";
+        } else if (pestanaActual === "datos") {
+          ico.innerHTML = editandoPlantillaEstructura ? ICO_CANDADO2 : ICO_EDITAR;
+          btn.title = editandoPlantillaEstructura ? "Bloquear edición" : "Editar campos";
+        } else if (pestanaActual === "articulos") {
+          ico.innerHTML = modoArticulos === "uno" ? ICO_MODO_UNO : ICO_MODO_MULTI;
+          btn.title = modoArticulos === "uno" ? "Modo: un artículo (toca para multiartículos)" : "Modo: multiartículos (toca para un artículo)";
+        } else {
+          ico.innerHTML = ICO_CALENDARIO;
+          btn.title = "Buscar por fechas";
+        }
+      }
+
+      function accionCabecera() {
+        if (pestanaActual === "editor") alternarVista();
+        else if (pestanaActual === "datos") toggleEdicionPlantilla();
+        else if (pestanaActual === "articulos") alternarModoArticulos();
+        else toggleBusquedaHistorial();
+      }
+
 
       // Cada pestaña ofrece sus propias acciones: nada de botones apagados
       function accionesDeLaPestana() {
@@ -1069,8 +1348,8 @@
             { ico: I.cliente, txt: "Nuevo cliente", sub: "Añadir a tu lista", fn: () => abrirFormCliente(), principal: true },
           ];
         }
-        if (pestanaActual === "history") {
-          return []; // pendiente de definir
+        if (pestanaActual === "history" || pestanaActual === "articulos") {
+          return []; // en Añadir todo se hace desde la propia pantalla, no desde este menú
         }
         // Pestaña Factura
         const enA4 = modoVista === "a4";
@@ -1081,7 +1360,6 @@
           { ico: enA4 ? I.movil : I.hoja, txt: enA4 ? "Ver en modo móvil" : "Ver como hoja A4",
             sub: enA4 ? "Más cómodo para escribir" : "Como quedará impresa", fn: alternarVista },
           { ico: I.eco, txt: "PDF Eco", sub: "Sin fondos negros, ahorra tinta", fn: exportarPDF },
-          { ico: I.tabla, txt: "Configurar tabla", sub: "Tipos de línea y columnas", fn: abrirConfigTabla },
         ];
       }
 
@@ -1091,18 +1369,185 @@
 
 
       /* ===== Pantalla de configuración de la tabla ===== */
-      function abrirConfigTabla() {
-        fx("abrir");
-        document.getElementById("pantalla-tabla").classList.remove("hidden");
-        bloquearFondo();
-        pintarConfigTabla();
+      /* ================= ASISTENTE: máquina de pasos =================
+         El recorrido de pasos depende de la categoría elegida:
+           fijo:            categoria -> precio -> descripcion -> confirmar
+           otros:           categoria -> etiquetas -> cantidad -> precio -> descripcion -> confirmar
+           resto (horas...): categoria -> cantidad -> precio -> descripcion -> confirmar */
+      let astCategoria = null;
+      let astPaso = 0;
+      let astDatos = {};
+      let direccionAst = 1; // 1 = avanzar, -1 = retroceder
+
+      function pasosDelAsistente() {
+        if (!astCategoria) return ["categoria"];
+        if (astCategoria === "fijo") return ["categoria", "precio", "descripcion", "confirmar"];
+        if (astCategoria === "otros") return ["categoria", "etiquetas", "cantidad", "precio", "descripcion", "confirmar"];
+        return ["categoria", "cantidad", "precio", "descripcion", "confirmar"];
       }
 
-      function cerrarConfigTabla() {
-        fx("cerrar");
-        document.getElementById("pantalla-tabla").classList.add("hidden");
-        desbloquearFondo();
-        guardarTabla();
+      // Reinicia el asistente al primer paso — ya no es una superposición
+      // modal, vive siempre dentro de la pestaña "Añadir".
+      function abrirAsistente() {
+        astCategoria = null; astPaso = 0; astDatos = { desc: "", cant: "", precio: "", etqCant: "", etqPrecio: "" };
+        pintarAsistente();
+      }
+
+      // Tras insertar un artículo, el asistente vuelve al principio para
+      // poder añadir el siguiente sin salir de la pantalla.
+      function pintarPantallaArticulos() {
+        abrirAsistente();
+        pintarZonaArticulos("zona-articulos-editable", true);
+        sincronizarClaseModoAsistente();
+      }
+
+      const T = () => TXT_ASISTENTE[idiomaActual] || TXT_ASISTENTE.es;
+
+      function pintarAsistente() {
+        const pasos = pasosDelAsistente();
+        const nombrePaso = pasos[astPaso];
+        const wrap = document.getElementById("ast-pasos");
+        // Un único "paso" real, pero se traslada como si viniera del lado
+        // correcto (derecha al avanzar, izquierda al retroceder) para dar
+        // la sensación de deslizamiento continuo entre preguntas.
+        wrap.style.transition = "none";
+        wrap.style.transform = `translateX(${direccionAst > 0 ? "24px" : "-24px"})`;
+        wrap.style.opacity = "0";
+        wrap.innerHTML = `<div class="ast-paso" id="ast-paso-actual"></div>`;
+        const paso = document.getElementById("ast-paso-actual");
+        requestAnimationFrame(() => {
+          wrap.style.transition = "transform 0.28s cubic-bezier(.22,.9,.24,1), opacity 0.22s ease";
+          wrap.style.transform = "translateX(0)";
+          wrap.style.opacity = "1";
+        });
+
+        document.getElementById("ast-atras").style.visibility = astPaso === 0 ? "hidden" : "visible";
+        document.getElementById("ast-titulo").innerText = T().titulo;
+
+        if (nombrePaso === "categoria") {
+          let html = `<p class="ast-preg">${T().pregCat}</p><div class="ast-lista-cat">`;
+          Object.keys(CATALOGO_ARTICULOS).forEach((cat) => {
+            const t = CATALOGO_ARTICULOS[cat][idiomaActual] || CATALOGO_ARTICULOS[cat].es;
+            html += `<button class="ast-cat-btn" onclick="elegirCategoria('${cat}')"><span>${t.nombre}</span><span class="flecha">›</span></button>`;
+          });
+          html += `</div>`;
+          paso.innerHTML = html;
+          document.getElementById("ast-btn-siguiente").style.display = "none";
+        } else if (nombrePaso === "etiquetas") {
+          paso.innerHTML = `<p class="ast-preg">${T().pregEtqOtros}</p>
+            <div class="ast-campo"><label>${T().etqCantOtros}</label><input id="ast-in-etqcant" type="text" value="${astDatos.etqCant}" placeholder="Cajas" /></div>
+            <div class="ast-campo"><label>${T().etqPrecioOtros}</label><input id="ast-in-etqprecio" type="text" value="${astDatos.etqPrecio}" placeholder="€/Caja" /></div>`;
+          mostrarBotonSiguiente();
+        } else if (nombrePaso === "cantidad") {
+          const et = astCategoria === "otros" ? astDatos.etqCant : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es).cant;
+          paso.innerHTML = `<p class="ast-preg">${T().pregCant}</p><p class="ast-sub-grande">${et}</p>
+            <div class="ast-campo ast-campo-grande"><input id="ast-in-cant" type="number" step="0.01" value="${astDatos.cant}" placeholder="0" inputmode="decimal" /></div>`;
+          mostrarBotonSiguiente();
+        } else if (nombrePaso === "precio") {
+          const et = astCategoria === "otros" ? astDatos.etqPrecio : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es).precio;
+          paso.innerHTML = `<p class="ast-preg">${T().pregPrecio}</p><p class="ast-sub-grande">${et}</p>
+            <div class="ast-campo ast-campo-grande"><input id="ast-in-precio" type="number" step="0.01" value="${astDatos.precio}" placeholder="0" inputmode="decimal" /></div>`;
+          mostrarBotonSiguiente();
+        } else if (nombrePaso === "descripcion") {
+          paso.innerHTML = `<p class="ast-preg">${T().pregDesc}</p>
+            <div class="ast-campo"><div id="ast-in-desc" contenteditable="true" data-placeholder="${T().descPlaceholder}">${astDatos.desc}</div></div>`;
+          mostrarBotonSiguiente();
+        } else if (nombrePaso === "confirmar") {
+          const et = astCategoria === "otros" ? { cant: astDatos.etqCant, precio: astDatos.etqPrecio } : (CATALOGO_ARTICULOS[astCategoria][idiomaActual] || CATALOGO_ARTICULOS[astCategoria].es);
+          const total = astCategoria === "fijo" ? num(astDatos.precio) : num(astDatos.cant) * num(astDatos.precio);
+          let filas = `<div><span>${astDatos.desc || "—"}</span></div>`;
+          if (astCategoria !== "fijo") filas += `<div><span>${et.cant}</span><span>${astDatos.cant || 0}</span></div>`;
+          filas += `<div><span>${et.precio}</span><span>${astDatos.precio || 0}</span></div>`;
+          filas += `<div><span>TOTAL</span><span>${formatEuro(total)}</span></div>`;
+          paso.innerHTML = `<p class="ast-preg">${T().titulo}</p><div class="ast-resumen">${filas}</div>`;
+          const btn = document.getElementById("ast-btn-siguiente");
+          btn.style.display = "block";
+          btn.innerText = T().insertar;
+        }
+
+        // Recoge el valor guardado del paso ANTERIOR si el usuario vuelve
+        // atrás, para no perder lo escrito
+        recolocarCampos();
+      }
+
+      function mostrarBotonSiguiente() {
+        const btn = document.getElementById("ast-btn-siguiente");
+        btn.style.display = "block";
+        btn.innerText = T().siguiente;
+      }
+
+      function recolocarCampos() {
+        const c1 = document.getElementById("ast-in-cant"); if (c1) c1.focus();
+      }
+
+      function elegirCategoria(cat) {
+        fx("elegir");
+        astCategoria = cat;
+        direccionAst = 1;
+        astPaso = 1;
+        pintarAsistente();
+      }
+
+      // Guarda lo escrito en el paso actual antes de avanzar o retroceder
+      function guardarPasoActual() {
+        const pasos = pasosDelAsistente();
+        const nombrePaso = pasos[astPaso];
+        if (nombrePaso === "etiquetas") {
+          astDatos.etqCant = (document.getElementById("ast-in-etqcant").value || "").trim();
+          astDatos.etqPrecio = (document.getElementById("ast-in-etqprecio").value || "").trim();
+        } else if (nombrePaso === "cantidad") {
+          astDatos.cant = document.getElementById("ast-in-cant").value;
+        } else if (nombrePaso === "precio") {
+          astDatos.precio = document.getElementById("ast-in-precio").value;
+        } else if (nombrePaso === "descripcion") {
+          astDatos.desc = (document.getElementById("ast-in-desc").innerText || "").trim();
+        }
+      }
+
+      function asistenteSiguiente() {
+        const pasos = pasosDelAsistente();
+        const nombrePaso = pasos[astPaso];
+
+        if (nombrePaso === "confirmar") { insertarArticulo(); return; }
+
+        // Validaciones mínimas antes de avanzar
+        if (nombrePaso === "etiquetas") {
+          const c = (document.getElementById("ast-in-etqcant").value || "").trim();
+          const p = (document.getElementById("ast-in-etqprecio").value || "").trim();
+          if (!c || !p) { mostrarToast("Escribe los dos nombres antes de continuar"); return; }
+        }
+        if (nombrePaso === "cantidad" && !document.getElementById("ast-in-cant").value) { mostrarToast("Escribe una cantidad"); return; }
+        if (nombrePaso === "precio" && !document.getElementById("ast-in-precio").value) { mostrarToast("Escribe un precio"); return; }
+
+        guardarPasoActual();
+        fx("nav");
+        direccionAst = 1;
+        astPaso++;
+        pintarAsistente();
+      }
+
+      function asistenteAtras() {
+        if (astPaso === 0) return;
+        guardarPasoActual();
+        fx("nav");
+        direccionAst = -1;
+        astPaso--;
+        // Si retrocedemos hasta la categoría, se reinicia la elección
+        if (pasosDelAsistente()[astPaso] === "categoria") astCategoria = null;
+        pintarAsistente();
+      }
+
+      function insertarArticulo() {
+        const linea = { id: Date.now().toString(), categoria: astCategoria, desc: astDatos.desc || "Nuevo concepto" };
+        if (astCategoria === "otros") { linea.etqCantOtros = astDatos.etqCant; linea.etqPrecioOtros = astDatos.etqPrecio; }
+        if (astCategoria === "fijo") { linea.precio = num(astDatos.precio); }
+        else { linea.cant = num(astDatos.cant); linea.precio = num(astDatos.precio); }
+
+        fx("guardar");
+        servicios.push(linea);
+        renderizarServicios();
+        abrirAsistente(); // vuelve al principio, listo para el siguiente
+        mostrarToast("Artículo añadido");
       }
 
       /* ===== Congelar el fondo mientras hay un panel abierto =====
@@ -1133,6 +1578,18 @@
         document.body.style.width = "";
         document.body.style.overflow = "";
         window.scrollTo(0, scrollGuardado);
+      }
+
+      // Cierra CUALQUIER panel abierto (hoja de acciones, config de tabla,
+      // selector de clientes) antes de mostrar Ajustes. Sin esto, el botón
+      // rojo apilaba dos paneles a la vez: el nuevo quedaba tapado por el
+      // anterior y el contador que congela el scroll se descuadraba.
+      function abrirAjustesDesdePanel() {
+        const hoja = document.getElementById("hoja-acciones");
+        const clientes = document.getElementById("modal-clientes");
+        if (hoja && !hoja.classList.contains("hidden")) { hoja.classList.add("hidden"); desbloquearFondo(); }
+        if (clientes && !clientes.classList.contains("hidden")) { clientes.classList.add("hidden"); desbloquearFondo(); }
+        abrirModalOpciones();
       }
 
       function abrirMenuAcciones() {
@@ -1201,9 +1658,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "1.6.0";
-      const VERSION_FECHA = "10/08/2026";
-      const VERSION_NOTAS = "Editor de tabla con tipos combinables (horas, bultos, km, peso, fijo) en una misma factura. Menos espacio muerto abajo.";
+      const VERSION = "2.1.3";
+      const VERSION_FECHA = "11/08/2026";
+      const VERSION_NOTAS = "Corregido de verdad: las píldoras de categoría (Horas, Kilómetros, Viajes...) se quedan negras en modo Un artículo y pasan a gris en Multiartículos, el mismo tono que la barra de las tablas agrupadas.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -1220,43 +1677,9 @@
          Capas: "t" = tono (semitono, duración, onda), "r" = ruido filtrado. */
       const EVENTOS = ["nav","abrir","foco","anadir","quitar","guardar","pdf","eco","nuevo","vista","ajustes","arrastrar","ok","error","elegir"];
 
+      // Un único pack de sonido: Cristal. Cada acción suena distinto,
+      // como en los menús de una consola.
       const PACKS = {
-        // Golpes de papel y lápiz: la X suena a papel estrujado, tocar un
-        // campo suena a mina de lápiz sobre la hoja.
-        papel: {
-          desplegar:[["r", 1300, 0.10, 0.09, "band"], ["t", 14, 0.08, "sine", 0.05]],
-          cerrar:   [["r", 900, 0.09, 0.08, "low"], ["t", 7, 0.08, "sine", 0.05]],
-          nav:      [["r", 1400, 0.07, 0.10, "band"]],
-          abrir:    [["r", 900, 0.18, 0.12, "low"], ["t", 12, 0.12, "sine", 0.06]],
-          foco:     [["r", 2600, 0.05, 0.05, "band"], ["r", 3400, 0.06, 0.04, "high"]],
-          anadir:   [["r", 1800, 0.09, 0.09, "band"], ["t", 19, 0.09, "sine", 0.05]],
-          quitar:   [["r", 2200, 0.10, 0.11, "high"], ["r", 1500, 0.13, 0.10, "band"], ["r", 900, 0.16, 0.08, "band"]],
-          guardar:  [["r", 700, 0.13, 0.11, "low"], ["t", 12, 0.10, "sine", 0.07], ["t", 19, 0.14, "sine", 0.06]],
-          pdf:      [["r", 1200, 0.16, 0.10, "band"], ["t", 7, 0.12, "triangle", 0.06], ["t", 14, 0.18, "triangle", 0.05]],
-          eco:      [["r", 800, 0.20, 0.09, "low"], ["t", 16, 0.16, "sine", 0.05]],
-          nuevo:    [["r", 2000, 0.14, 0.09, "high"], ["t", 24, 0.10, "sine", 0.05]],
-          vista:    [["r", 1600, 0.08, 0.09, "band"], ["t", 15, 0.07, "sine", 0.05]],
-          ajustes:  [["r", 1000, 0.07, 0.08, "band"], ["t", 10, 0.07, "sine", 0.05]],
-          arrastrar:[["r", 2800, 0.04, 0.035, "high"]],
-          ok:       [["t", 12, 0.08, "sine", 0.09], ["t", 19, 0.13, "sine", 0.07], ["r", 1500, 0.07, 0.05, "band"]],
-          error:    [["r", 500, 0.18, 0.12, "low"], ["t", 3, 0.16, "triangle", 0.08]],
-          elegir:   [["r", 1900, 0.07, 0.08, "band"], ["t", 21, 0.10, "sine", 0.05]],
-        },
-        suave: {
-          desplegar: [["t", 14, 0.07, "sine", 0.09], ["t", 19, 0.09, "sine", 0.06]],
-          cerrar: [["t", 14, 0.07, "sine", 0.08], ["t", 9, 0.09, "sine", 0.06]],
-          nav: [["t", 12, 0.06, "sine", 0.1]], abrir: [["t", 7, 0.1, "sine", 0.1], ["t", 14, 0.14, "sine", 0.08]],
-          foco: [["t", 21, 0.04, "sine", 0.07]], anadir: [["t", 16, 0.07, "sine", 0.1], ["t", 23, 0.1, "sine", 0.07]],
-          quitar: [["t", 9, 0.08, "sine", 0.1], ["t", 2, 0.12, "sine", 0.08]],
-          guardar: [["t", 12, 0.08, "sine", 0.1], ["t", 19, 0.14, "sine", 0.08]],
-          pdf: [["t", 14, 0.09, "triangle", 0.1], ["t", 21, 0.14, "sine", 0.07]],
-          eco: [["t", 10, 0.12, "sine", 0.09]], nuevo: [["t", 24, 0.09, "sine", 0.09]],
-          vista: [["t", 17, 0.06, "sine", 0.09]], ajustes: [["t", 11, 0.06, "sine", 0.08]],
-          arrastrar: [["t", 26, 0.03, "sine", 0.05]],
-          ok: [["t", 12, 0.09, "sine", 0.1], ["t", 19, 0.13, "sine", 0.08]],
-          error: [["t", 4, 0.14, "triangle", 0.1], ["t", -1, 0.2, "triangle", 0.08]],
-          elegir: [["t", 19, 0.08, "sine", 0.09]],
-        },
         cristal: {
           desplegar: [["t", 21, 0.06, "triangle", 0.08], ["t", 28, 0.09, "sine", 0.06]],
           cerrar: [["t", 21, 0.06, "triangle", 0.08], ["t", 16, 0.09, "sine", 0.06]],
@@ -1272,53 +1695,19 @@
           error: [["t", 8, 0.12, "square", 0.08], ["t", 2, 0.18, "square", 0.07]],
           elegir: [["t", 28, 0.08, "triangle", 0.08]],
         },
-        retro: {
-          desplegar: [["t", 14, 0.04, "square", 0.08], ["t", 19, 0.05, "square", 0.06]],
-          cerrar: [["t", 14, 0.04, "square", 0.08], ["t", 9, 0.05, "square", 0.06]],
-          nav: [["t", 12, 0.04, "square", 0.08]], abrir: [["t", 7, 0.05, "square", 0.08], ["t", 14, 0.08, "square", 0.07]],
-          foco: [["t", 19, 0.03, "square", 0.06]], anadir: [["t", 16, 0.04, "square", 0.08], ["t", 23, 0.07, "square", 0.06]],
-          quitar: [["t", 10, 0.05, "square", 0.08], ["t", 3, 0.09, "square", 0.07]],
-          guardar: [["t", 12, 0.05, "square", 0.08], ["t", 16, 0.05, "square", 0.08], ["t", 19, 0.1, "square", 0.07]],
-          pdf: [["t", 14, 0.05, "square", 0.08], ["t", 21, 0.1, "square", 0.06]],
-          eco: [["t", 9, 0.1, "square", 0.07]], nuevo: [["t", 24, 0.06, "square", 0.07]],
-          vista: [["t", 17, 0.04, "square", 0.07]], ajustes: [["t", 11, 0.04, "square", 0.07]],
-          arrastrar: [["t", 27, 0.02, "square", 0.04]],
-          ok: [["t", 12, 0.05, "square", 0.08], ["t", 19, 0.09, "square", 0.07]],
-          error: [["t", 5, 0.09, "square", 0.08], ["t", 0, 0.14, "square", 0.07]],
-          elegir: [["t", 21, 0.05, "square", 0.07]],
-        },
-        ki: {
-          desplegar: [["t", 16, 0.05, "sawtooth", 0.07], ["t", 23, 0.09, "triangle", 0.06]],
-          cerrar: [["t", 16, 0.05, "sawtooth", 0.07], ["t", 9, 0.09, "triangle", 0.06]],
-          nav: [["t", 19, 0.05, "triangle", 0.08]],
-          abrir: [["t", 12, 0.05, "sawtooth", 0.07], ["t", 19, 0.05, "sawtooth", 0.07], ["t", 24, 0.14, "triangle", 0.07]],
-          foco: [["t", 26, 0.04, "triangle", 0.06]],
-          anadir: [["t", 19, 0.05, "sawtooth", 0.08], ["t", 26, 0.1, "triangle", 0.06]],
-          quitar: [["t", 12, 0.06, "sawtooth", 0.08], ["t", 5, 0.12, "sawtooth", 0.07]],
-          guardar: [["t", 12, 0.06, "sawtooth", 0.08], ["t", 16, 0.06, "sawtooth", 0.08], ["t", 19, 0.06, "sawtooth", 0.08], ["t", 24, 0.16, "triangle", 0.07]],
-          pdf: [["t", 14, 0.06, "sawtooth", 0.08], ["t", 21, 0.06, "sawtooth", 0.07], ["t", 28, 0.16, "triangle", 0.06]],
-          eco: [["t", 9, 0.14, "triangle", 0.07]], nuevo: [["t", 28, 0.1, "triangle", 0.07]],
-          vista: [["t", 21, 0.05, "triangle", 0.07]], ajustes: [["t", 14, 0.05, "triangle", 0.07]],
-          arrastrar: [["t", 30, 0.03, "triangle", 0.05]],
-          ok: [["t", 19, 0.06, "sawtooth", 0.08], ["t", 26, 0.14, "triangle", 0.07]],
-          error: [["t", 7, 0.12, "sawtooth", 0.08], ["t", 1, 0.2, "triangle", 0.07]],
-          elegir: [["t", 24, 0.08, "triangle", 0.07]],
-        },
       };
 
       function cargarCfgFx() {
         try { Object.assign(cfgFx, JSON.parse(localStorage.getItem("agx_fx") || "{}")); } catch (e) {}
-        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar"), c = document.getElementById("cfg-pack");
+        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar");
         if (a) a.checked = cfgFx.sonido;
         if (b) b.checked = cfgFx.vibrar;
-        if (c) c.value = cfgFx.pack;
       }
 
       function guardarCfgFx() {
-        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar"), c = document.getElementById("cfg-pack");
+        const a = document.getElementById("cfg-sonido"), b = document.getElementById("cfg-vibrar");
         if (a) cfgFx.sonido = a.checked;
         if (b) cfgFx.vibrar = b.checked;
-        if (c) cfgFx.pack = c.value;
         localStorage.setItem("agx_fx", JSON.stringify(cfgFx));
         fx("elegir"); // se oye el pack recién elegido
       }
@@ -1383,7 +1772,7 @@
         iniciarAudio();
         if (!audioCtx) return;
         if (audioCtx.state === "suspended") audioCtx.resume();
-        const pack = PACKS[cfgFx.pack] || PACKS.papel;
+        const pack = PACKS.cristal;
         const capas = pack[evento] || pack.nav || [];
         let t = audioCtx.currentTime + 0.005;
         capas.forEach((c) => {
@@ -1872,6 +2261,7 @@
       }
 
       function volverAlMenu() {
+        liberarFondoSiempre();
         document.getElementById("main-menu").classList.remove("oculto");
         document.body.classList.add("menu-abierto");
         document.documentElement.style.backgroundColor = "#0f1115";
@@ -1882,8 +2272,11 @@
       // El logo del menú refleja el que hayas elegido (texto o imagen)
       function sincronizarLogoMenu() {
         const origen = document.getElementById("app-logo-box");
-        const destino = document.getElementById("menu-logo");
-        if (origen && destino) destino.innerHTML = origen.innerHTML;
+        if (!origen) return;
+        const menu = document.getElementById("menu-logo");
+        if (menu) menu.innerHTML = origen.innerHTML;
+        const hist = document.getElementById("bh-logo");
+        if (hist) hist.innerHTML = origen.innerHTML;
       }
 
       function formatEuro(monto) { return "€" + (Number(monto) || 0).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -1898,258 +2291,188 @@
       }
 
 
-      /* ============ TIPOS DE LÍNEA Y COLUMNAS ============
-         Modelo ADITIVO: activas los tipos que necesites (Por horas, Por
-         bultos...) y sus columnas conviven en la MISMA tabla, sin tener que
-         elegir un único tipo por línea. Cada fila puede rellenar cualquier
-         combinación — transporte por horas Y bultos en la misma factura.
-         El total de una línea es la suma de todos los pares con datos. */
-      const TIPOS_LINEA = {
-        horas:     { label: "Por horas",     corto: "Horas",  cols: [{ id: "hours", label: "HRS" }, { id: "rate", label: "TARIFA (€)" }] },
-        unidades:  { label: "Por unidades",  corto: "Uds.",   cols: [{ id: "cant", label: "CANT." }, { id: "precio", label: "PRECIO (€)" }] },
-        trayectos: { label: "Por trayectos", corto: "Km",     cols: [{ id: "km", label: "KM" }, { id: "eurkm", label: "€/KM" }] },
-        bultos:    { label: "Por bultos",    corto: "Bultos", cols: [{ id: "bultos", label: "BULTOS" }, { id: "pbulto", label: "€/BULTO" }] },
-        peso:      { label: "Por peso",      corto: "Kg",     cols: [{ id: "kg", label: "KG" }, { id: "eurkg", label: "€/KG" }] },
-        fijo:      { label: "Importe fijo",  corto: "Fijo",   cols: [{ id: "importe", label: "IMPORTE (€)" }] },
-      };
-
-      let tiposActivos = ["horas"];   // los que aparecen en la tabla
-      let columnasExtra = [];         // columnas de texto añadidas a mano
-      let etiquetasCol = {};          // renombrados del usuario (por idioma)
-
+      /* ================= DATOS: artículos por categoría =================
+         Cada línea (servicio) pertenece a una categoría del catálogo. Las
+         líneas de la MISMA categoría se agrupan visualmente en su propia
+         franja gris, con sus propias columnas — así conviven horas y
+         kilómetros en la misma factura sin mezclarse ni confundirse. */
       function num(v) { return parseFloat(String(v).replace(",", ".")) || 0; }
 
-      // Suma cada par de columnas activo que tenga datos. No depende de
-      // ningún "tipo" por línea: si la fila tiene horas Y bultos rellenos,
-      // los dos importes se suman.
-      function totalDeLinea(item) {
-        let total = 0;
-        tiposActivos.forEach((t) => {
-          const cols = TIPOS_LINEA[t] ? TIPOS_LINEA[t].cols : [];
-          if (cols.length === 2) total += num(item[cols[0].id]) * num(item[cols[1].id]);
-          else if (cols.length === 1) total += num(item[cols[0].id]);
-        });
-        return total;
-      }
-
-      function etiqueta(id, porDefecto) {
-        const guardada = etiquetasCol[id];
-        if (guardada && guardada[idiomaActual]) return guardada[idiomaActual];
-        return porDefecto;
-      }
-
-      // Columnas visibles = descripción + pares de los tipos activos (sin
-      // repetir si dos tipos comparten alguna columna) + extras + total
-      function columnasVisibles() {
-        const out = [{ id: "desc", label: etiqueta("desc", "DESCRIPCIÓN"), clase: "desc", ancho: "34%", fija: true }];
-        tiposActivos.forEach((t) => {
-          (TIPOS_LINEA[t] ? TIPOS_LINEA[t].cols : []).forEach((c) => {
-            if (out.some((x) => x.id === c.id)) return;
-            out.push({ id: c.id, label: etiqueta(c.id, c.label), clase: "num", tipoDueno: t });
-          });
-        });
-        columnasExtra.forEach((c) => out.push({ id: c.id, label: etiqueta(c.id, c.label), clase: "texto" }));
-        out.push({ id: "total", label: etiqueta("total", "TOTAL"), clase: "total", ancho: "20%", fija: true });
-        return out;
-      }
-
-      function pintarPreviaTabla() {
-        const cols = columnasVisibles();
-        const ejemplo = [{ desc: "Ejemplo de línea" }];
-        tiposActivos.forEach((t, i) => {
-          const c = TIPOS_LINEA[t].cols;
-          if (c.length === 1) ejemplo[0][c[0].id] = 250;
-          else { ejemplo[0][c[0].id] = [8, 12, 40][i % 3]; ejemplo[0][c[1].id] = 32; }
-        });
-        let html = "<table><thead><tr>";
-        cols.forEach((c) => (html += `<th>${c.label}</th>`));
-        html += "</tr></thead><tbody>";
-        ejemplo.forEach((it) => {
-          html += "<tr>";
-          cols.forEach((c) => {
-            if (c.clase === "desc") html += `<td>${it.desc}</td>`;
-            else if (c.clase === "total") html += `<td style="text-align:right;font-weight:800;">${formatEuro(totalDeLinea(it))}</td>`;
-            else if (c.clase === "texto") html += `<td style="text-align:center;">—</td>`;
-            else html += `<td style="text-align:center;">${it[c.id] !== undefined ? it[c.id] : "—"}</td>`;
-          });
-          html += "</tr>";
-        });
-        html += "</tbody></table>";
-        const cont = document.getElementById("pt-previa");
-        if (cont) cont.innerHTML = html;
-      }
-
-      function cargarTabla() {
-        try {
-          const g = JSON.parse(localStorage.getItem("agx_tabla") || "{}");
-          tiposActivos = Array.isArray(g.tipos) && g.tipos.length ? g.tipos : ["horas"];
-          columnasExtra = g.extra || [];
-          etiquetasCol = g.etiquetas || {};
-        } catch (e) { tiposActivos = ["horas"]; }
-      }
-
-      function guardarTabla() {
-        localStorage.setItem("agx_tabla", JSON.stringify({ tipos: tiposActivos, extra: columnasExtra, etiquetas: etiquetasCol }));
-        renderizarCabeceraTabla();
-        renderizarServicios();
-        calcularTotales();
-      }
-
-      function alternarTipo(t) {
-        if (tiposActivos.includes(t)) {
-          if (tiposActivos.length === 1) { mostrarToast("Debe quedar al menos un tipo activo"); return; }
-          tiposActivos = tiposActivos.filter((x) => x !== t);
-          fx("quitar");
-        } else {
-          tiposActivos.push(t);
-          fx("anadir");
+      // Etiquetas resueltas para el idioma actual. Para "otros" son las
+      // que escribió el usuario (no se traducen); para el resto, salen
+      // del catálogo fijo.
+      function etiquetasDeLinea(item) {
+        const cat = CATALOGO_ARTICULOS[item.categoria];
+        if (item.categoria === "otros") {
+          return { nombre: (cat && cat[idiomaActual] && cat[idiomaActual].nombre) || "Otros", cant: item.etqCantOtros || "CANTIDAD", precio: item.etqPrecioOtros || "PRECIO" };
         }
-        guardarTabla();
-        pintarConfigTabla();
+        const t = (cat && (cat[idiomaActual] || cat.es)) || {};
+        return { nombre: t.nombre || "", cant: t.cant || "", precio: t.precio || "" };
       }
 
-      // Guarda el nuevo nombre para el IDIOMA ACTUAL únicamente: cambiar de
-      // idioma sigue traduciendo el resto, salvo la personalización de cada uno
-      function renombrarCol(id, valor) {
-        if (!etiquetasCol[id]) etiquetasCol[id] = {};
-        etiquetasCol[id][idiomaActual] = valor.toUpperCase();
-        guardarTabla();
+      function totalDeLinea(item) {
+        if (item.categoria === "fijo") return num(item.precio);
+        return num(item.cant) * num(item.precio);
       }
 
-      function anadirColumnaTexto() {
-        fx("anadir");
-        columnasExtra.push({ id: "x" + Date.now(), label: "NUEVA" });
-        guardarTabla();
-        pintarConfigTabla();
+      // Clave de agrupación: las categorías del catálogo agrupan por sí
+      // mismas; "otros" agrupa por la pareja de etiquetas que escribiste,
+      // para que dos unidades personalizadas distintas no se mezclen.
+      function claveGrupo(item) {
+        if (item.categoria === "otros") return "otros:" + (item.etqCantOtros || "") + "|" + (item.etqPrecioOtros || "");
+        return item.categoria;
       }
 
-      function quitarColumnaTexto(id) {
-        fx("quitar");
-        columnasExtra = columnasExtra.filter((c) => c.id !== id);
-        guardarTabla();
-        pintarConfigTabla();
-      }
-
-      function pintarConfigTabla() {
-        const cont = document.getElementById("pt-tipos");
-        cont.innerHTML = "";
-        Object.keys(TIPOS_LINEA).forEach((t) => {
-          const d = TIPOS_LINEA[t];
-          const b = document.createElement("button");
-          b.className = "pt-tipo" + (tiposActivos.includes(t) ? " on" : "");
-          const detalle = t === "fijo" ? "Solo importe" : d.cols.map((c) => c.label.replace(" (€)", "")).join(" × ");
-          b.innerHTML = `${d.label}<small>${detalle}</small>`;
-          b.onclick = () => alternarTipo(t);
-          cont.appendChild(b);
-        });
-
-        // Columnas: solo lista informativa + renombrar. Descripción y Total
-        // llevan candado porque no se pueden quitar; el resto se gestiona
-        // activando o desactivando su TIPO arriba, no aquí.
-        const lista = document.getElementById("pt-columnas");
-        lista.innerHTML = "";
-        const filas = columnasVisibles();
-        filas.forEach((f) => {
-          const d = document.createElement("div");
-          d.className = "pt-col";
-          const et = f.clase === "total" ? "Calculada" : f.clase === "desc" ? "Texto" : f.clase === "texto" ? "Texto" : "Número";
-          d.innerHTML = `<input type="text" value="${f.label.replace(/"/g, "&quot;")}" oninput="renombrarCol('${f.id}', this.value)" />
-            <span class="et${f.clase === 'total' ? ' calc' : ''}">${et}${f.tipoDueno ? " · " + TIPOS_LINEA[f.tipoDueno].corto : ""}</span>`;
-          if (f.fija) {
-            const c = document.createElement("span");
-            c.className = "et-candado";
-            c.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/></svg>';
-            c.title = "Esta columna no se puede quitar";
-            d.appendChild(c);
-          } else if (f.clase === "texto") {
-            const b = document.createElement("button");
-            b.className = "btn-del-row";
-            b.innerHTML = "✕";
-            b.onclick = () => quitarColumnaTexto(f.id);
-            d.appendChild(b);
+      function agruparServicios() {
+        const grupos = [];
+        const indice = {};
+        servicios.forEach((item, i) => {
+          const clave = claveGrupo(item);
+          if (!indice[clave]) {
+            indice[clave] = { clave, categoria: item.categoria, etq: etiquetasDeLinea(item), lineas: [] };
+            grupos.push(indice[clave]);
           }
-          lista.appendChild(d);
+          indice[clave].lineas.push({ item, index: i });
         });
-
-        pintarPreviaTabla();
+        grupos.sort((a, b) => {
+          const oa = (CATALOGO_ARTICULOS[a.categoria] || {}).orden || 99;
+          const ob = (CATALOGO_ARTICULOS[b.categoria] || {}).orden || 99;
+          return oa - ob;
+        });
+        return grupos;
       }
 
-      function renderizarCabeceraTabla() {
-        const tr = document.getElementById("fila-cabecera-tabla");
-        if (!tr) return;
-        tr.innerHTML = "";
-        columnasVisibles().forEach((c) => {
-          const th = document.createElement("th");
-          if (c.ancho) th.style.width = c.ancho;
-          if (c.clase === "total") { th.className = "col-total"; th.style.textAlign = "right"; }
-          else if (c.clase !== "desc") th.style.textAlign = "center";
-          th.innerText = c.label;
-          tr.appendChild(th);
-        });
-        const thAcc = document.createElement("th");
-        thAcc.className = "no-print";
-        thAcc.style.width = "34px";
-        tr.appendChild(thAcc);
-      }
+      /* ================= MODO: un artículo vs multiartículos =================
+         "Un artículo": pensado para facturas de una sola categoría (o varias
+         líneas idénticas) — un único bloque con cabecera propia, sin la
+         franja negra genérica ni sub-franjas grises, así no hay nada que
+         pueda desalinearse.
+         "Multiartículos": el comportamiento agrupado, una franja gris por
+         categoría distinta que aparezca. */
+      let modoArticulos = "multi"; // "uno" | "multi"
 
-      function renderizarServicios() {
-        const tbody = document.getElementById("items-tbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        const cols = columnasVisibles();
-
-        servicios.forEach((item, index) => {
-          const tr = document.createElement("tr");
-          let html = "";
-
-          cols.forEach((c) => {
-            if (c.clase === "desc") {
-              html += `<td class="col-desc" data-label="${c.label}"><div class="editable-span" contenteditable="true" oninput="actualizarServicio(${index}, 'desc', this.innerText, this)" style="font-weight:600;">${item.desc || ""}</div></td>`;
-            } else if (c.clase === "total") {
-              html += `<td class="col-total" data-label="${c.label}" style="text-align:right; font-weight:800; font-variant-numeric: tabular-nums;">${formatEuro(totalDeLinea(item))}</td>`;
-            } else if (c.clase === "texto") {
-              const val = item[c.id] !== undefined ? item[c.id] : "";
-              html += `<td data-label="${c.label}" style="text-align:center;"><input type="text" value="${String(val).replace(/"/g, "&quot;")}" oninput="actualizarServicio(${index}, '${c.id}', this.value, this)" style="text-align:center; width:100%;"></td>`;
-            } else {
-              // Toda columna numérica activa es editable siempre: sin celdas
-              // apagadas ni selector de tipo por línea.
-              const val = item[c.id] !== undefined ? item[c.id] : "";
-              html += `<td data-label="${c.label}" style="text-align:center;"><input type="number" step="0.01" value="${val}" oninput="actualizarServicio(${index}, '${c.id}', this.value, this)" style="text-align:center; width:60px;"></td>`;
-            }
-          });
-
-          html += `<td class="no-print col-actions" style="text-align:center; vertical-align:middle;"><button class="btn-del-row" title="Eliminar línea" onclick="eliminarServicio(${index})">✕</button></td>`;
-          tr.innerHTML = html;
-          tbody.appendChild(tr);
-        });
-        calcularTotales();
-      }
-
-      // Nueva línea en blanco: no lleva ningún "tipo" fijo, sus columnas
-      // se rellenan cuando el usuario escribe en las que use.
-      function agregarServicio() {
-        fx("anadir");
-        servicios.push({ id: Date.now().toString(), desc: "Nuevo concepto" });
+      function alternarModoArticulos() {
+        modoArticulos = modoArticulos === "uno" ? "multi" : "uno";
+        fx("nav");
+        localStorage.setItem("agx_modo_articulos", modoArticulos);
         renderizarServicios();
+        refrescarEstadoBotones();
+        sincronizarClaseModoAsistente();
+        mostrarToast(modoArticulos === "uno" ? "Modo: un artículo" : "Modo: multiartículos");
+      }
+
+      function sincronizarClaseModoAsistente() {
+        const card = document.querySelector(".art-asistente-card");
+        if (!card) return;
+        card.classList.toggle("modo-uno", modoArticulos === "uno");
+        card.classList.toggle("modo-multi", modoArticulos !== "uno");
+      }
+
+      // Construye el HTML de UN grupo. cabeceraNegra=true cuando es el único
+      // grupo visible (modo "uno"): entonces su propia cabecera es la franja
+      // negra, en vez de una gris colgando de una barra genérica aparte.
+      function htmlDeGrupo(g, editable, cabeceraNegra) {
+        const esFijo = g.categoria === "fijo";
+        // La cabecera usa exactamente la misma rejilla que sus propias
+        // filas: con ✕ o sin ella, con columna de cantidad o sin ella.
+        const clases = ["grupo-cab"];
+        if (cabeceraNegra) clases.push("grupo-cab-negra");
+        if (esFijo) clases.push("grupo-cab-fijo");
+        if (!editable) clases.push("grupo-cab-lectura");
+        let html = `<div class="grupo-articulos${cabeceraNegra ? " grupo-solo" : ""}">
+          <div class="${clases.join(" ")}">
+            <span class="gc-desc">DESCRIPCIÓN</span>
+            ${esFijo ? "" : `<span class="gc-cant">${g.etq.cant}</span>`}
+            <span class="gc-precio">${g.etq.precio}</span>
+            <span class="gc-total">IMPORTE</span>
+            ${editable ? '<span class="gc-x"></span>' : ""}
+          </div>`;
+        g.lineas.forEach(({ item, index }) => {
+          const esFijo = item.categoria === "fijo";
+          if (editable) {
+            html += `<div class="grupo-fila${esFijo ? " grupo-fila-fijo" : ""}">
+              <div class="editable-span gf-desc" contenteditable="true" oninput="actualizarServicio(${index}, 'desc', this.innerText, this)">${item.desc || ""}</div>
+              ${esFijo ? "" : `<input class="gf-cant" type="number" step="0.01" value="${item.cant}" oninput="actualizarServicio(${index}, 'cant', this.value, this)">`}
+              <input class="gf-precio" type="number" step="0.01" value="${item.precio}" oninput="actualizarServicio(${index}, 'precio', this.value, this)">
+              <span class="gf-total" data-total-linea="${index}">${formatEuro(totalDeLinea(item))}</span>
+              <button class="btn-del-row gf-x no-print" title="Quitar" onclick="eliminarServicio(${index})">✕</button>
+            </div>`;
+          } else {
+            // Solo lectura: nada de inputs ni X — se edita desde "Añadir"
+            html += `<div class="grupo-fila${esFijo ? " grupo-fila-fijo" : ""} grupo-fila-lectura">
+              <div class="gf-desc">${item.desc || ""}</div>
+              ${esFijo ? "" : `<span class="gf-cant" data-cant-linea="${index}">${item.cant}</span>`}
+              <span class="gf-precio" data-precio-linea="${index}">${item.precio}</span>
+              <span class="gf-total" data-total-linea-ro="${index}">${formatEuro(totalDeLinea(item))}</span>
+            </div>`;
+          }
+        });
+        html += `</div>`;
+        return html;
+      }
+
+      // Pinta la zona de artículos en el contenedor indicado. editable=true
+      // para la pestaña "Añadir" (inputs + X); false para la Factura
+      // (solo lectura, ahí no se edita ni se quita nada).
+      function pintarZonaArticulos(contId, editable) {
+        const cont = document.getElementById(contId);
+        if (!cont) return;
+        const grupos = agruparServicios();
+
+        if (!grupos.length) {
+          cont.innerHTML = '<p style="text-align:center; color:#9ca3af; font-size:12px; padding:18px 0;">Aún no has añadido ningún artículo.</p>';
+          return;
+        }
+
+        if (modoArticulos === "uno" && grupos.length === 1) {
+          cont.innerHTML = htmlDeGrupo(grupos[0], editable, true);
+        } else {
+          let html = "";
+          grupos.forEach((g) => (html += htmlDeGrupo(g, editable, false)));
+          cont.innerHTML = html;
+        }
+      }
+
+      // Reconstruye TODA la zona de artículos, en las dos pestañas a la
+      // vez, para que estén siempre sincronizadas. Solo se llama tras
+      // añadir/quitar una línea, nunca en cada pulsación de tecla.
+      function renderizarServicios() {
+        pintarZonaArticulos("zona-articulos", false);
+        pintarZonaArticulos("zona-articulos-editable", true);
+        calcularTotales();
       }
 
       function eliminarServicio(index) {
-        if (servicios.length <= 1) { mostrarToast("Debe quedar al menos una línea"); return; }
         fx("quitar");
         servicios.splice(index, 1);
         renderizarServicios();
       }
 
-      // IMPORTANTE: aquí NO se puede llamar a renderizarServicios(), porque
-      // regenerar la tabla destruye el campo que estás escribiendo y iOS cierra
-      // el teclado en cuanto tecleas la primera letra. Actualizamos solo lo justo.
+      // IMPORTANTE: aquí NO se puede reconstruir toda la zona editable, o
+      // regenerarla destruye el campo que estás escribiendo y iOS cierra el
+      // teclado en cuanto tecleas la primera letra. Solo se actualiza el
+      // total de esa línea (en ambas pestañas) y el dato correspondiente
+      // en la copia de SOLO LECTURA de la Factura.
       function actualizarServicio(index, campo, valor, el) {
-        servicios[index][campo] = campo === "desc" ? valor : parseFloat(valor) || 0;
+        servicios[index][campo] = campo === "desc" ? valor : parseFloat(String(valor).replace(",", ".")) || 0;
         const item = servicios[index];
-        const fila = el ? el.closest("tr") : document.querySelectorAll("#items-tbody tr")[index];
-        if (fila) {
-          const celda = fila.querySelector(".col-total");
-          if (celda) celda.textContent = formatEuro(totalDeLinea(item));
+        const totalEditable = document.querySelector(`[data-total-linea="${index}"]`);
+        if (totalEditable) totalEditable.textContent = formatEuro(totalDeLinea(item));
+
+        // Reflejo en la copia de solo lectura de la Factura
+        const totalRO = document.querySelector(`[data-total-linea-ro="${index}"]`);
+        if (totalRO) totalRO.textContent = formatEuro(totalDeLinea(item));
+        if (campo === "desc") {
+          const cont = document.getElementById("zona-articulos");
+          const filas = cont ? cont.querySelectorAll(".grupo-fila-lectura") : [];
+          // Reconstrucción completa de la copia de lectura: no hay foco que
+          // perder ahí (no es editable), así que es seguro.
+          pintarZonaArticulos("zona-articulos", false);
+        } else {
+          const cantRO = document.querySelector(`[data-cant-linea="${index}"]`);
+          const precioRO = document.querySelector(`[data-precio-linea="${index}"]`);
+          if (campo === "cant" && cantRO) cantRO.textContent = valor === "" ? "" : item.cant;
+          if (campo === "precio" && precioRO) precioRO.textContent = valor === "" ? "" : item.precio;
         }
         calcularTotales();
       }
@@ -2566,7 +2889,29 @@
       }
 
       function cargarLogoGuardado() { try { const saved = localStorage.getItem("agx_custom_logo"); if (saved) { const obj = JSON.parse(saved); aplicarLogo(obj); if (obj.type === "text") setVal("input-logo-text", obj.val); } } catch (err) {} }
-      function toggleEdicionPlantilla() { editandoPlantillaEstructura = !editandoPlantillaEstructura; const btnModal = document.getElementById("btn-toggle-edit-template"); const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th"); const addBtns = document.querySelectorAll(".btn-add-field"); if (editandoPlantillaEstructura) { document.body.classList.add("template-editing-mode"); document.body.classList.add("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.remove("hidden"); btnModal.innerHTML = ICO_CANDADO + "<span>Bloquear Edición</span>"; labels.forEach((el) => { el.contentEditable = "true"; }); addBtns.forEach((b) => b.classList.remove("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); renderizarCabeceraTabla(); cerrarModalOpciones(); mostrarToast("Estructura Desbloqueada"); } else { document.body.classList.remove("template-editing-mode"); document.body.classList.remove("editando-plantilla"); document.getElementById("barra-edicion-rapida").classList.add("hidden"); btnModal.innerHTML = ICO_LAPIZ + "<span>Activar Edición</span>"; labels.forEach((el) => { el.contentEditable = "false"; }); addBtns.forEach((b) => b.classList.add("hidden")); refrescarBotonesBorrar(); renderizarMisDatos(); renderizarCamposCliente(leerFormCliente()); renderizarCabeceraTabla(); mostrarToast("Estructura Bloqueada"); } }
+      function toggleEdicionPlantilla() {
+        editandoPlantillaEstructura = !editandoPlantillaEstructura;
+        const labels = document.querySelectorAll(".field-label, .box-header span, .meta-label, th");
+        const addBtns = document.querySelectorAll(".btn-add-field");
+        if (editandoPlantillaEstructura) {
+          document.body.classList.add("template-editing-mode", "editando-plantilla");
+          document.getElementById("barra-edicion-rapida").classList.remove("hidden");
+          labels.forEach((el) => { el.contentEditable = "true"; });
+          addBtns.forEach((b) => b.classList.remove("hidden"));
+          mostrarToast("Edición activada");
+        } else {
+          document.body.classList.remove("template-editing-mode", "editando-plantilla");
+          document.getElementById("barra-edicion-rapida").classList.add("hidden");
+          labels.forEach((el) => { el.contentEditable = "false"; });
+          addBtns.forEach((b) => b.classList.add("hidden"));
+          mostrarToast("Edición bloqueada");
+        }
+        refrescarBotonesBorrar();
+        renderizarMisDatos();
+        renderizarCamposCliente(leerFormCliente());
+        renderizarServicios();
+        refrescarEstadoBotones();
+      }
       // Crea una fila nueva (con etiqueta) en las cajas superiores
       function nuevaFilaEtiquetada(container, blanco) {
         const div = document.createElement("div");
@@ -2628,9 +2973,9 @@
         setVal("lbl-inv-to", t.invTo); setVal("lbl-inv-from", t.invFrom);
         setVal("lbl-m-company", t.mCompany); setVal("lbl-m-vat", t.mVat); setVal("lbl-m-kvk", t.mKvk); setVal("lbl-m-status", t.mStatus);
         setVal("lbl-meta-no", t.metaNo); setVal("lbl-meta-issue", t.metaIssue); setVal("lbl-meta-due", t.metaDue);
-        // Cabeceras de la tabla: se traducen salvo que las hayas renombrado
-        renderizarCabeceraTabla();
-        setVal("txt-add-service", t.addService);
+        // Los artículos se vuelven a pintar para traducir el nombre de
+        // cada categoría (Horas, Kilómetros...) al idioma nuevo
+        renderizarServicios();
         setVal("lbl-subtotal", t.subtotal); setVal("lbl-tax", t.tax); setVal("lbl-total", t.total); 
         setVal("txt-hist-title", t.histTitle); setVal("txt-hist-desc", t.histDesc); setVal("txt-tab-template", t.tabTemplate); setVal("txt-tab-history", t.tabHistory); setVal("txt-tab-datos", t.tabDatos);
         setVal("menu-txt-factura", t.tabTemplate); setVal("menu-txt-datos", t.tabDatos); setVal("menu-txt-historial", t.tabHistory);
@@ -2656,11 +3001,36 @@
 
       let pestanaActual = "editor";
 
+      // Red de seguridad: si por cualquier motivo el contador de paneles
+      // se descuadrara, cambiar de pestaña siempre libera el scroll. Nunca
+      // debe quedarse la factura bloqueada sin poder bajar.
+      function liberarFondoSiempre() {
+        panelesAbiertos = 0;
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+      }
+
       function cambiarPestana(tab) {
         fx("nav");
+        // La edición de campos solo tiene sentido en Datos: si sales de ahí
+        // con el modo activo, se bloquea automáticamente.
+        if (pestanaActual === "datos" && tab !== "datos" && editandoPlantillaEstructura) toggleEdicionPlantilla();
         pestanaActual = tab;
-        const vistas = { editor: "view-editor", datos: "view-datos", history: "view-history" };
-        const botones = { editor: "btn-tab-editor", datos: "btn-tab-datos", history: "btn-tab-history" };
+        liberarFondoSiempre();
+        // También se cierra cualquier panel que hubiera quedado abierto
+        ["hoja-acciones", "modal-clientes", "modal-opciones", "modal-menu"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add("hidden");
+        });
+        window.scrollTo(0, 0);
+        const wrapA4 = document.getElementById("a4-wrapper");
+        if (wrapA4) wrapA4.scrollLeft = 0;
+        const vistas = { articulos: "view-articulos", editor: "view-editor", datos: "view-datos", history: "view-history" };
+        const botones = { articulos: "btn-tab-articulos", editor: "btn-tab-editor", datos: "btn-tab-datos", history: "btn-tab-history" };
         Object.keys(vistas).forEach((k) => {
           const v = document.getElementById(vistas[k]);
           const b = document.getElementById(botones[k]);
@@ -2669,6 +3039,7 @@
         });
         refrescarEstadoBotones();
         if (tab === "editor") requestAnimationFrame(autoZoomA4);
+        if (tab === "articulos") pintarPantallaArticulos();
         if (tab === "history") renderizarHistorial();
         if (tab === "datos") { cargarMisDatos(); renderizarClientes(); }
       }
@@ -3057,14 +3428,80 @@
       }
 
       function cargarHistorialLocal() { try { const guardado = localStorage.getItem("agx_facturas_iphone"); if (guardado) historialFacturas = JSON.parse(guardado); } catch (e) {} actualizarBadgeHistorial(); }
+      // Convierte "dd/mm/aaaa" a Date para poder comparar fechas
+      function fechaDesdeDDMMAAAA(txt) {
+        if (!txt) return null;
+        const [d, m, a] = txt.split("/").map(Number);
+        if (!d || !m || !a) return null;
+        return new Date(a, m - 1, d);
+      }
+
+      let vistaHistorial = "tarjeta"; // "tarjeta" | "lista"
+      let busquedaHistorialAbierta = false;
+
+      function toggleBusquedaHistorial() {
+        busquedaHistorialAbierta = !busquedaHistorialAbierta;
+        fx(busquedaHistorialAbierta ? "desplegar" : "cerrar");
+        document.getElementById("modo-titulo-historial").classList.toggle("hidden", busquedaHistorialAbierta);
+        document.getElementById("modo-busqueda-historial").classList.toggle("hidden", !busquedaHistorialAbierta);
+        if (!busquedaHistorialAbierta) {
+          setVal("hist-fecha-desde", ""); setVal("hist-fecha-hasta", "");
+          document.getElementById("pie-historial").classList.add("hidden");
+        }
+        renderizarHistorial();
+      }
+
+      function filtrarHistorialPorFecha() { renderizarHistorial(); }
+
+      function alternarVistaHistorial() {
+        fx("vista");
+        vistaHistorial = vistaHistorial === "tarjeta" ? "lista" : "tarjeta";
+        renderizarHistorial();
+      }
+
       function renderizarHistorial() {
-        const container = document.getElementById("history-container"); const busqueda = (document.getElementById("search-input").value || "").toLowerCase();
-        const filtradas = historialFacturas.filter((f) => f.invoiceNo.toLowerCase().includes(busqueda) || f.clientName.toLowerCase().includes(busqueda));
+        const container = document.getElementById("history-container");
+        const busqueda = (document.getElementById("search-input").value || "").toLowerCase();
+        let filtradas = historialFacturas.filter((f) => f.invoiceNo.toLowerCase().includes(busqueda) || f.clientName.toLowerCase().includes(busqueda));
+
+        if (busquedaHistorialAbierta) {
+          const desdeTxt = getVal("hist-fecha-desde"), hastaTxt = getVal("hist-fecha-hasta");
+          const desde = desdeTxt ? new Date(desdeTxt) : null;
+          const hasta = hastaTxt ? new Date(hastaTxt) : null;
+          if (desde || hasta) {
+            filtradas = filtradas.filter((f) => {
+              const fecha = fechaDesdeDDMMAAAA(f.issueDate);
+              if (!fecha) return false;
+              if (desde && fecha < desde) return false;
+              if (hasta && fecha > hasta) return false;
+              return true;
+            });
+          }
+          const pie = document.getElementById("pie-historial");
+          if (desde || hasta) {
+            const total = filtradas.reduce((sum, f) => sum + (Number(f.total) || 0), 0);
+            setVal("pie-hist-cuenta", `${filtradas.length} factura${filtradas.length === 1 ? "" : "s"}`);
+            setVal("pie-hist-total", formatEuro(total));
+            pie.classList.remove("hidden");
+          } else {
+            pie.classList.add("hidden");
+          }
+        }
+
+        container.className = "history-grid" + (vistaHistorial === "lista" ? " vista-lista" : "");
+        const btnVista = document.getElementById("btn-vista-lista");
+        if (btnVista) btnVista.title = vistaHistorial === "lista" ? "Ver como tarjetas" : "Ver como lista";
+
         if (filtradas.length === 0) { container.innerHTML = `<div style="background:#ffffff; padding:20px; border-radius:12px; text-align:center; color:#6b7280; font-size:12px;">No hay facturas guardadas.</div>`; return; }
         container.innerHTML = "";
         filtradas.forEach((f) => {
           const div = document.createElement("div"); div.className = "history-card"; div.onclick = () => cargarFactura(f.invoiceNo);
-          div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#000000; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`; container.appendChild(div);
+          if (vistaHistorial === "lista") {
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><div style="min-width:0;"><span style="font-weight:800; font-size:13px;">N° ${f.invoiceNo} · ${f.clientName}</span><p style="font-size:10.5px; color:#6b7280;">${f.issueDate}</p></div><div style="display:flex; align-items:center; gap:10px; flex-shrink:0;"><span style="font-size:14px; font-weight:900;">${formatEuro(f.total)}</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">✕</button></div></div>`;
+          } else {
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#000000; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`;
+          }
+          container.appendChild(div);
         });
       }
 
@@ -3076,9 +3513,14 @@
         setVal("bank-name", f.bankName || ""); setVal("bank-iban", f.bankIban || ""); setVal("bank-bic", f.bankBic || ""); setVal("bank-holder", f.bankHolder || "");
         setVal("issue-date", f.issueDate || ""); setVal("due-date", f.dueDate || ""); document.getElementById("tax-rate").value = f.taxRate || 21;
         servicios = JSON.parse(JSON.stringify(f.servicios)); facturaEnEdicionNo = f.invoiceNo;
-        // Si la factura guardada usa tipos que ahora están apagados, se reactivan
-        servicios.forEach((l) => { if (l.tipo && TIPOS_LINEA[l.tipo] && !tiposActivos.includes(l.tipo)) tiposActivos.push(l.tipo); });
-        guardarTabla();
+        // MIGRACIÓN: facturas guardadas con versiones anteriores usaban
+        // "tipo" (multiplo/fijo) en vez de "categoria". Se traducen para
+        // que sigan viéndose bien con el sistema de catálogo actual.
+        servicios.forEach((l) => {
+          if (l.categoria) return; // ya está en el formato nuevo
+          if (l.tipo === "fijo") { l.categoria = "fijo"; l.precio = l.importe !== undefined ? l.importe : l.precio; }
+          else if (l.tipo) { l.categoria = "otros"; l.etqCantOtros = (l.etq && l.etq.cant) || "CANTIDAD"; l.etqPrecioOtros = (l.etq && l.etq.precio) || "PRECIO"; l.cant = l.cant !== undefined ? l.cant : 0; l.precio = l.precio !== undefined ? l.precio : 0; }
+        });
         renderizarServicios(); if (f.idioma) cambiarIdioma(f.idioma); cambiarPestana("editor"); sincronizarSelectoresFecha(); mostrarToast(`Factura N° ${f.invoiceNo} cargada`);
       }
 
@@ -3101,7 +3543,9 @@
         // Los datos del emisor se recuperan de "Mis Datos"
         cargarMisDatos(true);
 
-        servicios = [{ id: Date.now().toString(), desc: "" }];
+        // Una factura nueva empieza sin artículos: se añaden con el
+        // asistente ("+ Añadir artículo"), no con una línea en blanco.
+        servicios = [];
         renderizarServicios();
         cambiarPestana("editor");
         mostrarToast("Factura nueva en blanco");
