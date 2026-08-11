@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Facturas AGX" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#111827" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='90' y='112' font-family='Helvetica,Arial,sans-serif' font-size='58' font-weight='bold' fill='%23fff' text-anchor='middle' letter-spacing='4'%3EAGX%3C/text%3E%3C/svg%3E" />
@@ -58,7 +58,7 @@
       }
 
       /* BOTONERA Y LOGO */
-      .logo-agx { cursor: pointer; background-color: #000000; color: #ffffff; font-weight: 900; font-size: 13px; letter-spacing: 2px; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; height: 32px; min-width: 56px; overflow: hidden; }
+      .logo-agx { cursor: pointer; background-color: #111827; color: #ffffff; font-weight: 900; font-size: 13px; letter-spacing: 2px; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; height: 32px; min-width: 56px; overflow: hidden; }
       /* Con imagen: el logo se encaja centrado y sin deformarse dentro del rectángulo negro */
       .logo-agx.con-imagen { padding: 5px 8px; }
       .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
@@ -103,7 +103,7 @@
       .grupo-cab-fijo.grupo-cab-lectura { grid-template-columns: 1.6fr 1.8fr 0.9fr; }
       /* Modo "un artículo": esta ES la cabecera principal, en negro,
          igual de protagonista que antes lo era la barra genérica */
-      .grupo-cab-negra { background: #111827; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; }
+      .grupo-cab-negra { background: #111827; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; border-radius: 11px 11px 0 0; }
       .grupo-solo { border: none; border-radius: 11px; }
       .grupo-cab span { text-align: center; }
       .gc-desc { text-align: left !important; }
@@ -112,7 +112,7 @@
         padding: 8px 10px; border-bottom: 1px solid #f3f4f6; background: #fff;
       }
       .grupo-fila-fijo { grid-template-columns: 1.6fr 1.8fr 0.9fr 26px; }
-      .grupo-fila:last-child { border-bottom: none; }
+      .grupo-fila:last-child { border-bottom: none; border-radius: 0 0 11px 11px; }
       .gf-desc { font-size: 12px; font-weight: 600; padding: 5px 6px; min-width: 0; }
       .gf-cant, .gf-precio { width: 100%; text-align: center; font-size: 12px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 5px 3px; min-width: 0; }
       .gf-total { text-align: right; font-weight: 800; font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -255,7 +255,7 @@
       /* Botones que no aplican a la pestaña actual: apagados y no pulsables */
       .btn.desactivado { opacity: 0.35; pointer-events: none; filter: grayscale(1); }
       .btn:active { transform: scale(0.95); }
-      .btn-black { background-color: #000000; color: #ffffff; }
+      .btn-black { background-color: #111827; color: #ffffff; }
       .btn-gray { background-color: #e5e7eb; color: #374151; }
             .nav-grid { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; height: 44px; }
             .nav-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
@@ -264,13 +264,13 @@
       .nav-btn { border-radius: 12px; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; height: 100%;}
       .nav-grid-4 .nav-btn { font-size: 9.5px; gap: 3px; padding: 0 2px; }
       .nav-grid-4 .nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-      .nav-btn.active { background-color: #000000; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+      .nav-btn.active { background-color: #111827; color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
       .nav-btn.inactive { background-color: #e5e7eb; color: #4b5563; }
 
       .main-container { max-width: 900px; margin: 0 auto; padding: 12px; }
       /* Datos e Historial son cortos: que ocupen el alto disponible para que
          no quede una banda gris muerta encima de la navegación. */
-      #view-datos, #view-history { min-height: calc(100dvh - 132px - var(--safe-top) - var(--safe-bottom)); }
+      #view-datos, #view-history, #view-articulos { min-height: calc(100dvh - 132px - var(--safe-top) - var(--safe-bottom)); }
       
       #a4-wrapper {
         width: 100%; display: flex; justify-content: flex-start; margin-top: 10px;
@@ -301,7 +301,7 @@
       .sidebar-text, .invoice-sidebar .sidebar-text { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
       body.editando-plantilla .sidebar-text { cursor: grab; touch-action: none; }
       .invoice-sidebar {
-        width: 70px; background-color: #000000; border-radius: 16px;
+        width: 70px; background-color: #111827; border-radius: 16px;
         display: flex; flex-direction: column; align-items: center; padding: 20px 0; overflow: hidden;
       }
       
@@ -322,11 +322,11 @@
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
       .box { border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
       .box-white { border: 1px solid #d1d5db; }
-      .box-black { background-color: #000000; color: #ffffff; border: 1px solid #000000; }
+      .box-black { background-color: #111827; color: #ffffff; border: 1px solid #111827; }
       
       .box-header { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid rgba(156, 163, 175, 0.25); padding-bottom: 6px; margin-bottom: 4px;}
       .box-header-title { display: flex; align-items: center; gap: 8px; }
-      .box-white .box-header { color: #000000; } .box-black .box-header { color: #ffffff; }
+      .box-white .box-header { color: #111827; } .box-black .box-header { color: #ffffff; }
 
       .field-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; margin-bottom: 2px;}
       /* Ancho fijo: así los textos editables arrancan todos en la misma
@@ -337,10 +337,10 @@
 
       /* CAMPOS MULTILÍNEA */
       .editable-span { font-family: inherit; font-size: 12px; border-bottom: 1px solid transparent; outline: none; display: inline-block; width: 100%; min-height: 16px; word-wrap: break-word; white-space: pre-wrap; transition: border-color 0.2s; cursor: text; padding: 2px 0; }
-      .editable-span:focus { border-bottom-color: #000000; }
+      .editable-span:focus { border-bottom-color: #111827; }
       .box-black .editable-span { color: #ffffff; } .box-black .editable-span:focus { border-bottom-color: #ffffff; }
       input[type="number"] { font-family: inherit; font-size: 12px; border: none; border-bottom: 1px solid transparent; background: transparent; outline: none; width: 100%; padding: 2px 0; }
-      input[type="number"]:focus { border-bottom-color: #000000; }
+      input[type="number"]:focus { border-bottom-color: #111827; }
 
       body.template-editing-mode .field-label, body.template-editing-mode .box-header span, body.template-editing-mode th { outline: none; background: rgba(59, 130, 246, 0.08); cursor: text; border-bottom: 1px dashed #3b82f6 !important; }
       body.template-editing-mode .editable-span { border-bottom: 1px dashed #3b82f6; }
@@ -351,7 +351,7 @@
       .meta-label { font-size: 10px; font-weight: 700; color: #6b7280; display: block; margin-bottom: 4px; text-transform: uppercase; }
 
       table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 16px;}
-      th { background-color: #000000; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 12px 10px; text-align: left; }
+      th { background-color: #111827; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 12px 10px; text-align: left; }
       th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
       td.col-actions { text-align: center; vertical-align: middle; padding-left: 4px; padding-right: 0; }
       th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px;}
@@ -361,18 +361,15 @@
       @media print {
         th.col-total, td.col-total { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 16px; }
       }
-      td { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; font-size: 11px; vertical-align: top;}
-      td:last-child { padding-right: 16px;}
-
       .totals-area { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
       /* Los importes se alinean exactamente con la columna TOTAL de la tabla
          y con el importe de la barra negra (mismo padding derecho de 16px). */
-      .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 0; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 16px; }
+      .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 10px; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 16px; }
       .subtotals-grid > div { display: flex; align-items: center; justify-content: flex-end; }
       .amount-align { font-weight: 700; color: #111827; font-variant-numeric: tabular-nums; text-align: right; }
       
       /* BARRA TOTAL (Mismo ancho que la tabla) */
-      .total-bar { background-color: #000000; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
+      .total-bar { background-color: #111827; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
       .total-label { font-size: 14px; font-weight: 900; text-transform: uppercase; text-align: right; }
       .total-value { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
 
@@ -434,10 +431,10 @@
       
       .lang-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
       .lang-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; font-size: 11px; font-weight: 600; }
-      .lang-item.active { border-color: #000000; background: #000000; color: #ffffff; }
+      .lang-item.active { border-color: #111827; background: #111827; color: #ffffff; }
 
       .toast #toast-icon { display: flex; }
-      .toast { position: fixed; top: calc(70px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-150px); background: #000000; color: #ffffff; padding: 12px 20px; border-radius: 24px; font-size: 12px; font-weight: 600; z-index: 3000; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+      .toast { position: fixed; top: calc(70px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-150px); background: #111827; color: #ffffff; padding: 12px 20px; border-radius: 24px; font-size: 12px; font-weight: 600; z-index: 3000; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
       .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
       .hidden { display: none !important; }
 
@@ -487,20 +484,15 @@
       body.vista-movil tbody tr { border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; position: relative; }
       /* Rejilla fija: la etiqueta y el valor caen SIEMPRE en la misma columna */
       body.vista-movil td { padding: 5px 0; border: none; display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 8px; }
-      body.vista-movil td::before { content: attr(data-label); font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; text-align: left; }
-      /* Las celdas llevan text-align en línea (right/center) para la hoja A4;
-         en móvil lo anulamos o RATE y HRS se descuadran respecto a las demás. */
-      body.vista-movil td, body.vista-movil td input { text-align: left !important; }
-      body.vista-movil td.col-desc::before { display: none; }
-      body.vista-movil td.col-desc { grid-template-columns: 1fr; }
-      body.vista-movil td.col-desc { border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; margin-bottom: 4px; }
-      body.vista-movil td input { font-size: 16px !important; width: 100% !important; text-align: left !important; border-bottom: 1px solid #e5e7eb; }
-      body.vista-movil td.col-total { justify-content: flex-start; text-align: left !important; }
-      /* La ✕ del artículo deja de flotar encima del campo de descripción:
-         pasa a ser una línea propia al pie de la tarjeta. */
-      body.vista-movil td.col-actions { display: flex; justify-content: flex-end; border-top: 1px solid #f3f4f6; padding-top: 8px; margin-top: 4px; }
-      body.vista-movil td.col-actions::before { display: none; }
-      body.vista-movil tbody tr { padding: 12px; }
+      /* Campos numéricos y de texto en modo móvil: al menos 16px, o iOS
+         hace zoom automático al enfocarlos y luego se queda atascado sin
+         volver atrás por sí solo. Esta regla se perdió al pasar la tabla
+         de <table><td> a <div>; queda restaurada aquí para la estructura
+         actual. */
+      body.vista-movil .gf-cant, body.vista-movil .gf-precio,
+      body.vista-movil .ast-campo input, body.vista-movil .dato-row input,
+      body.vista-movil input[type="text"], body.vista-movil input[type="number"],
+      body.vista-movil input[type="date"] { font-size: 16px !important; }
 
       body.vista-movil .subtotals-grid { grid-template-columns: 1fr auto; padding-right: 0; }
       body.vista-movil .total-bar { grid-template-columns: 1fr auto; padding: 12px 16px; }
@@ -521,7 +513,7 @@
       /* Recuadros guía en AMBAS vistas. Nunca salen en el PDF ni al imprimir. */
       .editable-span { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 6px; }
       .box-black .editable-span, .invoice-sidebar .editable-span { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.22); }
-      .editable-span:focus { background: #ffffff; border-color: #000000; }
+      .editable-span:focus { background: #ffffff; border-color: #111827; }
       .box-black .editable-span:focus { background: rgba(255,255,255,0.16); border-color: #ffffff; }
       body.vista-movil .editable-span { border-radius: 8px; }
       body.exportando .editable-span { background: transparent !important; border-color: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
@@ -544,7 +536,7 @@
       #menu-imagen { background-size: cover; background-position: center; display: none; }
       .menu-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.7)); }
       .menu-contenido { position: relative; z-index: 2; width: 100%; max-width: 380px; padding: 0 24px 190px; text-align: center; }
-      .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
+      .menu-logo { display: inline-flex; align-items: center; justify-content: center; background: #111827; color: #fff; font-weight: 900; font-size: 42px; letter-spacing: 8px; padding: 18px 30px; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); min-height: 84px; }
       .menu-logo img { max-height: 56px; max-width: 220px; object-fit: contain; display: block; }
       .menu-sub { color: rgba(255,255,255,0.72); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 28px; }
       .menu-botones { display: flex; flex-direction: column; gap: 10px; }
@@ -558,7 +550,7 @@
 
       /* TARJETAS DE LA PESTAÑA DATOS */
       .datos-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-      .datos-card-negra { background: #000000; border-color: #000000; color: #ffffff; }
+      .datos-card-negra { background: #111827; border-color: #111827; color: #ffffff; }
       .datos-card-header { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
       .datos-hint { font-size: 11px; color: #9ca3af; margin-bottom: 12px; }
       .datos-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -578,7 +570,7 @@
       .cliente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
       /* Botón para insertar un cliente guardado en la factura */
-      .btn-cliente-factura { background: #000; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
+      .btn-cliente-factura { background: #111827; color: #fff; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; cursor: pointer; }
 
       /* BARRA DE EDICIÓN RÁPIDA (faltaba en el HTML original) */
       /* Pastilla compacta abajo a la derecha: ya no tapa el contenido */
@@ -985,7 +977,7 @@
         <button id="btn-tab-history" onclick="cambiarPestana('history')" class="nav-btn inactive">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
           <span id="txt-tab-history">Historial</span>
-          <span id="history-badge" style="background: #ffffff; color: #000000; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">0</span>
+          <span id="history-badge" style="background: #ffffff; color: #111827; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">0</span>
         </button>
       </div>
     </nav>
@@ -1069,7 +1061,7 @@
             </div>
             <div class="config-row hidden" id="logo-preview-box">
               <label>Vista previa sobre la caja negra:</label>
-              <div style="background:#000; border-radius:8px; padding:10px; display:flex; justify-content:center;"><img id="logo-preview" alt="preview" style="max-height:40px; max-width:100%; object-fit:contain;" /></div>
+              <div style="background:#111827; border-radius:8px; padding:10px; display:flex; justify-content:center;"><img id="logo-preview" alt="preview" style="max-height:40px; max-width:100%; object-fit:contain;" /></div>
             </div>
           </div>
         </div>
@@ -1263,6 +1255,18 @@
         paper.style.marginBottom = `${-1123 * (1 - escala)}px`;
       }
 
+      // Bloquea o libera el pellizco de zoom cambiando el propio viewport.
+      // En A4 el zoom hace falta para editar la plantilla; en móvil no debe
+      // poder pellizcarse nada, y así tampoco queda nunca "atascado" un
+      // zoom que iOS abrió solo al enfocar un campo.
+      function fijarViewport(bloquear) {
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) return;
+        meta.setAttribute("content", bloquear
+          ? "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+          : "width=device-width, initial-scale=1.0, viewport-fit=cover");
+      }
+
       function autoZoomA4() {
         const wrapper = document.getElementById("a4-wrapper");
         const paper = document.querySelector(".a4-paper");
@@ -1274,10 +1278,12 @@
           paper.style.transform = "none";
           paper.style.marginRight = "0px";
           paper.style.marginBottom = "0px";
+          fijarViewport(true); // en móvil, nada de zoom ni pellizco: todo estático
           return;
         }
 
         document.body.classList.remove("vista-movil");
+        fijarViewport(false); // en A4 sí hace falta poder pellizcar para editar la plantilla
         // Si el editor está oculto (estás en Datos o Historial) su ancho es 0 y la
         // escala salía negativa: la hoja desaparecía. Usamos un ancho de respaldo.
         let ancho = wrapper.parentElement.clientWidth;
@@ -1658,9 +1664,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.1.3";
+      const VERSION = "2.2.0";
       const VERSION_FECHA = "11/08/2026";
-      const VERSION_NOTAS = "Corregido de verdad: las píldoras de categoría (Horas, Kilómetros, Viajes...) se quedan negras en modo Un artículo y pasan a gris en Multiartículos, el mismo tono que la barra de las tablas agrupadas.";
+      const VERSION_NOTAS = "Consistencia visual: un único negro (#111827) en toda la app, arreglado el hueco sin espacio entre etiqueta e importe en los totales, redondeo reforzado en la barra negra, y arreglado el zoom atascado en modo móvil (el CSS que lo prevenía apuntaba a una tabla que ya no existe). Añadir ahora tiene la misma altura mínima que Datos e Historial.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -3499,7 +3505,7 @@
           if (vistaHistorial === "lista") {
             div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><div style="min-width:0;"><span style="font-weight:800; font-size:13px;">N° ${f.invoiceNo} · ${f.clientName}</span><p style="font-size:10.5px; color:#6b7280;">${f.issueDate}</p></div><div style="display:flex; align-items:center; gap:10px; flex-shrink:0;"><span style="font-size:14px; font-weight:900;">${formatEuro(f.total)}</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">✕</button></div></div>`;
           } else {
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#000000; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div><span style="background:#111827; color:#ffffff; font-size:9px; font-weight:800; padding:3px 6px; border-radius:6px;">N° ${f.invoiceNo}</span><h3 style="font-weight:800; font-size:14px; margin-top:6px;">${f.clientName}</h3><p style="font-size:11px; color:#6b7280; margin-top:2px;">${f.issueDate} • Vence: ${f.dueDate}</p></div><div style="text-align:right;"><span style="font-size:16px; font-weight:900; color:#111827;">${formatEuro(f.total)}</span></div></div><div style="border-top:1px solid #f3f4f6; padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:11px;"><span style="color:#6b7280;">Toca para cargar</span><button onclick="eliminarFacturaHistorial('${f.invoiceNo}', event)" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; padding:4px;">Eliminar</button></div>`;
           }
           container.appendChild(div);
         });
