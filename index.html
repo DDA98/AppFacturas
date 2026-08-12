@@ -83,10 +83,14 @@
       button.barra-titulo { cursor: pointer; }
       /* Se queda fija arriba al hacer scroll dentro de su hoja */
       /* Se queda fija arriba al hacer scroll dentro de su hoja */
-      .pagina-app > .barra-titulo:first-child { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 60; }
+      .pagina-app > .barra-titulo:first-child { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 500; will-change: transform; }
       /* La barra de Historial flota fuera de cualquier hoja: se ancla ella
          misma, junto con el botón cuadrado que la acompaña */
-      .fila-barra-historial { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 60; }
+      /* z-index alto y capa de composición propia (will-change) para que
+         durante el rebote elástico del navegador la barra fija nunca
+         quede tapada ni un instante por el contenido de detrás — es un
+         efecto conocido de WebKit con "position: sticky" en el rebote. */
+      .fila-barra-historial { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 500; will-change: transform; }
 
       .ast-pasos-wrap-inline { min-height: 190px; position: relative; overflow: hidden; }
       .pt-cab { background: #fff; border-bottom: 1px solid #e5e7eb; padding: calc(10px + var(--safe-top)) 12px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -1439,6 +1443,12 @@
         autoZoomA4();
       };
 
+      // Bloquea el rebote elástico SOLO cuando de verdad no hace falta
+      // scroll (el contenido cabe entero en la pantalla) — bloquearlo
+      // siempre, aunque sí haya contenido para desplazar, hace que el
+      // scroll se sienta rígido en vez de fluido. Se reevalúa solo cada
+      // vez que cambia la altura del contenido (nueva pestaña, tarjetas
+      // añadidas o quitadas, etc.), sin tener que enganchar cada función.
       // MODO DE VISTA: "a4" (hoja real) o "movil" (todo apilado y compacto)
       let modoVista = localStorage.getItem("agx_vista") || "a4";
 
@@ -1865,9 +1875,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.7.7";
+      const VERSION = "2.8.0";
       const VERSION_FECHA = "11/08/2026";
-      const VERSION_NOTAS = "La barra de abajo (recuento y total) ahora mide lo mismo que la de arriba, con el mismo criterio de 50px. Añadida una animación de entrada: se desliza desde abajo y se asienta con un ligero rebote. Confirmado que el hueco respecto a la cabecera/navegación es de 5px en los dos extremos, arriba y abajo.";
+      const VERSION_NOTAS = "Revertido el bloqueo del rebote elástico: el scroll vuelve a ser el nativo por defecto del navegador. En su lugar, arreglado el problema real — la tarjeta 'No hay facturas' se colaba unos píxeles por debajo de la barra fija durante el rebote. Reforzado el z-index y añadida una capa de composición propia (will-change) a las barras fijas para que nunca queden tapadas.";
 
       function mostrarVersion() {
         fx("abrir");
