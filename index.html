@@ -36,7 +36,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: #f3f4f6; color: #000000; -webkit-tap-highlight-color: transparent;
         /* Márgenes para que la cabecera y el footer no tapen la factura al hacer scroll */
-        padding-top: calc(60px + var(--safe-top));
+        padding-top: calc(67px + var(--safe-top));
         padding-bottom: calc(72px + var(--safe-bottom));
         overflow-x: hidden;
       }
@@ -44,7 +44,7 @@
       .app-header {
         position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid #e5e7eb; padding: calc(12px + var(--safe-top)) 16px 12px 16px;
+        border-bottom: 1px solid #e5e7eb; padding: calc(12px + var(--safe-top)) 12px 12px 12px;
         z-index: 1000; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center;
       }
       /* Franja de relleno del área segura inferior. Sin esto asomaba una
@@ -58,7 +58,10 @@
       }
 
       /* BOTONERA Y LOGO */
-      .logo-agx { cursor: pointer; background-color: #000000; color: #ffffff; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; padding: 0 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center; height: 42px; min-width: 56px; overflow: hidden; }
+      /* El ancho del logo es la suma exacta de los dos botones de la
+         derecha (42 + 7 de hueco + 42 = 91px), para que ambos extremos de
+         la cabecera queden simétricos */
+      .logo-agx { cursor: pointer; background-color: #000000; color: #ffffff; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; padding: 0 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center; height: 42px; width: 91px; overflow: hidden; }
       /* Con imagen: el logo se encaja centrado y sin deformarse dentro del rectángulo negro */
       .logo-agx.con-imagen { padding: 5px 8px; }
       .logo-agx img { display: block; height: 100%; max-height: 22px; max-width: 96px; width: auto; object-fit: contain; }
@@ -80,10 +83,10 @@
       button.barra-titulo { cursor: pointer; }
       /* Se queda fija arriba al hacer scroll dentro de su hoja */
       /* Se queda fija arriba al hacer scroll dentro de su hoja */
-      .pagina-app > .barra-titulo:first-child { position: sticky; top: calc(60px + var(--safe-top)); z-index: 60; }
+      .pagina-app > .barra-titulo:first-child { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 60; }
       /* La barra de Historial flota fuera de cualquier hoja: se ancla ella
          misma, junto con el botón cuadrado que la acompaña */
-      .fila-barra-historial { position: sticky; top: calc(60px + var(--safe-top) + 5px); z-index: 60; }
+      .fila-barra-historial { position: sticky; top: calc(67px + var(--safe-top) + 5px); z-index: 60; }
 
       .ast-pasos-wrap-inline { min-height: 190px; position: relative; overflow: hidden; }
       .pt-cab { background: #fff; border-bottom: 1px solid #e5e7eb; padding: calc(10px + var(--safe-top)) 12px 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -246,7 +249,12 @@
          verdad que no deben tocar el borde redondeado. */
       /* Relleno propio para que los campos no toquen el borde redondeado
          de la barra — antes iban pegados a los extremos */
-      .barra-historial { position: relative; overflow: hidden; padding: 0 8px; justify-content: flex-start; }
+      /* La barra ocupa TODO el ancho de su fila, sin relleno propio — así
+         empieza exactamente donde el logo y acaba exactamente donde
+         empieza el botón cuadrado, igual que la cabecera. El aire para
+         que el texto no toque el borde va en el contenido de dentro
+         (bh-capa-busqueda / bh-mitad), no en la barra misma. */
+      .barra-historial { position: relative; overflow: hidden; padding: 0; justify-content: flex-start; }
       /* ===== TRANSFORMACIÓN REAL de la barra de búsqueda =====
          No hay dos elementos superpuestos: hay UNA fila con dos mitades.
          En modo búsqueda, la mitad derecha tiene ancho 0 y la izquierda
@@ -255,7 +263,11 @@
          parte en dos. Los textos internos (lupa/etiquetas) se cruzan en
          opacidad durante el movimiento, así nunca se ve el placeholder
          "flotando" encima de los selectores ya colocados. */
-      .bh-morph { position: relative; display: flex; align-items: center; width: 100%; height: 100%; gap: 0; transition: gap 0.42s cubic-bezier(.34,1.56,.64,1); }
+      /* El aire alrededor de los campos va AQUÍ (en el contenido de
+         dentro), no en la barra exterior — así la barra sigue alineada
+         por fuera con el logo y el botón, pero por dentro los campos no
+         tocan directamente el borde negro. */
+      .bh-morph { position: relative; display: flex; align-items: center; width: 100%; height: 100%; gap: 0; padding: 0 6px; box-sizing: border-box; transition: gap 0.42s cubic-bezier(.34,1.56,.64,1); }
       .barra-historial.modo-fechas .bh-morph { gap: 10px; }
 
       /* Capa del buscador: se superpone a las dos mitades cuando están
@@ -311,24 +323,42 @@
          fondo. "Fixed" la ancla siempre, haya o no scroll. Como sale del
          flujo del documento, hay que replicarle a mano el mismo ancho y
          centrado que ya tiene .main-container. */
+      /* Mismo ancho que la barra de arriba: empieza en el mismo borde
+         izquierdo, pero su borde derecho también se detiene 50px antes
+         (el mismo hueco+botón que hace más estrecha a la barra de arriba),
+         en vez de ocupar todo el ancho de la fila como hacía antes. */
       .pie-historial {
         position: fixed; bottom: calc(66px + var(--safe-bottom) + 5px);
-        left: 50%; transform: translateX(-50%);
-        width: min(calc(900px - 24px), calc(100% - 24px));
+        left: max(12px, calc((100% - 900px) / 2 + 12px));
+        right: calc(max(12px, calc((100% - 900px) / 2 + 12px)) + 50px);
         background: #000; color: #fff; border-radius: 12px; padding: 12px 16px;
         display: flex; justify-content: space-between; align-items: center;
         font-size: 13px; font-weight: 800; box-shadow: 0 -6px 14px rgba(0,0,0,0.12);
         z-index: 900;
+        /* Entra deslizándose desde abajo y se asienta con un ligero rebote */
+        animation: pieHistorialEntra 0.42s cubic-bezier(.22,1.4,.36,1);
+      }
+      @keyframes pieHistorialEntra {
+        from { transform: translateY(28px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
       .pie-historial.hidden { display: none; }
       /* Hueco al final de la lista para que la barra fija no tape la
          última factura */
+      /* La barra comparte su fila con el botón cuadrado (barra + 8px de
+         hueco + 42px de botón), así que la barra POR SÍ SOLA es 50px más
+         estrecha que la fila entera. Las tarjetas deben acabar donde
+         acaba la barra, no donde acaba la fila — por eso llevan el mismo
+         hueco a la derecha que ocupan el hueco y el botón juntos. */
+      #pagina-resultados-historial { margin-right: 50px; }
       #pagina-resultados-historial.con-pie-fijo { margin-bottom: 70px; }
       #pie-hist-cuenta { color: #d1d5db; font-weight: 600; font-size: 12px; }
       /* Vista lista: cada factura sigue siendo una barra INDEPENDIENTE,
          con su propio fondo y borde — antes el contenedor las agrupaba en
          un bloque único con un borde compartido, por eso se veían pegadas
          entre sí en vez de separadas. */
+      /* Las tarjetas ocupan el mismo ancho que la barra: empiezan y acaban
+         exactamente donde ella, sin ningún margen propio */
       .history-grid.vista-lista { display: flex; flex-direction: column; gap: 5px; background: none; border: none; border-radius: 0; }
       .history-grid.vista-lista .history-card { border-radius: 9px; border: 1px solid #e5e7eb; padding: 8px 12px; }
 
@@ -1835,9 +1865,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.7.1";
+      const VERSION = "2.7.7";
       const VERSION_FECHA = "11/08/2026";
-      const VERSION_NOTAS = "Los cuatro botones de la cabecera (logo AGX, calendario, tres puntos) miden ahora exactamente 42x42 con 10px de radio, igual que el cuadrado de vista tarjeta/lista — antes estaban en 38px (32px el logo). Confirmado también que el hueco entre columnas de tarjetas coincide con el de la barra: los dos usan 10px.";
+      const VERSION_NOTAS = "La barra de abajo (recuento y total) ahora mide lo mismo que la de arriba, con el mismo criterio de 50px. Añadida una animación de entrada: se desliza desde abajo y se asienta con un ligero rebote. Confirmado que el hueco respecto a la cabecera/navegación es de 5px en los dos extremos, arriba y abajo.";
 
       function mostrarVersion() {
         fx("abrir");
