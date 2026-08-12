@@ -292,8 +292,36 @@
         background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
         overflow: hidden;
         transition: padding 0.42s cubic-bezier(.34,1.56,.64,1), border-radius 0.42s cubic-bezier(.34,1.56,.64,1),
-                    border-color 0.36s ease;
+                    border-color 0.36s ease, background 0.3s ease;
       }
+      /* En modo búsqueda (no calendario), esta caja de fondo es la que se
+         ve "a través" del buscador transparente que va encima — por eso
+         se apaga del todo por defecto (barra negra pura, solo la lupa) y
+         solo se enciende cuando el campo tiene el foco. En modo
+         calendario se ignora esto y se ve siempre, porque ahí SÍ hace
+         falta distinguir los dos campos de fecha. */
+      /* En modo búsqueda las mitades de fecha no pintan nada — el recuadro
+         visual es SIEMPRE el elemento dedicado de abajo (bh-fondo-busqueda),
+         nunca ellas. Así no hay dos cosas independientes que animar (y
+         desincronizar), solo una. */
+      .barra-historial:not(.modo-fechas) .bh-mitad { background: transparent !important; border-color: transparent !important; }
+
+      /* El recuadro que se revela al enfocar es un elemento propio,
+         independiente de los campos de fecha. Antes intentaba animar cada
+         mitad (Desde/Hasta) por separado para lograr este efecto, pero
+         solo le puse la transición del recorte a una de las dos — por eso
+         la otra mitad aparecía de golpe en vez de deslizarse. Con un único
+         elemento cubriendo toda la barra, el barrido es uno solo y
+         continuo, sin costuras a la mitad. */
+      .bh-fondo-busqueda {
+        position: absolute; inset: 0; border-radius: 7px;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        opacity: 0; clip-path: inset(0 100% 0 0);
+        transition: opacity 0.2s ease, clip-path 0.4s cubic-bezier(.22,.9,.24,1);
+        pointer-events: none;
+      }
+      .barra-historial:focus-within .bh-fondo-busqueda { opacity: 1; clip-path: inset(0 0 0 0); }
+      .barra-historial.modo-fechas .bh-fondo-busqueda { display: none; }
       /* Unidas: la izquierda redondea solo por fuera, la derecha igual, y
          se quita el borde que las separaría por dentro */
       .bh-mitad-izq { border-radius: 7px 0 0 7px; border-right: none; padding: 0 0 0 10px; }
@@ -304,6 +332,8 @@
 
       .bh-lupa { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.5; transition: opacity 0.2s ease, width 0.3s ease; }
       .barra-historial.modo-fechas .bh-lupa { opacity: 0; width: 0; }
+      .bh-lupa-btn { background: none; border: none; padding: 0; display: flex; align-items: center; cursor: pointer; color: #fff; flex-shrink: 0; }
+      .bh-lupa-btn:focus { outline: none; }
 
       .bh-etq { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 0.3px; flex-shrink: 0; white-space: nowrap; opacity: 0; width: 0; overflow: hidden; transition: opacity 0.22s ease 0.14s, width 0.3s ease; }
       .barra-historial.modo-fechas .bh-etq { opacity: 1; width: auto; }
@@ -1129,8 +1159,11 @@
                    parece un único campo. Al separarse, se desvanece y cada
                    mitad muestra su propio selector de fecha. -->
               <div class="bh-capa-busqueda">
-                <svg class="bh-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input id="search-input" type="text" placeholder="Buscar por cliente o N°..." oninput="renderizarHistorial()" class="bh-campo bh-campo-busqueda" />
+                <div class="bh-fondo-busqueda"></div>
+                <button type="button" class="bh-lupa-btn" onclick="document.getElementById('search-input').focus()" title="Buscar">
+                  <svg class="bh-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+                <input id="search-input" type="text" placeholder="" oninput="renderizarHistorial()" onfocus="activarBusquedaHistorial()" class="bh-campo bh-campo-busqueda" />
               </div>
               <div class="bh-mitad bh-mitad-izq">
                 <label class="bh-etq">Desde</label>
@@ -1881,9 +1914,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.8.1";
+      const VERSION = "2.8.4";
       const VERSION_FECHA = "12/08/2026";
-      const VERSION_NOTAS = "Arreglado que el contenido se viera comprimido, sin el hueco de la cabecera, después de bajar del todo y soltar: usaba 100dvh (altura dinámica), que cambia en caliente cuando el navegador oculta la barra de direcciones al hacer scroll. Cambiado a 100svh, que se queda fija siempre y no depende de si la barra de direcciones está visible.";
+      const VERSION_NOTAS = "Arreglado el recorte a medias del buscador: solo tenía la transición puesta en una de las dos mitades. Ahora es un único elemento el que se revela, con un barrido continuo sin costuras. La animación de escritura del placeholder también se reinicia cada vez que sales de Historial y vuelves, en vez de solo una vez por sesión.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -3253,6 +3286,10 @@
         // La edición de campos solo tiene sentido en Datos: si sales de ahí
         // con el modo activo, se bloquea automáticamente.
         if (pestanaActual === "datos" && tab !== "datos" && editandoPlantillaEstructura) toggleEdicionPlantilla();
+        // Al salir de Historial, la animación de escritura del buscador se
+        // reinicia — así vuelve a reproducirse la próxima vez que entres,
+        // en vez de solo una vez por sesión entera.
+        if (pestanaActual === "history" && tab !== "history") busquedaYaAnimada = false;
         pestanaActual = tab;
         liberarFondoSiempre();
         // También se cierra cualquier panel que hubiera quedado abierto
@@ -3687,6 +3724,25 @@
       // ninguna transición CSS llegaría a animar (mismo motivo por el que
       // no había animación en el asistente de artículos hace unas rondas).
       // Aquí solo se cambia la clase sobre los nodos que ya existen.
+      // La primera vez que se toca la lupa/campo de búsqueda, el
+      // placeholder se escribe letra a letra en vez de aparecer de golpe.
+      // Solo pasa una vez por sesión — las siguientes veces el campo ya
+      // tiene el texto normal, escribirlo cada vez sería cargante.
+      let busquedaYaAnimada = false;
+      function activarBusquedaHistorial() {
+        if (busquedaYaAnimada) return;
+        busquedaYaAnimada = true;
+        const input = document.getElementById("search-input");
+        const textoFinal = "Buscar por cliente o N°...";
+        input.placeholder = "";
+        let i = 0;
+        const intervalo = setInterval(() => {
+          i++;
+          input.placeholder = textoFinal.slice(0, i);
+          if (i >= textoFinal.length) clearInterval(intervalo);
+        }, 45);
+      }
+
       function alternarVistaHistorial() {
         vistaHistorial = vistaHistorial === "tarjeta" ? "lista" : "tarjeta";
         // Gotas que se juntan al apilarse en lista, y que se dispersan al
@@ -3751,7 +3807,10 @@
         const btnVista = document.getElementById("btn-vista-lista");
         if (btnVista) actualizarIconoVista();
 
-        if (filtradas.length === 0) { container.innerHTML = `<div style="background:#ffffff; padding:20px; border-radius:12px; text-align:center; color:#6b7280; font-size:12px;">No hay facturas guardadas.</div>`; return; }
+        // grid-column:1/-1 para que, en modo tarjeta (rejilla de dos
+        // columnas), este único mensaje ocupe las dos en vez de encajarse
+        // en la primera y quedar más estrecho que en modo lista
+        if (filtradas.length === 0) { container.innerHTML = `<div style="grid-column: 1 / -1; background:#ffffff; padding:20px; border-radius:12px; text-align:center; color:#6b7280; font-size:12px;">No hay facturas guardadas.</div>`; return; }
         container.innerHTML = "";
         filtradas.forEach((f, i) => {
           const div = document.createElement("div"); div.className = "history-card"; div.onclick = () => cargarFactura(f.invoiceNo);
