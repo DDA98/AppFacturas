@@ -445,7 +445,13 @@
       .main-container { max-width: 900px; margin: 0 auto; padding: 12px; }
       /* Datos e Historial son cortos: que ocupen el alto disponible para que
          no quede una banda gris muerta encima de la navegación. */
-      #view-datos, #view-history, #view-articulos { min-height: calc(100dvh - 132px - var(--safe-top) - var(--safe-bottom)); }
+      /* 100svh (altura "pequeña", la que hay con la barra de direcciones
+         del navegador visible) en vez de 100dvh (altura "dinámica"): dvh
+         cambia en caliente cuando el navegador oculta la barra de
+         direcciones al hacer scroll, y eso es justo lo que hacía que el
+         contenido se viera comprimido y sin el hueco de la cabecera
+         después de bajar del todo. svh se queda fija siempre. */
+      #view-datos, #view-history, #view-articulos { min-height: calc(100svh - 132px - var(--safe-top) - var(--safe-bottom)); }
       
       #a4-wrapper {
         width: 100%; display: flex; justify-content: flex-start; margin-top: 10px;
@@ -1875,9 +1881,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.8.0";
-      const VERSION_FECHA = "11/08/2026";
-      const VERSION_NOTAS = "Revertido el bloqueo del rebote elástico: el scroll vuelve a ser el nativo por defecto del navegador. En su lugar, arreglado el problema real — la tarjeta 'No hay facturas' se colaba unos píxeles por debajo de la barra fija durante el rebote. Reforzado el z-index y añadida una capa de composición propia (will-change) a las barras fijas para que nunca queden tapadas.";
+      const VERSION = "2.8.1";
+      const VERSION_FECHA = "12/08/2026";
+      const VERSION_NOTAS = "Arreglado que el contenido se viera comprimido, sin el hueco de la cabecera, después de bajar del todo y soltar: usaba 100dvh (altura dinámica), que cambia en caliente cuando el navegador oculta la barra de direcciones al hacer scroll. Cambiado a 100svh, que se queda fija siempre y no depende de si la barra de direcciones está visible.";
 
       function mostrarVersion() {
         fx("abrir");
