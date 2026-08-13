@@ -1618,7 +1618,9 @@
         cargarClientes();
         cargarMisDatos(false);
         cargarClienteExtra();
+        cargarClienteOcultos();
         aplicarClienteExtraAFactura();
+        ocultarFilasClienteFijas();
         cargarCamposCliente();
         aplicarIdioma("es"); // traduce y ya deja aplicado todo lo anterior
         renderizarClientes();
@@ -2082,9 +2084,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "3.2.8";
+      const VERSION = "3.2.9";
       const VERSION_FECHA = "13/08/2026";
-      const VERSION_NOTAS = "Encontrado por qué mis cuatro intentos con margin-top nunca cambiaban nada visible: el botón es sticky y probablemente ya empieza 'pegado' desde el principio (la tarjeta está justo debajo de la cabecera fija), así que su posición la decide 'top', no el margen — el margen solo se aplicaría si el botón NO estuviera ya pegado, y aquí nunca lo está. Corregido ajustando 'top' en vez de 'margin-top', calculado con ResizeObserver en tiempo real.";
+      const VERSION_NOTAS = "'Datos de cliente' ahora permite borrar también sus 6 campos fijos (Nombre empresa, NIF/VAT, Calle...) en Modo Edición, igual que Mis Datos — con su botón ✕ y ocultando la fila correspondiente en la propia factura. Se recuerda qué campos borraste, incluso al recargar la app.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -3637,19 +3639,48 @@
         });
       }
 
+      // Igual que en Mis Datos: los campos fijos SÍ se pueden borrar en
+      // Modo Edición — se guarda cuáles están ocultos, y la fila
+      // correspondiente se oculta también en la propia factura.
+      let camposClienteOcultos = [];
+      function cargarClienteOcultos() {
+        try { camposClienteOcultos = JSON.parse(localStorage.getItem("agx_cliente_ocultos") || "[]"); } catch (e) { camposClienteOcultos = []; }
+      }
+      function guardarClienteOcultos() { localStorage.setItem("agx_cliente_ocultos", JSON.stringify(camposClienteOcultos)); }
+      function quitarCampoClienteFijo(sufijo) {
+        fx("quitar");
+        if (!camposClienteOcultos.includes(sufijo)) camposClienteOcultos.push(sufijo);
+        guardarClienteOcultos();
+        renderizarDatosClienteTarjeta();
+      }
+      function ocultarFilasClienteFijas() {
+        CAMPOS_CLIENTE_FACTURA.forEach((c) => {
+          const el = document.getElementById("client-" + c.sufijo);
+          const fila = el ? el.closest(".field-row") : null;
+          if (fila) fila.style.display = camposClienteOcultos.includes(c.sufijo) ? "none" : "";
+        });
+      }
+
       function renderizarDatosClienteTarjeta() {
         const cont = document.getElementById("seccion-datos-cliente-tarjeta");
         if (!cont) return;
         cont.innerHTML = "";
-        const todasEtiquetas = CAMPOS_CLIENTE_FACTURA.map((c) => c.label.length).concat(camposClienteExtra.map((c) => (c.label || "").length));
+        const camposFijosVisibles = CAMPOS_CLIENTE_FACTURA.filter((c) => !camposClienteOcultos.includes(c.sufijo));
+        const todasEtiquetas = camposFijosVisibles.map((c) => c.label.length).concat(camposClienteExtra.map((c) => (c.label || "").length));
         const anchoEtiqueta = Math.max(6, ...todasEtiquetas) + 1;
-        CAMPOS_CLIENTE_FACTURA.forEach((c) => {
+        camposFijosVisibles.forEach((c) => {
           const origen = document.getElementById("client-" + c.sufijo);
           const fila = document.createElement("div");
           fila.className = "dato-row dato-row-claro";
           fila.innerHTML = `
             <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${c.label}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="renombrarEtiquetaClienteFactura('${c.sufijo}', this.value)" />
             <input class="dato-valor" id="dc-${c.sufijo}" type="text" value="${origen ? (origen.innerText || "").replace(/"/g, "&quot;") : ""}" oninput="sincronizarCampoClienteDesdeTarjeta('${c.sufijo}')" />`;
+          if (editandoPlantillaEstructura) {
+            const b = document.createElement("button");
+            b.className = "btn-del-row"; b.innerHTML = "✕"; b.title = "Quitar campo";
+            b.onclick = () => quitarCampoClienteFijo(c.sufijo);
+            fila.appendChild(b);
+          }
           cont.appendChild(fila);
         });
         camposClienteExtra.forEach((en) => {
@@ -3674,6 +3705,7 @@
           cont.appendChild(add);
         }
         aplicarClienteExtraAFactura();
+        ocultarFilasClienteFijas();
       }
 
       function sincronizarCampoClienteDesdeTarjeta(sufijo) {
