@@ -246,6 +246,9 @@
       .btn-vista-cuadrado svg { width: 17px; height: 17px; }
       @keyframes girarIconoVista { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(0.75); } 100% { transform: rotate(360deg) scale(1); } }
       .btn-vista-cuadrado.girando #ico-vista-lista { display: inline-flex; animation: girarIconoVista 0.45s cubic-bezier(.34,1.56,.64,1); }
+      /* Mismo giro para el botón de calendario/lupa de la cabecera al
+         cambiar de modo en Historial */
+      .pastilla-num.girando #ico-accion-cabecera { display: inline-flex; animation: girarIconoVista 0.45s cubic-bezier(.34,1.56,.64,1); }
       #ico-vista-lista { display: inline-flex; }
 
       /* La barra del buscador necesita relleno propio: los demás textos de
@@ -346,6 +349,23 @@
       }
       .bh-campo:focus { outline: none; }
       .bh-campo::placeholder { color: rgba(255,255,255,0.45); }
+      /* La leyenda del buscador solo se ve mientras el campo tiene el
+         foco — por defecto (sin tocarlo) solo se ve la lupa, nada de
+         texto. Si ya has escrito algo, esto no lo afecta: el navegador
+         nunca muestra el placeholder cuando hay un valor de por medio. */
+      /* El placeholder (aspecto en reposo) usa la misma tipografía que las
+         barras de título (negrita, mayúsculas, con espaciado) — como si
+         fuera una etiqueta. En cuanto escribes algo, el texto real vuelve
+         al tamaño normal y legible de un campo de búsqueda (eso lo
+         controla .bh-campo, sin tocar). Si el texto no cabe con ese
+         espaciado tan amplio, se recorta con puntos suspensivos en vez de
+         desbordar la barra. */
+      .bh-campo-busqueda::placeholder {
+        opacity: 0; transition: opacity 0.15s ease;
+        font-size: 15px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;
+      }
+      .bh-campo-busqueda { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .bh-campo-busqueda:focus::placeholder { opacity: 1; }
       /* Los selectores de fecha aparecen solo cuando la barra ya se ha
          separado — antes de eso están ocultos bajo la capa del buscador */
       .bh-campo-fecha { font-size: 11px; opacity: 0; transition: opacity 0.22s ease 0.16s; }
@@ -779,6 +799,100 @@
       .datos-card-negra { background: #000000; border-color: #000000; color: #ffffff; }
       .datos-card-header { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
       .datos-hint { font-size: 11px; color: #9ca3af; margin-bottom: 12px; }
+
+      /* Tarjeta plegable de "Datos de mi empresa" — aparte de la barra
+         negra "Mis Datos", que ahora es solo un título flotante */
+      /* Mismo criterio de ancho que Historial: las barras (y las tarjetas
+         de debajo) se detienen antes del final de la fila — hasta donde
+         llega el botón negro de acción de la cabecera, no hasta el de los
+         tres puntos — en vez de ocupar todo el ancho disponible. */
+      /* Mismo criterio de ancho que Historial: las barras (y las tarjetas
+         de debajo) se detienen antes del final de la fila — hasta donde
+         llega el botón negro de acción de la cabecera, no hasta el de los
+         tres puntos — en vez de ocupar todo el ancho disponible.
+         IMPORTANTE: .barra-titulo tiene width:100% fijo, así que
+         margin-right no la encoge (solo desborda) — hay que fijar el
+         ancho directamente con calc(). Las tarjetas .pagina-app sí son
+         normales (width:auto) y con margin-right les basta. */
+      #view-datos > .barra-titulo { width: calc(100% - 50px); }
+      #view-datos > .pagina-app { margin-right: 50px; }
+
+      /* Acordeón: colapsadas, solo icono + nombre, una al lado de otra. Al
+         tocar una, se expande hasta ocupar todo el ancho de la barra (el
+         mismo mecanismo de flex-grow que ya usan las categorías de
+         Artículos) y la otra se encoge a la nada en vez de quedar como un
+         resto a medias. */
+      /* Misma composición que .fila-barra-historial: contenido a la
+         izquierda (flex:1) + botón cuadrado fijo de 42px a la derecha,
+         con el mismo hueco (8px) entre los dos. */
+      .fila-tarjetas-cliente-guardar { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 20px; }
+      .datos-fila-tarjetas { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+      .datos-tarjeta-info {
+        flex: 1 1 50%; min-width: 0; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden;
+        transition: flex-grow 0.4s cubic-bezier(.22,.9,.24,1), flex-basis 0.4s cubic-bezier(.22,.9,.24,1),
+                    opacity 0.32s ease, transform 0.4s cubic-bezier(.22,.9,.24,1), margin 0.4s cubic-bezier(.22,.9,.24,1);
+      }
+      .datos-tarjeta-info.abierta { flex: 1 1 100%; }
+      .datos-tarjeta-info.encogida { flex: 0 0 0%; opacity: 0; transform: scale(0.92); margin-left: -10px; pointer-events: none; }
+
+      /* El botón cuadrado de guardar: oculto por defecto, plegado DENTRO
+         del hueco de la tarjeta (translateX negativo). Al desplegar
+         "Datos de cliente" se desliza hacia la derecha y se asienta en su
+         sitio, como si saliera de dentro de la propia tarjeta — no como
+         si entrara desde fuera.
+         position:sticky (con el mismo top que el resto de barras fijas de
+         la app) hace que te siga al hacer scroll, pero solo dentro de los
+         límites de su fila — en cuanto la fila (la tarjeta) se termina,
+         dejar de seguir es el comportamiento nativo de sticky, no hace
+         falta nada más para lograrlo. */
+      .btn-guardar-cliente-cuadrado {
+        position: sticky; top: calc(67px + var(--safe-top) + 5px);
+        /* El margin-top ya NO se calcula a mano en CSS (fallé varias veces
+           adivinando la altura real de la cabecera) — lo fija JS con la
+           altura REAL medida por el navegador, vía
+           alinearBotonGuardarCliente(). Aquí solo el valor de arranque,
+           por si JS tarda un instante en aplicar el suyo. */
+        margin-top: 13px; opacity: 0; transform: translateX(-46px) scale(0.85); pointer-events: none;
+        transition: opacity 0.38s cubic-bezier(.22,.9,.24,1), transform 0.42s cubic-bezier(.34,1.4,.4,1);
+      }
+      .btn-guardar-cliente-cuadrado.visible { opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; }
+
+      /* Vuelta a la alineación simple a la izquierda — icono cerca del
+         borde, texto justo después, los dos en la misma fila. Es mucho
+         más fiable que centrar (que llevaba varias rondas fallando por
+         mi culpa): aquí no hay ningún cálculo de equilibrio que pueda
+         salir mal, el icono y el texto simplemente ocupan su sitio en
+         orden, de izquierda a derecha. */
+      .datos-tarjeta-cab {
+        width: 100%; background: none; border: none; cursor: pointer;
+        display: flex; align-items: center; padding: 14px;
+        transition: padding 0.4s cubic-bezier(.22,.9,.24,1);
+      }
+      .datos-tarjeta-espaciador { display: none; }
+      .datos-tarjeta-contenido { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+      .datos-tarjeta-contenido svg { width: 17px; height: 17px; color: #6b7280; flex-shrink: 0; transition: width 0.4s cubic-bezier(.22,.9,.24,1), height 0.4s cubic-bezier(.22,.9,.24,1); }
+      .datos-tarjeta-contenido h3 { font-size: 13px; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: font-size 0.4s cubic-bezier(.22,.9,.24,1); }
+      .datos-tarjeta-flecha { width: 20px; flex-shrink: 0; text-align: right; font-size: 11px; color: #9ca3af; transition: transform 0.35s cubic-bezier(.22,.9,.24,1); }
+      /* Colapsada, junto a la otra tarjeta, el ancho es la mitad de la
+         fila — ahí el icono y el texto se quedan en su tamaño normal, no
+         cabría más. Solo al desplegarse (todo el ancho de la fila) es
+         cuando de verdad "sobra espacio", y es cuando crecen.
+         La altura fija (68px) hace que el cálculo del botón de guardar
+         sea exacto, en vez de depender de estimar cuánto ocupan el
+         relleno y el icono juntos — que fue justo donde fallé antes. */
+      .datos-tarjeta-info.abierta .datos-tarjeta-cab { height: 68px; padding: 0 34px; }
+      .datos-tarjeta-info.abierta .datos-tarjeta-contenido svg { width: 28px; height: 28px; }
+      .datos-tarjeta-info.abierta .datos-tarjeta-contenido h3 { font-size: 15px; }
+      .datos-tarjeta-info.abierta .datos-tarjeta-flecha { transform: rotate(180deg); }
+
+      /* Altura del cuerpo animada con la técnica grid 0fr→1fr, la misma
+         que ya se usa en el resto de la app para desplegar sin saltos */
+      .datos-tarjeta-cuerpo-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(.22,.9,.24,1); }
+      .datos-tarjeta-info.abierta .datos-tarjeta-cuerpo-wrap { grid-template-rows: 1fr; }
+      .datos-tarjeta-cuerpo { overflow: hidden; min-height: 0; padding: 0 14px 14px; opacity: 0; transition: opacity 0.2s ease; }
+      .datos-tarjeta-info.abierta .datos-tarjeta-cuerpo { opacity: 1; transition: opacity 0.25s ease 0.15s; }
+
       .datos-grid { display: flex; flex-direction: column; gap: 10px; }
       .datos-sep { font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.6; margin-top: 6px; border-top: 1px solid rgba(156,163,175,0.35); padding-top: 8px; }
       .datos-card input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 16px; background: #fff; color: #000000; }
@@ -786,13 +900,29 @@
       .datos-toggle { width: 100%; background: none; border: none; color: inherit; font-size: 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0; }
       .btn-extra { background: rgba(255,255,255,0.12); color: #fff; border: 1px dashed rgba(255,255,255,0.45); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 6px; }
       .datos-seccion { display: flex; flex-direction: column; gap: 8px; }
-      .dato-row { display: grid; grid-template-columns: 104px 1fr auto; gap: 8px; align-items: center; }
-      .dato-row input { font-size: 15px; padding: 9px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #000000; width: 100%; }
-      .dato-row .dato-label { font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.12); color: #e5e7eb; border-color: rgba(255,255,255,0.25); }
+      /* 136px en vez de 104px: con las etiquetas nuevas más largas
+         ("Nombre empresa", "Código postal"...) el ancho viejo se quedaba
+         corto y el texto se recortaba dentro del campo. Sin poder medir
+         el renderizado real (sin herramientas de navegador disponibles
+         aquí), calculé el ancho necesario a mano y dejé margen de sobra
+         en vez de ajustar al límite. */
+      /* La columna de la etiqueta se ajusta ella sola al contenido real
+         (max-content), usando el atributo "size" del input como medida —
+         eso lo calcula el propio navegador con su motor de texto real, en
+         vez de un ancho en píxeles adivinado a mano que se quedaba corto
+         con etiquetas largas y desperdiciaba espacio con las cortas. */
+      .dato-row { display: grid; grid-template-columns: max-content 1fr auto; gap: 8px; align-items: center; }
+      .dato-row input { font-size: 13px; padding: 8px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #000000; width: 100%; }
+      .dato-row .dato-label { width: auto; }
+      .dato-row .dato-label { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #eef0f3; color: #111827; border-color: #d1d5db; }
       .dato-row-claro .dato-label { background: #eef0f3; color: #4b5563; border-color: #d1d5db; }
-      .dato-row-claro .dato-label[readonly] { background: transparent; border-color: transparent; color: #6b7280; }
+      /* Negro, no gris — y sin poder enfocarse ni un instante fuera del
+         modo edición: "readonly" solo evita ESCRIBIR, pero un campo de
+         solo lectura sigue siendo enfocable por el navegador y muestra su
+         contorno de foco igualmente. pointer-events lo evita del todo. */
+      .dato-row-claro .dato-label[readonly] { background: transparent; border-color: transparent; color: #111827; pointer-events: none; }
       .btn-extra-claro { background: #eef0f3; color: #374151; border-color: #cbd5e1; }
-      .dato-row .dato-label[readonly] { background: transparent; border-color: transparent; padding-left: 0; }
+      .dato-row .dato-label[readonly] { background: transparent; border-color: transparent; padding-left: 0; color: #111827; pointer-events: none; }
       .cliente-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
       /* Botón para insertar un cliente guardado en la factura */
@@ -1054,6 +1184,7 @@
                   </div>
                   <div class="footer-content" id="container-addr-fields">
                     <div class="foot-row"><span id="addr-street" class="editable-span" contenteditable="true" style="font-weight: 600;">Straatnaam 123</span></div>
+                    <div class="foot-row"><span id="addr-postal" class="editable-span" contenteditable="true"></span></div>
                     <div class="foot-row"><span id="addr-city" class="editable-span" contenteditable="true">1234 AB Amsterdam</span></div>
                     <div class="foot-row"><span id="addr-country" class="editable-span" contenteditable="true">Netherlands</span></div>
                     <button onclick="agregarFilaPie('container-addr-fields')" class="no-print hidden btn-add-field">+ Fila</button>
@@ -1108,37 +1239,73 @@
       <!-- VISTA: DATOS (MIS DATOS + CLIENTES) -->
       <section id="view-datos" class="hidden">
 
-        <!-- TARJETA 1: MIS DATOS — barra fija, siempre visible, sin desplegar -->
-        <div class="pagina-app">
-          <div class="barra-titulo">
-            <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.6" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="6.6" y="13" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="13" width="1.8" height="1.8" rx="0.5"/></svg>
-            <span>Mis Datos</span>
-          </div>
-          <div id="cuerpo-mis-datos">
-            <p class="datos-hint">Se aplica automáticamente a la factura. Para añadir, quitar o renombrar campos, activa el Modo Edición desde Ajustes.</p>
-            <div id="seccion-empresa" class="datos-seccion"></div>
-            <div id="seccion-direccion" class="datos-seccion"></div>
-            <div id="seccion-contacto" class="datos-seccion"></div>
-            <div id="seccion-banco" class="datos-seccion"></div>
-          </div>
+        <!-- MIS DATOS: barra independiente, flotando — sin tarjeta blanca
+             detrás, misma medida que el resto de barras de la app -->
+        <div class="barra-titulo">
+          <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6.6a1 1 0 0 1 .78-.98l8-1.9A1 1 0 0 1 14 4.7V21"/><path d="M14 11.6h5.2a1 1 0 0 1 1 1V21"/><line x1="2.6" y1="21" x2="21.4" y2="21"/><rect x="6.6" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="8.6" width="1.8" height="1.8" rx="0.5"/><rect x="6.6" y="13" width="1.8" height="1.8" rx="0.5"/><rect x="10.3" y="13" width="1.8" height="1.8" rx="0.5"/></svg>
+          <span>Mis Datos</span>
         </div>
 
-        <!-- TARJETA 2: CLIENTES — aparte -->
-        <div class="pagina-app" style="margin-top: 12px;">
-          <div class="barra-titulo">
-            <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg>
-            <span>Clientes</span>
-          </div>
-          <p class="datos-hint" style="text-align:center;">Guarda tus clientes y añádelos a la factura con un toque.</p>
-
-          <div id="form-cliente" class="hidden" style="border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; margin-top:10px; background:#f9fafb;">
-            <input type="hidden" id="cli-id" />
-            <div id="campos-cliente" class="datos-seccion"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-              <button onclick="guardarCliente()" class="btn btn-black" style="flex:1; justify-content:center; padding:10px;">Guardar cliente</button>
-              <button onclick="cerrarFormCliente()" class="btn btn-gray" style="padding:10px 14px;">Cancelar</button>
+        <!-- Acordeón: colapsadas, solo icono + nombre; al tocar una, se
+             expande hasta el ancho de la barra y la otra se encoge —
+             mismo mecanismo que ya usan las categorías de Artículos. -->
+        <!-- Misma composición que la fila de Historial: contenido + hueco
+             + botón cuadrado de 42x42 a la derecha -->
+        <div class="fila-tarjetas-cliente-guardar">
+          <div class="datos-fila-tarjetas">
+          <div class="datos-tarjeta-info" id="tarjeta-datos-empresa">
+            <button class="datos-tarjeta-cab" onclick="toggleTarjetaDatos('empresa')">
+              <span class="datos-tarjeta-espaciador"></span>
+              <span class="datos-tarjeta-contenido">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+                <h3>Datos de mi empresa</h3>
+              </span>
+              <span class="datos-tarjeta-flecha">▼</span>
+            </button>
+            <div class="datos-tarjeta-cuerpo-wrap">
+              <div class="datos-tarjeta-cuerpo">
+                <p class="datos-hint" style="margin-bottom: 10px;">Se aplica a la factura. Para añadir o quitar campos, activa el Modo Edición desde Ajustes.</p>
+                <div id="seccion-empresa" class="datos-seccion"></div>
+                <div id="seccion-direccion" class="datos-seccion"></div>
+                <div id="seccion-contacto" class="datos-seccion"></div>
+                <div id="seccion-banco" class="datos-seccion"></div>
+              </div>
             </div>
           </div>
+
+          <div class="datos-tarjeta-info" id="tarjeta-datos-cliente">
+            <button class="datos-tarjeta-cab" onclick="toggleTarjetaDatos('cliente')">
+              <span class="datos-tarjeta-espaciador"></span>
+              <span class="datos-tarjeta-contenido">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1"/></svg>
+                <h3>Datos de cliente</h3>
+              </span>
+              <span class="datos-tarjeta-flecha">▼</span>
+            </button>
+            <div class="datos-tarjeta-cuerpo-wrap">
+              <div class="datos-tarjeta-cuerpo">
+                <p class="datos-hint" style="margin-bottom: 10px;">El mismo formulario de "Facturar a" que verás en la factura — escribe aquí o allí, se sincroniza solo.</p>
+                <div class="datos-seccion" id="seccion-datos-cliente-tarjeta"></div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Oculto por defecto; se revela y se desliza hasta aquí SOLO
+               cuando "Datos de cliente" está desplegada -->
+          <button id="btn-guardar-cliente-cuadrado" class="btn-vista-cuadrado btn-guardar-cliente-cuadrado" onclick="guardarClienteDesdeTarjeta()" title="Guardar cliente">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+
+        <!-- CLIENTES: barra independiente, idéntica a la de arriba -->
+        <div class="barra-titulo" style="margin-top: 20px;">
+          <svg class="ico-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 20.5v-1.8a3.8 3.8 0 0 0-3.8-3.8H6.3a3.8 3.8 0 0 0-3.8 3.8v1.8"/><circle cx="9" cy="7.5" r="3.6"/><path d="M21.5 20.5v-1.8a3.8 3.8 0 0 0-2.9-3.7"/><path d="M16.2 4.1a3.8 3.8 0 0 1 0 7"/></svg>
+          <span>Clientes</span>
+        </div>
+
+        <div class="pagina-app">
+          <p class="datos-hint" style="text-align:center;">Rellena los datos del cliente en la tarjeta de arriba y toca "Guardar cliente" — se añade aquí al momento.</p>
 
           <div id="clientes-container" class="history-grid" style="margin-top: 10px;"></div>
         </div>
@@ -1433,11 +1600,11 @@
 
 
       const i18n = {
-        es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE / EMPRESA:", cVat: "NIF / VAT:", cStreet: "CALLE:", cCity: "CIUDAD:", cPostal: "CÓDIGO POSTAL:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos" },
-        en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME / COMPANY:", cVat: "VAT NUMBER:", cStreet: "STREET:", cCity: "CITY:", cPostal: "POSTAL CODE:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data" },
-        nl: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TEN NAME VAN:", invTo: "FACTUUR AAN (KLANT)", cName: "NAAM / BEDRIJF:", cVat: "BTW-NUMMER:", cStreet: "STRAAT:", cCity: "STAD:", cPostal: "POSTCODE:", cCountry: "LAND:", invFrom: "FACTUUR VAN (AFZENDER)", mCompany: "BEDRIJF:", mVat: "BTW-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Factuurnummer", metaIssue: "Factuurdatum", metaDue: "Vervaldatum", thDesc: "OMSCHRIJVING", thHours: "UREN", thRate: "TARIEF (€)", thAmount: "BEDRAG", addService: "Dienst Toevoegen", subtotal: "Subtotaal", tax: "BTW (", total: "TOTAAL", sidebar: "FACTUUR", histTitle: "Opgeslagen Facturen", histDesc: "Volledige geschiedenis", tabTemplate: "Factuur", tabHistory: "Geschiedenis", tabDatos: "Gegevens" },
-        de: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "INHABER:", invTo: "RECHNUNG AN (KUNDE)", cName: "NAME / FIRMA:", cVat: "UST-IDNR.:", cStreet: "STRASSE:", cCity: "STADT:", cPostal: "PLZ:", cCountry: "LAND:", invFrom: "RECHNUNG VON (AUSSTELLER)", mCompany: "FIRMA:", mVat: "UST-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Rechnungsnr.", metaIssue: "Datum", metaDue: "Fälligkeit", thDesc: "BESCHREIBUNG", thHours: "STND", thRate: "SATZ (€)", thAmount: "BETRAG", addService: "Dienst Hinzufügen", subtotal: "Zwischensumme", tax: "MwSt. (", total: "GESAMT", sidebar: "RECHNUNG", histTitle: "Rechnungen", histDesc: "Verlauf", tabTemplate: "Rechnung", tabHistory: "Verlauf", tabDatos: "Daten" },
-        ro: { bBank: "BANCA:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURĂ CĂTRE (CLIENT)", cName: "NUME / FIRMĂ:", cVat: "CUI / TVA:", cStreet: "STRADA:", cCity: "ORAȘ:", cPostal: "COD POȘTAL:", cCountry: "ȚARA:", invFrom: "FACTURĂ DE LA (EMITENT)", mCompany: "FIRMA:", mVat: "COD TVA:", mKvk: "NR. REG:", mStatus: "STARE:", metaNo: "Nr. factură", metaIssue: "Data emiterii", metaDue: "Data scadenței", thDesc: "DESCRIERE", thHours: "ORE", thRate: "TARIF (€)", thAmount: "TOTAL", addService: "Adaugă serviciu", subtotal: "Subtotal", tax: "TVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturi salvate", histDesc: "Istoric pe dispozitiv", tabTemplate: "Factură", tabHistory: "Istoric", tabDatos: "Date" }
+        es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE / EMPRESA:", cVat: "NIF / VAT:", cStreet: "CALLE:", cCity: "CIUDAD:", cPostal: "CÓDIGO POSTAL:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos", medNombre: "Nombre empresa", medCalle: "Calle", medCP: "Código postal", medCiudad: "Ciudad", medPais: "País", medEmail: "Email", medTelefono: "Teléfono", medBanco: "Nombre banco", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" },
+        en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME / COMPANY:", cVat: "VAT NUMBER:", cStreet: "STREET:", cCity: "CITY:", cPostal: "POSTAL CODE:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data", medNombre: "Company name", medCalle: "Street", medCP: "Postal code", medCiudad: "City", medPais: "Country", medEmail: "Email", medTelefono: "Phone", medBanco: "Bank name", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Account holder" },
+        nl: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TEN NAME VAN:", invTo: "FACTUUR AAN (KLANT)", cName: "NAAM / BEDRIJF:", cVat: "BTW-NUMMER:", cStreet: "STRAAT:", cCity: "STAD:", cPostal: "POSTCODE:", cCountry: "LAND:", invFrom: "FACTUUR VAN (AFZENDER)", mCompany: "BEDRIJF:", mVat: "BTW-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Factuurnummer", metaIssue: "Factuurdatum", metaDue: "Vervaldatum", thDesc: "OMSCHRIJVING", thHours: "UREN", thRate: "TARIEF (€)", thAmount: "BEDRAG", addService: "Dienst Toevoegen", subtotal: "Subtotaal", tax: "BTW (", total: "TOTAAL", sidebar: "FACTUUR", histTitle: "Opgeslagen Facturen", histDesc: "Volledige geschiedenis", tabTemplate: "Factuur", tabHistory: "Geschiedenis", tabDatos: "Gegevens", medNombre: "Bedrijfsnaam", medCalle: "Straat", medCP: "Postcode", medCiudad: "Stad", medPais: "Land", medEmail: "E-mail", medTelefono: "Telefoon", medBanco: "Banknaam", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Rekeninghouder" },
+        de: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "INHABER:", invTo: "RECHNUNG AN (KUNDE)", cName: "NAME / FIRMA:", cVat: "UST-IDNR.:", cStreet: "STRASSE:", cCity: "STADT:", cPostal: "PLZ:", cCountry: "LAND:", invFrom: "RECHNUNG VON (AUSSTELLER)", mCompany: "FIRMA:", mVat: "UST-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Rechnungsnr.", metaIssue: "Datum", metaDue: "Fälligkeit", thDesc: "BESCHREIBUNG", thHours: "STND", thRate: "SATZ (€)", thAmount: "BETRAG", addService: "Dienst Hinzufügen", subtotal: "Zwischensumme", tax: "MwSt. (", total: "GESAMT", sidebar: "RECHNUNG", histTitle: "Rechnungen", histDesc: "Verlauf", tabTemplate: "Rechnung", tabHistory: "Verlauf", tabDatos: "Daten", medNombre: "Firmenname", medCalle: "Straße", medCP: "PLZ", medCiudad: "Stadt", medPais: "Land", medEmail: "E-Mail", medTelefono: "Telefon", medBanco: "Bankname", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Kontoinhaber" },
+        ro: { bBank: "BANCA:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURĂ CĂTRE (CLIENT)", cName: "NUME / FIRMĂ:", cVat: "CUI / TVA:", cStreet: "STRADA:", cCity: "ORAȘ:", cPostal: "COD POȘTAL:", cCountry: "ȚARA:", invFrom: "FACTURĂ DE LA (EMITENT)", mCompany: "FIRMA:", mVat: "COD TVA:", mKvk: "NR. REG:", mStatus: "STARE:", metaNo: "Nr. factură", metaIssue: "Data emiterii", metaDue: "Data scadenței", thDesc: "DESCRIERE", thHours: "ORE", thRate: "TARIF (€)", thAmount: "TOTAL", addService: "Adaugă serviciu", subtotal: "Subtotal", tax: "TVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturi salvate", histDesc: "Istoric pe dispozitiv", tabTemplate: "Factură", tabHistory: "Istoric", tabDatos: "Date", medNombre: "Nume companie", medCalle: "Stradă", medCP: "Cod poștal", medCiudad: "Oraș", medPais: "Țară", medEmail: "Email", medTelefono: "Telefon", medBanco: "Nume bancă", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" }
       };
 
       window.onload = function () {
@@ -1450,6 +1617,8 @@
         cargarConfigBarra(); cargarHistorialLocal(); renderizarServicios(); renderizarHistorial(); cargarLogoGuardado();
         cargarClientes();
         cargarMisDatos(false);
+        cargarClienteExtra();
+        aplicarClienteExtraAFactura();
         cargarCamposCliente();
         aplicarIdioma("es"); // traduce y ya deja aplicado todo lo anterior
         renderizarClientes();
@@ -1567,6 +1736,7 @@
       // Un solo círculo relleno = "un artículo"; tres apilados = "multiartículos"
       const ICO_MODO_UNO  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>';
       const ICO_MODO_MULTI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>';
+      const ICO_LUPA_CABECERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 
       // El botón de la cabecera adapta icono y acción a la pestaña actual
       function refrescarEstadoBotones() {
@@ -1583,8 +1753,8 @@
           ico.innerHTML = modoArticulos === "uno" ? ICO_MODO_UNO : ICO_MODO_MULTI;
           btn.title = modoArticulos === "uno" ? "Modo: un artículo (toca para multiartículos)" : "Modo: multiartículos (toca para un artículo)";
         } else {
-          ico.innerHTML = ICO_CALENDARIO;
-          btn.title = "Buscar por fechas";
+          ico.innerHTML = busquedaHistorialAbierta ? ICO_LUPA_CABECERA : ICO_CALENDARIO;
+          btn.title = busquedaHistorialAbierta ? "Volver al buscador" : "Buscar por fechas";
         }
       }
 
@@ -1599,9 +1769,7 @@
       // Cada pestaña ofrece sus propias acciones: nada de botones apagados
       function accionesDeLaPestana() {
         if (pestanaActual === "datos") {
-          return [
-            { ico: I.cliente, txt: "Nuevo cliente", sub: "Añadir a tu lista", fn: () => abrirFormCliente(), principal: true },
-          ];
+          return [];
         }
         if (pestanaActual === "history" || pestanaActual === "articulos") {
           return []; // en Añadir todo se hace desde la propia pantalla, no desde este menú
@@ -1914,9 +2082,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "2.8.4";
-      const VERSION_FECHA = "12/08/2026";
-      const VERSION_NOTAS = "Arreglado el recorte a medias del buscador: solo tenía la transición puesta en una de las dos mitades. Ahora es un único elemento el que se revela, con un barrido continuo sin costuras. La animación de escritura del placeholder también se reinicia cada vez que sales de Historial y vuelves, en vez de solo una vez por sesión.";
+      const VERSION = "3.2.8";
+      const VERSION_FECHA = "13/08/2026";
+      const VERSION_NOTAS = "Encontrado por qué mis cuatro intentos con margin-top nunca cambiaban nada visible: el botón es sticky y probablemente ya empieza 'pegado' desde el principio (la tarjeta está justo debajo de la cabecera fija), así que su posición la decide 'top', no el margen — el margen solo se aplicaría si el botón NO estuviera ya pegado, y aquí nunca lo está. Corregido ajustando 'top' en vez de 'margin-top', calculado con ResizeObserver en tiempo real.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -3175,7 +3343,7 @@
         }
         refrescarBotonesBorrar();
         renderizarMisDatos();
-        renderizarCamposCliente(leerFormCliente());
+        renderizarDatosClienteTarjeta();
         renderizarServicios();
         refrescarEstadoBotones();
       }
@@ -3261,7 +3429,6 @@
           if (c.clave && t[c.clave]) c.label = t[c.clave];
         });
         guardarCamposCliente();
-        if (!document.getElementById("form-cliente").classList.contains("hidden")) renderizarCamposCliente(leerFormCliente());
 
         aplicarConfigBarra(false);
       }
@@ -3312,26 +3479,27 @@
         if (tab === "editor") requestAnimationFrame(autoZoomA4);
         if (tab === "articulos") pintarPantallaArticulos();
         if (tab === "history") renderizarHistorial();
-        if (tab === "datos") { cargarMisDatos(); renderizarClientes(); }
+        if (tab === "datos") { cargarMisDatos(); renderizarClientes(); renderizarDatosClienteTarjeta(); }
       }
 
       /* ===================== MIS DATOS ===================== */
       // Cada campo de "Mis Datos" es una entrada editable. Las que llevan
       // "destino" se vuelcan sobre un campo concreto de la factura.
       const ENTRADAS_POR_DEFECTO = [
-        { id: "e1",  seccion: "empresa",   label: "COMPANY:", valor: "", destino: "company-name", clave: "mCompany" },
+        { id: "e1",  seccion: "empresa",   label: "COMPANY:", valor: "", destino: "company-name", clave: "medNombre" },
         { id: "e2",  seccion: "empresa",   label: "BTW-ID:",  valor: "", destino: "company-vat", clave: "mVat" },
         { id: "e3",  seccion: "empresa",   label: "KVK NO:",  valor: "", destino: "company-kvk", clave: "mKvk" },
         { id: "e4",  seccion: "empresa",   label: "STATUS:",  valor: "", destino: "company-status", clave: "mStatus" },
-        { id: "d1",  seccion: "direccion", label: "Calle",    valor: "", destino: "addr-street" },
-        { id: "d2",  seccion: "direccion", label: "Ciudad / CP", valor: "", destino: "addr-city" },
-        { id: "d3",  seccion: "direccion", label: "País",     valor: "", destino: "addr-country" },
-        { id: "c1",  seccion: "contacto",  label: "Email",    valor: "", destino: "contact-email" },
-        { id: "c2",  seccion: "contacto",  label: "Teléfono", valor: "", destino: "contact-phone" },
-        { id: "b1",  seccion: "banco",     label: "BANK:",    valor: "", destino: "bank-name", clave: "bBank" },
-        { id: "b2",  seccion: "banco",     label: "IBAN:",    valor: "", destino: "bank-iban", clave: "bIban" },
-        { id: "b3",  seccion: "banco",     label: "SWIFT:",   valor: "", destino: "bank-bic", clave: "bSwift" },
-        { id: "b4",  seccion: "banco",     label: "HOLDER:",  valor: "", destino: "bank-holder", clave: "bHolder" },
+        { id: "d1",  seccion: "direccion", label: "Calle",    valor: "", destino: "addr-street", clave: "medCalle" },
+        { id: "d2",  seccion: "direccion", label: "Código postal", valor: "", destino: "addr-postal", clave: "medCP" },
+        { id: "d3",  seccion: "direccion", label: "Ciudad",   valor: "", destino: "addr-city", clave: "medCiudad" },
+        { id: "d4",  seccion: "direccion", label: "País",     valor: "", destino: "addr-country", clave: "medPais" },
+        { id: "c1",  seccion: "contacto",  label: "Email",    valor: "", destino: "contact-email", clave: "medEmail" },
+        { id: "c2",  seccion: "contacto",  label: "Teléfono", valor: "", destino: "contact-phone", clave: "medTelefono" },
+        { id: "b1",  seccion: "banco",     label: "BANK:",    valor: "", destino: "bank-name", clave: "medBanco" },
+        { id: "b2",  seccion: "banco",     label: "IBAN:",    valor: "", destino: "bank-iban", clave: "medIban" },
+        { id: "b3",  seccion: "banco",     label: "SWIFT:",   valor: "", destino: "bank-bic", clave: "medSwift" },
+        { id: "b4",  seccion: "banco",     label: "HOLDER:",  valor: "", destino: "bank-holder", clave: "medTitular" },
       ];
       // Semilla del primer arranque: en la caja EMPRESA solo Nombre/Empresa.
       // El resto de campos (NIF, KVK, estado...) se añaden a mano con
@@ -3347,12 +3515,222 @@
 
       let misDatos = [];
 
+      // Los campos de la empresa viven en su propia tarjeta plegable,
+      // aparte de la barra "Mis Datos" — se despliega al tocarla
+      // Los 6 campos fijos del recuadro "Facturar a" de la propia factura
+      // — la tarjeta de Datos es un espejo de ESTOS, no del formulario de
+      // clientes guardados (que es un formulario aparte, para la lista).
+      const CAMPOS_CLIENTE_FACTURA = [
+        { sufijo: "name", label: "Nombre empresa" },
+        { sufijo: "vat", label: "NIF / VAT" },
+        { sufijo: "address", label: "Calle" },
+        { sufijo: "city", label: "Ciudad" },
+        { sufijo: "postal", label: "Código postal" },
+        { sufijo: "country", label: "País" },
+      ];
+
+      // Escribir aquí actualiza la factura al instante; al volver a esta
+      // pestaña, la tarjeta se refresca con lo que haya en la factura —
+      // así funciona en los dos sentidos sin duplicar el dato de verdad.
+      // Solo una de las dos tarjetas puede estar abierta a la vez: al
+      // expandirse una hasta el ancho de la barra, la otra no tiene
+      // sitio para seguir a su lado, así que se encoge del todo.
+      let tarjetaDatosAbierta = null; // null | "empresa" | "cliente"
+      function toggleTarjetaDatos(cual) {
+        tarjetaDatosAbierta = tarjetaDatosAbierta === cual ? null : cual;
+        fx(tarjetaDatosAbierta ? "desplegar" : "cerrar");
+        aplicarEstadoTarjetasDatos();
+      }
+      function aplicarEstadoTarjetasDatos() {
+        ["empresa", "cliente"].forEach((t) => {
+          const el = document.getElementById("tarjeta-datos-" + t);
+          if (!el) return;
+          const abierta = tarjetaDatosAbierta === t;
+          el.classList.toggle("abierta", abierta);
+          el.classList.toggle("encogida", !!tarjetaDatosAbierta && !abierta);
+        });
+        // El botón cuadrado de guardar solo se revela cuando la tarjeta de
+        // cliente en concreto está desplegada — con la tarjeta de empresa
+        // abierta, sigue oculto.
+        const btnGuardar = document.getElementById("btn-guardar-cliente-cuadrado");
+        if (btnGuardar) btnGuardar.classList.toggle("visible", tarjetaDatosAbierta === "cliente");
+        iniciarObservadorCabeceraCliente();
+      }
+
+      // ResizeObserver en vez de setTimeout: no hay que ACERTAR cuándo
+      // medir (eso es justo lo que llevo fallando) — el navegador avisa
+      // solo, en tiempo real, cada vez que la cabecera cambia de tamaño
+      // de verdad, sea por lo que sea (incluso a mitad de una animación),
+      // y se reajusta el margen en el acto. Una sola vez conectado, se
+      // queda escuchando mientras la página esté abierta.
+      let observadorCabeceraCliente = null;
+      function iniciarObservadorCabeceraCliente() {
+        if (observadorCabeceraCliente || !window.ResizeObserver) return;
+        const cabecera = document.querySelector("#tarjeta-datos-cliente .datos-tarjeta-cab");
+        if (!cabecera) return;
+        observadorCabeceraCliente = new ResizeObserver(() => alinearBotonGuardarCliente());
+        observadorCabeceraCliente.observe(cabecera);
+      }
+
+      function alinearBotonGuardarCliente() {
+        const cabecera = document.querySelector("#tarjeta-datos-cliente .datos-tarjeta-cab");
+        const btn = document.getElementById("btn-guardar-cliente-cuadrado");
+        if (!cabecera || !btn) return;
+        // Motivo real por el que margin-top nunca cambiaba nada visible:
+        // el botón usa position:sticky, y si ya empieza "pegado" desde el
+        // principio (sin hacer falta scroll para activarse, que es
+        // justo el caso aquí, la tarjeta está pegada a la cabecera fija),
+        // su posición la decide "top", no el margen — el margen solo
+        // importaría en el estado NO pegado, que este botón nunca llega
+        // a tener. Se calcula "top" en coordenadas de pantalla reales, a
+        // partir de dónde está la cabecera AHORA MISMO.
+        const rectCabecera = cabecera.getBoundingClientRect();
+        const centroCabecera = rectCabecera.top + rectCabecera.height / 2;
+        const nuevoTop = centroCabecera - 42 / 2;
+        btn.style.top = Math.max(0, nuevoTop) + "px";
+      }
+
+      // Los 6 campos son fijos (van a sitios concretos y ya definidos de
+      // la factura, no una lista libre como Mis Datos) — por eso esta
+      // tarjeta no lleva "+ Añadir campo" ni botón de quitar. Lo que SÍ
+      // se puede hacer en Modo Edición es renombrar la etiqueta, y eso
+      // renombra también la que se imprime en la propia factura.
+      function renombrarEtiquetaClienteFactura(sufijo, texto) {
+        const lbl = document.getElementById("lbl-c-" + sufijo);
+        if (lbl) lbl.innerText = texto;
+      }
+
+      // Campos EXTRA del cliente, "por si los necesitas" — aparte de los 6
+      // fijos, que van a sitios ya definidos de la factura. Reutiliza el
+      // mismo patrón de inyección de filas que ya usa Mis Datos, pero con
+      // su propia clase (fila-inyectada-cliente) para no chocar con la
+      // limpieza que hace aplicarMisDatosAFactura() sobre las suyas.
+      let camposClienteExtra = [];
+      function cargarClienteExtra() {
+        try { camposClienteExtra = JSON.parse(localStorage.getItem("agx_cliente_extra") || "[]"); } catch (e) { camposClienteExtra = []; }
+      }
+      function guardarClienteExtra() { localStorage.setItem("agx_cliente_extra", JSON.stringify(camposClienteExtra)); }
+      function anadirCampoClienteExtra() {
+        fx("anadir");
+        camposClienteExtra.push({ id: "cx" + Date.now(), label: "NUEVO:", valor: "" });
+        guardarClienteExtra(); renderizarDatosClienteTarjeta();
+      }
+      function quitarCampoClienteExtra(id) {
+        fx("quitar");
+        camposClienteExtra = camposClienteExtra.filter((x) => x.id !== id);
+        guardarClienteExtra(); renderizarDatosClienteTarjeta();
+      }
+      function editarCampoClienteExtra(id, campo, valor) {
+        const en = camposClienteExtra.find((x) => x.id === id);
+        if (en) { en[campo] = valor; guardarClienteExtra(); aplicarClienteExtraAFactura(); }
+      }
+      function aplicarClienteExtraAFactura() {
+        const cont = document.getElementById("container-client-fields");
+        if (!cont) return;
+        cont.querySelectorAll(".fila-inyectada-cliente").forEach((el) => el.remove());
+        const boton = cont.querySelector(".btn-add-field");
+        camposClienteExtra.forEach((en) => {
+          const div = document.createElement("div");
+          div.className = "fila-inyectada-cliente field-row";
+          div.innerHTML = `<span class="field-label">${en.label || ""}</span><span class="editable-span" contenteditable="true">${en.valor || ""}</span>`;
+          if (boton) cont.insertBefore(div, boton); else cont.appendChild(div);
+        });
+      }
+
+      function renderizarDatosClienteTarjeta() {
+        const cont = document.getElementById("seccion-datos-cliente-tarjeta");
+        if (!cont) return;
+        cont.innerHTML = "";
+        const todasEtiquetas = CAMPOS_CLIENTE_FACTURA.map((c) => c.label.length).concat(camposClienteExtra.map((c) => (c.label || "").length));
+        const anchoEtiqueta = Math.max(6, ...todasEtiquetas) + 1;
+        CAMPOS_CLIENTE_FACTURA.forEach((c) => {
+          const origen = document.getElementById("client-" + c.sufijo);
+          const fila = document.createElement("div");
+          fila.className = "dato-row dato-row-claro";
+          fila.innerHTML = `
+            <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${c.label}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="renombrarEtiquetaClienteFactura('${c.sufijo}', this.value)" />
+            <input class="dato-valor" id="dc-${c.sufijo}" type="text" value="${origen ? (origen.innerText || "").replace(/"/g, "&quot;") : ""}" oninput="sincronizarCampoClienteDesdeTarjeta('${c.sufijo}')" />`;
+          cont.appendChild(fila);
+        });
+        camposClienteExtra.forEach((en) => {
+          const fila = document.createElement("div");
+          fila.className = "dato-row dato-row-claro";
+          fila.innerHTML = `
+            <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${(en.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarCampoClienteExtra('${en.id}','label',this.value)" />
+            <input class="dato-valor" type="text" placeholder="Escribe aquí" value="${(en.valor || "").replace(/"/g, "&quot;")}" oninput="editarCampoClienteExtra('${en.id}','valor',this.value)" />`;
+          if (editandoPlantillaEstructura) {
+            const b = document.createElement("button");
+            b.className = "btn-del-row"; b.innerHTML = "✕"; b.title = "Quitar campo";
+            b.onclick = () => quitarCampoClienteExtra(en.id);
+            fila.appendChild(b);
+          }
+          cont.appendChild(fila);
+        });
+        if (editandoPlantillaEstructura) {
+          const add = document.createElement("button");
+          add.className = "btn-extra btn-extra-claro";
+          add.innerText = "+ Añadir campo";
+          add.onclick = anadirCampoClienteExtra;
+          cont.appendChild(add);
+        }
+        aplicarClienteExtraAFactura();
+      }
+
+      function sincronizarCampoClienteDesdeTarjeta(sufijo) {
+        const destino = document.getElementById("client-" + sufijo);
+        const origen = document.getElementById("dc-" + sufijo);
+        if (destino && origen) destino.innerText = origen.value;
+      }
+
+      // Si guardaste datos con una versión anterior de la app, esas
+      // entradas no tienen "clave" — sin ella nunca se traducen, se
+      // quedan con el texto literal de cuando se guardaron (a veces en
+      // inglés) para siempre. Aquí se la asignamos buscando por
+      // "destino" (que sí es estable entre versiones) para que vuelvan a
+      // traducirse solas, sin tocar el valor que ya escribiste.
+      const DESTINO_A_CLAVE = {
+        "company-name": "medNombre", "company-vat": "mVat", "company-kvk": "mKvk", "company-status": "mStatus",
+        "addr-street": "medCalle", "addr-postal": "medCP", "addr-city": "medCiudad", "addr-country": "medPais",
+        "contact-email": "medEmail", "contact-phone": "medTelefono",
+        "bank-name": "medBanco", "bank-iban": "medIban", "bank-bic": "medSwift", "bank-holder": "medTitular",
+      };
+      // Claves que YA existían antes de esta ronda (mCompany, bBank...) y
+      // que por eso mi primera migración no tocó — seguían "traduciendo"
+      // pero con el texto viejo (EMPRESA:/BANCO: en vez de las etiquetas
+      // nuevas). Aquí se REMPLAZAN por las nuevas claves, y si alguna
+      // entrada tenía un texto personalizado por idioma que coincide
+      // exactamente con el texto antiguo por defecto, se limpia para que
+      // la traducción nueva pueda aplicarse.
+      const CLAVE_ANTIGUA_A_NUEVA = { mCompany: "medNombre", bBank: "medBanco", bIban: "medIban", bSwift: "medSwift", bHolder: "medTitular" };
+      const TEXTOS_ANTIGUOS_CONOCIDOS = ["COMPANY:", "BANK:", "IBAN:", "SWIFT:", "HOLDER:", "BEDRIJF:", "BANCA:", "FIRMA:"];
+      function migrarClavesMisDatos() {
+        let cambiado = false;
+        misDatos.forEach((en) => {
+          if (!en.clave && DESTINO_A_CLAVE[en.destino]) { en.clave = DESTINO_A_CLAVE[en.destino]; cambiado = true; }
+          if (en.clave && CLAVE_ANTIGUA_A_NUEVA[en.clave]) {
+            en.clave = CLAVE_ANTIGUA_A_NUEVA[en.clave];
+            cambiado = true;
+            if (en.porIdioma) {
+              Object.keys(en.porIdioma).forEach((lang) => {
+                if (TEXTOS_ANTIGUOS_CONOCIDOS.includes((en.porIdioma[lang] || "").toUpperCase())) delete en.porIdioma[lang];
+              });
+            }
+          }
+        });
+        if (cambiado) {
+          const t = i18n[idiomaActual] || i18n.es;
+          misDatos.forEach((en) => { if (!(en.porIdioma && en.porIdioma[idiomaActual]) && en.clave && t[en.clave]) en.label = t[en.clave]; });
+          localStorage.setItem("agx_mis_datos_v2", JSON.stringify(misDatos));
+        }
+      }
+
       function cargarMisDatos(aplicar = true) {
         try {
           const g = localStorage.getItem("agx_mis_datos_v2");
           misDatos = g ? JSON.parse(g) : JSON.parse(JSON.stringify(SEMILLA_INICIAL));
         } catch (e) { misDatos = JSON.parse(JSON.stringify(SEMILLA_INICIAL)); }
         if (!Array.isArray(misDatos) || !misDatos.length) misDatos = JSON.parse(JSON.stringify(SEMILLA_INICIAL));
+        migrarClavesMisDatos();
         renderizarMisDatos();
         if (aplicar) aplicarMisDatosAFactura();
       }
@@ -3363,6 +3741,13 @@
       }
 
       function renderizarMisDatos() {
+        // Cada .dato-row es su propia rejilla independiente — con
+        // max-content, cada fila mide su columna según SU etiqueta, y al
+        // no compartir rejilla entre sí, no se alinean unas con otras
+        // (por eso "CALLE" y "TELÉFONO" quedaban a distinta altura). La
+        // solución: una sola medida compartida por TODAS las filas, del
+        // tamaño de la etiqueta más larga que haya.
+        const anchoEtiqueta = Math.max(6, ...misDatos.map((en) => (en.label || "").length)) + 1;
         Object.keys(TITULOS_SECCION).forEach((sec) => {
           const cont = document.getElementById("seccion-" + sec);
           if (!cont) return;
@@ -3372,7 +3757,7 @@
             const fila = document.createElement("div");
             fila.className = "dato-row";
             fila.innerHTML = `
-              <input class="dato-label" type="text" value="${(en.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarDato('${en.id}','label',this.value)" />
+              <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${(en.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarDato('${en.id}','label',this.value)" />
               <input class="dato-valor" type="text" placeholder="Escribe aquí" value="${(en.valor || "").replace(/"/g, "&quot;")}" oninput="editarDato('${en.id}','valor',this.value)" />`;
             if (editandoPlantillaEstructura) {
               const b = document.createElement("button");
@@ -3386,7 +3771,7 @@
           });
           if (editandoPlantillaEstructura) {
             const add = document.createElement("button");
-            add.className = "btn-extra";
+            add.className = "btn-extra btn-extra-claro";
             add.innerText = "+ Añadir campo";
             add.onclick = () => anadirDato(sec);
             cont.appendChild(add);
@@ -3488,63 +3873,6 @@
         aplicarCamposClienteAFactura();
       }
 
-      function renderizarCamposCliente(valores) {
-        const cont = document.getElementById("campos-cliente");
-        if (!cont) return;
-        cont.innerHTML = "";
-        camposCliente.forEach((c) => {
-          const fila = document.createElement("div");
-          fila.className = "dato-row dato-row-claro";
-          fila.innerHTML = `
-            <input class="dato-label" type="text" value="${(c.label || "").replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="editarCampoCliente('${c.id}', this.value)" />
-            <input class="dato-valor" id="cli-${c.id}" type="text" value="${((valores && valores[c.id]) || "").replace(/"/g, "&quot;")}" />`;
-          if (editandoPlantillaEstructura) {
-            const b = document.createElement("button");
-            b.className = "btn-del-row"; b.innerHTML = "✕"; b.title = "Quitar campo";
-            b.onclick = () => quitarCampoCliente(c.id);
-            fila.appendChild(b);
-          }
-          cont.appendChild(fila);
-        });
-        if (editandoPlantillaEstructura) {
-          const add = document.createElement("button");
-          add.className = "btn-extra btn-extra-claro";
-          add.innerText = "+ Añadir campo";
-          add.onclick = anadirCampoCliente;
-          cont.appendChild(add);
-        }
-      }
-
-      // El renombrado se guarda para el IDIOMA ACTUAL: al cambiar de idioma,
-      // los campos que no hayas tocado en ESE idioma se siguen traduciendo solos.
-      function editarCampoCliente(id, valor) {
-        const c = camposCliente.find((x) => x.id === id);
-        if (!c) return;
-        c.label = valor;
-        c.personalizado = true;
-        c.porIdioma = c.porIdioma || {};
-        c.porIdioma[idiomaActual] = valor;
-        guardarCamposCliente();
-      }
-      function anadirCampoCliente() {
-        camposCliente.push({ id: "c" + Date.now(), label: "NUEVO" });
-        guardarCamposCliente();
-        renderizarCamposCliente(leerFormCliente());
-        fx("anadir");
-      }
-      function quitarCampoCliente(id) {
-        camposCliente = camposCliente.filter((x) => x.id !== id);
-        guardarCamposCliente();
-        renderizarCamposCliente(leerFormCliente());
-        fx("quitar");
-      }
-
-      function leerFormCliente() {
-        const v = {};
-        camposCliente.forEach((c) => { v[c.id] = getVal("cli-" + c.id) || ""; });
-        return v;
-      }
-
       // Refleja etiquetas y campos borrados en la caja blanca de la factura
       function aplicarCamposClienteAFactura() {
         CAMPOS_CLIENTE_BASE.forEach((base) => {
@@ -3560,25 +3888,22 @@
         });
       }
 
-      function abrirFormCliente(id) {
-        document.getElementById("form-cliente").classList.remove("hidden");
-        const c = clientes.find((x) => x.id === id);
-        setVal("cli-id", c ? c.id : "");
-        renderizarCamposCliente(c || {});
-        fx("abrir");
-      }
-      function cerrarFormCliente() {
-        fx("cerrar"); document.getElementById("form-cliente").classList.add("hidden"); }
-
-      function guardarCliente() {
-        const valores = leerFormCliente();
-        const nombre = (valores.name || "").trim();
+      // Guarda directamente los datos de la tarjeta "Datos de cliente"
+      // (que ya están en la factura, al estar sincronizados) como un
+      // cliente nuevo — o actualiza el que tengas cargado, si lo tienes.
+      let clienteActualId = null;
+      function guardarClienteDesdeTarjeta() {
+        const nombre = (getVal("client-name") || "").trim();
         if (!nombre) { mostrarToast("El cliente necesita un nombre"); return; }
-        const id = getVal("cli-id") || Date.now().toString();
-        const cliente = Object.assign({ id: id }, valores, { name: nombre });
+        const valores = { name: nombre };
+        CAMPOS_CLIENTE_BASE.slice(1).forEach((c) => { valores[c.id] = getVal(c.destino) || ""; });
+        const id = clienteActualId || Date.now().toString();
+        const cliente = Object.assign({ id: id }, valores);
         const i = clientes.findIndex((c) => c.id === id);
         if (i >= 0) clientes[i] = cliente; else clientes.push(cliente);
-        persistirClientes(); renderizarClientes(); cerrarFormCliente();
+        clienteActualId = id;
+        persistirClientes(); renderizarClientes();
+        fx("guardar");
         mostrarToast("Cliente guardado");
       }
 
@@ -3599,13 +3924,22 @@
         clientes.forEach((c) => {
           const div = document.createElement("div");
           div.className = "cliente-card";
-          div.innerHTML = `<div style="min-width:0;"><h3 style="font-weight:800; font-size:14px;">${c.name}</h3><p style="font-size:11px; color:#6b7280; overflow:hidden; text-overflow:ellipsis;">${c.vat || ""} ${c.city ? "• " + c.city : ""}</p></div>
-            <div style="display:flex; gap:6px; flex-shrink:0;">
-              <button class="btn btn-gray" style="padding:6px 10px;" onclick="abrirFormCliente('${c.id}')">Editar</button>
-              <button class="btn btn-gray" style="padding:6px 10px; color:#ef4444;" onclick="eliminarCliente('${c.id}')">✕</button>
-            </div>`;
+          // Solo el nombre — tocar la tarjeta carga sus datos en "Datos de
+          // cliente" para verlos o editarlos; la ✕ la borra directamente.
+          div.innerHTML = `<button style="all:unset; cursor:pointer; min-width:0; flex:1;" onclick="cargarClienteEnTarjeta('${c.id}')"><h3 style="font-weight:800; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.name}</h3></button>
+            <button class="btn btn-gray" style="padding:6px 10px; color:#ef4444; flex-shrink:0;" onclick="eliminarCliente('${c.id}')">✕</button>`;
           cont.appendChild(div);
         });
+      }
+
+      // Carga un cliente guardado en la tarjeta "Datos de cliente" (y por
+      // tanto en la factura, que está sincronizada) para verlo o editarlo.
+      // Volver a tocar "Guardar cliente" actualiza este mismo cliente.
+      function cargarClienteEnTarjeta(id) {
+        insertarClienteEnFactura(id, true);
+        clienteActualId = id;
+        renderizarDatosClienteTarjeta();
+        cambiarPestana("datos");
       }
 
       // Selector de cliente desde la propia factura
@@ -3627,7 +3961,7 @@
       }
       function cerrarSelectorClientes() { fx("cerrar"); document.getElementById("modal-clientes").classList.add("hidden"); desbloquearFondo(); }
 
-      function insertarClienteEnFactura(id) {
+      function insertarClienteEnFactura(id, silencioso) {
         const c = clientes.find((x) => x.id === id);
         if (!c) return;
         // Vuelca cada campo (también los que hayas añadido tú) a la factura
@@ -3646,6 +3980,7 @@
           }
           fila.querySelector(".editable-span").innerText = c[campo.id] || "";
         });
+        if (silencioso) return;
         cerrarSelectorClientes();
         mostrarToast(`Cliente ${c.name} añadido`);
       }
@@ -3678,7 +4013,7 @@
         const taxRate = parseFloat(document.getElementById("tax-rate").value) || 0;
         const total = subtotal + (subtotal * taxRate) / 100;
         const factura = {
-          id: numFactura, invoiceNo: numFactura, clientName: clienteNombre, clientVat: getVal("client-vat"), clientAddress: getVal("client-address"), clientCity: getVal("client-city"), clientCountry: getVal("client-country"), companyName: getVal("company-name"), companyVat: getVal("company-vat"), companyKvk: getVal("company-kvk"), companyStatus: getVal("company-status"), addrStreet: getVal("addr-street"), addrCity: getVal("addr-city"), addrCountry: getVal("addr-country"), contactEmail: getVal("contact-email"), contactPhone: getVal("contact-phone"), bankName: getVal("bank-name"), bankIban: getVal("bank-iban"), bankBic: getVal("bank-bic"), bankHolder: getVal("bank-holder"), issueDate: getVal("issue-date"), dueDate: getVal("due-date"), servicios: JSON.parse(JSON.stringify(servicios)), taxRate: taxRate, total: total, idioma: idiomaActual,
+          id: numFactura, invoiceNo: numFactura, clientName: clienteNombre, clientVat: getVal("client-vat"), clientAddress: getVal("client-address"), clientCity: getVal("client-city"), clientCountry: getVal("client-country"), companyName: getVal("company-name"), companyVat: getVal("company-vat"), companyKvk: getVal("company-kvk"), companyStatus: getVal("company-status"), addrStreet: getVal("addr-street"), addrPostal: getVal("addr-postal"), addrCity: getVal("addr-city"), addrCountry: getVal("addr-country"), contactEmail: getVal("contact-email"), contactPhone: getVal("contact-phone"), bankName: getVal("bank-name"), bankIban: getVal("bank-iban"), bankBic: getVal("bank-bic"), bankHolder: getVal("bank-holder"), issueDate: getVal("issue-date"), dueDate: getVal("due-date"), servicios: JSON.parse(JSON.stringify(servicios)), taxRate: taxRate, total: total, idioma: idiomaActual,
         };
         const index = historialFacturas.findIndex((f) => f.invoiceNo === numFactura);
         if (index >= 0) historialFacturas[index] = factura; else historialFacturas.unshift(factura);
@@ -3715,6 +4050,10 @@
           document.getElementById("pagina-resultados-historial").classList.remove("con-pie-fijo");
         }
         renderizarHistorial();
+        refrescarEstadoBotones();
+        // El icono cambia con un pequeño giro, igual que el de vista lista/tarjeta
+        const btnAccion = document.getElementById("hb-accion");
+        if (btnAccion) { btnAccion.classList.remove("girando"); void btnAccion.offsetWidth; btnAccion.classList.add("girando"); }
       }
 
       function filtrarHistorialPorFecha() { renderizarHistorial(); }
@@ -3838,7 +4177,7 @@
         const f = historialFacturas.find((fact) => fact.invoiceNo === numFactura); if (!f) return;
         setVal("invoice-no", f.invoiceNo); setVal("client-name", f.clientName); setVal("client-vat", f.clientVat || ""); setVal("client-address", f.clientAddress || ""); setVal("client-city", f.clientCity || ""); setVal("client-country", f.clientCountry || "");
         setVal("company-name", f.companyName || ""); setVal("company-vat", f.companyVat || ""); setVal("company-kvk", f.companyKvk || ""); setVal("company-status", f.companyStatus || "");
-        setVal("addr-street", f.addrStreet || ""); setVal("addr-city", f.addrCity || ""); setVal("addr-country", f.addrCountry || ""); setVal("contact-email", f.contactEmail || ""); setVal("contact-phone", f.contactPhone || "");
+        setVal("addr-street", f.addrStreet || ""); setVal("addr-postal", f.addrPostal || ""); setVal("addr-city", f.addrCity || ""); setVal("addr-country", f.addrCountry || ""); setVal("contact-email", f.contactEmail || ""); setVal("contact-phone", f.contactPhone || "");
         setVal("bank-name", f.bankName || ""); setVal("bank-iban", f.bankIban || ""); setVal("bank-bic", f.bankBic || ""); setVal("bank-holder", f.bankHolder || "");
         setVal("issue-date", f.issueDate || ""); setVal("due-date", f.dueDate || ""); document.getElementById("tax-rate").value = f.taxRate || 21;
         servicios = JSON.parse(JSON.stringify(f.servicios)); facturaEnEdicionNo = f.invoiceNo;
