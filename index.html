@@ -128,7 +128,15 @@
       .grupo-cab-fijo.grupo-cab-lectura { grid-template-columns: 1.6fr 1.8fr 0.9fr; }
       /* Modo "un artículo": esta ES la cabecera principal, en negro,
          igual de protagonista que antes lo era la barra genérica */
-      .grupo-cab-negra { background: #000000; color: #fff; border-bottom: none; padding: 10px 12px; font-size: 9.5px; border-radius: 11px 11px 0 0; }
+      /* Redondeada por los CUATRO lados, no solo arriba: las filas de
+         debajo son blancas sobre fondo blanco, así que las esquinas
+         inferiores rectas se veían "cortadas", como si a la barra le
+         faltara un trozo. Con un pequeño hueco debajo queda como una
+         pastilla propia, igual que el resto de barras negras de la app.
+         El relleno HORIZONTAL debe ser el mismo que el de las filas
+         (10px): con 12px, cada columna quedaba 2px desplazada respecto
+         a los importes de debajo — de ahí que no cuadraran. */
+      .grupo-cab-negra { background: #000000; color: #fff; border-bottom: none; padding: 10px; font-size: 9.5px; border-radius: 11px; margin-bottom: 4px; }
       .grupo-solo { border: none; border-radius: 11px; }
       .grupo-cab span { text-align: center; }
       .gc-desc { text-align: left !important; }
@@ -595,12 +603,15 @@
       .totals-area { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
       /* Los importes se alinean exactamente con la columna TOTAL de la tabla
          y con el importe de la barra negra (mismo padding derecho de 16px). */
-      .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 10px; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 16px; }
+      /* Mismo criterio que en móvil: 10px por la derecha en los tres
+         bloques (tabla, subtotales y barra de total) para que todas las
+         cifras queden en la misma línea vertical. */
+      .subtotals-grid { align-self: stretch; display: grid; grid-template-columns: 1fr 140px; gap: 6px 10px; margin-bottom: 12px; font-size: 12px; color: #4b5563; padding-right: 10px; }
       .subtotals-grid > div { display: flex; align-items: center; justify-content: flex-end; }
       .amount-align { font-weight: 700; color: #000000; font-variant-numeric: tabular-nums; text-align: right; }
       
       /* BARRA TOTAL (Mismo ancho que la tabla) */
-      .total-bar { background-color: #000000; color: #ffffff; padding: 12px 16px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
+      .total-bar { background-color: #000000; color: #ffffff; padding: 12px 10px 12px 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 140px; align-items: center; width: 100%; }
       .total-label { font-size: 14px; font-weight: 900; text-transform: uppercase; text-align: right; }
       .total-value { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
 
@@ -661,7 +672,15 @@
       /* Ajustes debe quedar SIEMPRE por encima de cualquier hoja/panel,
          nunca tapado por ellos (z-index de .hoja-fondo es 3000). */
       #modal-opciones.modal-overlay { z-index: 4200; }
+      /* flex-shrink:0 en los hijos — SIN esto, al desplegar un acordeón
+         el contenido supera el max-height y, como .modal-card es un flex
+         en columna, los elementos se COMPRIMEN en vez de desbordar y
+         activar el scroll: el desplegable se abría pero quedaba aplastado
+         a media altura, cortado por el overflow:hidden de .accordion-item.
+         Con flex-shrink:0 cada bloque conserva su altura natural y el
+         panel pasa a desplazarse, que es lo que debía hacer. */
       .modal-card { position: relative; overscroll-behavior: contain; background: #ffffff; border-radius: 18px; width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 8px; max-height: 85vh; overflow-y: auto; }
+      .modal-card > * { flex-shrink: 0; }
       .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 8px; }
       .modal-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
       
@@ -740,8 +759,13 @@
       body.vista-movil input[type="text"], body.vista-movil input[type="number"],
       body.vista-movil input[type="date"] { font-size: 16px !important; }
 
-      body.vista-movil .subtotals-grid { grid-template-columns: 1fr auto; padding-right: 0; }
-      body.vista-movil .total-bar { grid-template-columns: 1fr auto; padding: 12px 16px; }
+      /* Las cifras de subtotal, IVA y total deben caer en la MISMA línea
+         vertical que la columna IMPORTE de la tabla, que termina a 10px
+         del borde (por el padding de .grupo-fila). Antes cada bloque usaba
+         un valor distinto — 0px el subtotal, 16px la barra de total — y
+         por eso las cantidades quedaban descuadradas entre sí. */
+      body.vista-movil .subtotals-grid { grid-template-columns: 1fr auto; padding-right: 10px; }
+      body.vista-movil .total-bar { grid-template-columns: 1fr auto; padding: 12px 10px 12px 16px; }
       body.vista-movil .footer-3-col { grid-template-columns: 1fr; gap: 14px; padding-top: 14px; }
       /* En móvil el banco deja de ser rejilla: cada dato en su propia línea */
       body.vista-movil .footer-bank { display: flex; flex-direction: column; gap: 4px; align-items: center; }
@@ -1600,11 +1624,11 @@
 
 
       const i18n = {
-        es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE / EMPRESA:", cVat: "NIF / VAT:", cStreet: "CALLE:", cCity: "CIUDAD:", cPostal: "CÓDIGO POSTAL:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos", medNombre: "Nombre empresa", medCalle: "Calle", medCP: "Código postal", medCiudad: "Ciudad", medPais: "País", medEmail: "Email", medTelefono: "Teléfono", medBanco: "Nombre banco", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" },
-        en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME / COMPANY:", cVat: "VAT NUMBER:", cStreet: "STREET:", cCity: "CITY:", cPostal: "POSTAL CODE:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data", medNombre: "Company name", medCalle: "Street", medCP: "Postal code", medCiudad: "City", medPais: "Country", medEmail: "Email", medTelefono: "Phone", medBanco: "Bank name", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Account holder" },
-        nl: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TEN NAME VAN:", invTo: "FACTUUR AAN (KLANT)", cName: "NAAM / BEDRIJF:", cVat: "BTW-NUMMER:", cStreet: "STRAAT:", cCity: "STAD:", cPostal: "POSTCODE:", cCountry: "LAND:", invFrom: "FACTUUR VAN (AFZENDER)", mCompany: "BEDRIJF:", mVat: "BTW-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Factuurnummer", metaIssue: "Factuurdatum", metaDue: "Vervaldatum", thDesc: "OMSCHRIJVING", thHours: "UREN", thRate: "TARIEF (€)", thAmount: "BEDRAG", addService: "Dienst Toevoegen", subtotal: "Subtotaal", tax: "BTW (", total: "TOTAAL", sidebar: "FACTUUR", histTitle: "Opgeslagen Facturen", histDesc: "Volledige geschiedenis", tabTemplate: "Factuur", tabHistory: "Geschiedenis", tabDatos: "Gegevens", medNombre: "Bedrijfsnaam", medCalle: "Straat", medCP: "Postcode", medCiudad: "Stad", medPais: "Land", medEmail: "E-mail", medTelefono: "Telefoon", medBanco: "Banknaam", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Rekeninghouder" },
-        de: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "INHABER:", invTo: "RECHNUNG AN (KUNDE)", cName: "NAME / FIRMA:", cVat: "UST-IDNR.:", cStreet: "STRASSE:", cCity: "STADT:", cPostal: "PLZ:", cCountry: "LAND:", invFrom: "RECHNUNG VON (AUSSTELLER)", mCompany: "FIRMA:", mVat: "UST-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Rechnungsnr.", metaIssue: "Datum", metaDue: "Fälligkeit", thDesc: "BESCHREIBUNG", thHours: "STND", thRate: "SATZ (€)", thAmount: "BETRAG", addService: "Dienst Hinzufügen", subtotal: "Zwischensumme", tax: "MwSt. (", total: "GESAMT", sidebar: "RECHNUNG", histTitle: "Rechnungen", histDesc: "Verlauf", tabTemplate: "Rechnung", tabHistory: "Verlauf", tabDatos: "Daten", medNombre: "Firmenname", medCalle: "Straße", medCP: "PLZ", medCiudad: "Stadt", medPais: "Land", medEmail: "E-Mail", medTelefono: "Telefon", medBanco: "Bankname", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Kontoinhaber" },
-        ro: { bBank: "BANCA:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURĂ CĂTRE (CLIENT)", cName: "NUME / FIRMĂ:", cVat: "CUI / TVA:", cStreet: "STRADA:", cCity: "ORAȘ:", cPostal: "COD POȘTAL:", cCountry: "ȚARA:", invFrom: "FACTURĂ DE LA (EMITENT)", mCompany: "FIRMA:", mVat: "COD TVA:", mKvk: "NR. REG:", mStatus: "STARE:", metaNo: "Nr. factură", metaIssue: "Data emiterii", metaDue: "Data scadenței", thDesc: "DESCRIERE", thHours: "ORE", thRate: "TARIF (€)", thAmount: "TOTAL", addService: "Adaugă serviciu", subtotal: "Subtotal", tax: "TVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturi salvate", histDesc: "Istoric pe dispozitiv", tabTemplate: "Factură", tabHistory: "Istoric", tabDatos: "Date", medNombre: "Nume companie", medCalle: "Stradă", medCP: "Cod poștal", medCiudad: "Oraș", medPais: "Țară", medEmail: "Email", medTelefono: "Telefon", medBanco: "Nume bancă", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" }
+        es: { bBank: "BANCO:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURAR A (CLIENTE)", cName: "NOMBRE / EMPRESA:", cVat: "NIF / VAT:", cStreet: "CALLE:", cCity: "CIUDAD:", cPostal: "CÓDIGO POSTAL:", cCountry: "PAÍS:", invFrom: "FACTURA DE (EMISOR)", mCompany: "EMPRESA:", mVat: "BTW-ID:", mKvk: "Nº KVK:", mStatus: "ESTADO:", metaNo: "Nº Factura", metaIssue: "Fecha Emisión", metaDue: "Fecha Vencimiento", thDesc: "DESCRIPCIÓN", thImporte: "IMPORTE", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Añadir Servicio", subtotal: "Subtotal", tax: "IVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturas Guardadas", histDesc: "Historial completo en tu dispositivo", tabTemplate: "Factura", tabHistory: "Historial", tabDatos: "Datos", medNombre: "Nombre empresa", medCalle: "Calle", medCP: "Código postal", medCiudad: "Ciudad", medPais: "País", medEmail: "Email", medTelefono: "Teléfono", medBanco: "Nombre banco", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" },
+        en: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "HOLDER:", invTo: "INVOICE TO (CLIENT)", cName: "NAME / COMPANY:", cVat: "VAT NUMBER:", cStreet: "STREET:", cCity: "CITY:", cPostal: "POSTAL CODE:", cCountry: "COUNTRY:", invFrom: "INVOICE FROM (ISSUER)", mCompany: "COMPANY:", mVat: "VAT ID:", mKvk: "KVK NO:", mStatus: "STATUS:", metaNo: "Invoice No.", metaIssue: "Issue Date", metaDue: "Due Date", thDesc: "DESCRIPTION", thImporte: "AMOUNT", thHours: "HRS", thRate: "RATE (€)", thAmount: "TOTAL", addService: "Add Service", subtotal: "Subtotal", tax: "Tax (", total: "TOTAL", sidebar: "INVOICE", histTitle: "Saved Invoices", histDesc: "Complete history on device", tabTemplate: "Invoice", tabHistory: "History", tabDatos: "Data", medNombre: "Company name", medCalle: "Street", medCP: "Postal code", medCiudad: "City", medPais: "Country", medEmail: "Email", medTelefono: "Phone", medBanco: "Bank name", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Account holder" },
+        nl: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TEN NAME VAN:", invTo: "FACTUUR AAN (KLANT)", cName: "NAAM / BEDRIJF:", cVat: "BTW-NUMMER:", cStreet: "STRAAT:", cCity: "STAD:", cPostal: "POSTCODE:", cCountry: "LAND:", invFrom: "FACTUUR VAN (AFZENDER)", mCompany: "BEDRIJF:", mVat: "BTW-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Factuurnummer", metaIssue: "Factuurdatum", metaDue: "Vervaldatum", thDesc: "OMSCHRIJVING", thImporte: "BEDRAG", thHours: "UREN", thRate: "TARIEF (€)", thAmount: "BEDRAG", addService: "Dienst Toevoegen", subtotal: "Subtotaal", tax: "BTW (", total: "TOTAAL", sidebar: "FACTUUR", histTitle: "Opgeslagen Facturen", histDesc: "Volledige geschiedenis", tabTemplate: "Factuur", tabHistory: "Geschiedenis", tabDatos: "Gegevens", medNombre: "Bedrijfsnaam", medCalle: "Straat", medCP: "Postcode", medCiudad: "Stad", medPais: "Land", medEmail: "E-mail", medTelefono: "Telefoon", medBanco: "Banknaam", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Rekeninghouder" },
+        de: { bBank: "BANK:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "INHABER:", invTo: "RECHNUNG AN (KUNDE)", cName: "NAME / FIRMA:", cVat: "UST-IDNR.:", cStreet: "STRASSE:", cCity: "STADT:", cPostal: "PLZ:", cCountry: "LAND:", invFrom: "RECHNUNG VON (AUSSTELLER)", mCompany: "FIRMA:", mVat: "UST-ID:", mKvk: "KVK NR:", mStatus: "STATUS:", metaNo: "Rechnungsnr.", metaIssue: "Datum", metaDue: "Fälligkeit", thDesc: "BESCHREIBUNG", thImporte: "BETRAG", thHours: "STND", thRate: "SATZ (€)", thAmount: "BETRAG", addService: "Dienst Hinzufügen", subtotal: "Zwischensumme", tax: "MwSt. (", total: "GESAMT", sidebar: "RECHNUNG", histTitle: "Rechnungen", histDesc: "Verlauf", tabTemplate: "Rechnung", tabHistory: "Verlauf", tabDatos: "Daten", medNombre: "Firmenname", medCalle: "Straße", medCP: "PLZ", medCiudad: "Stadt", medPais: "Land", medEmail: "E-Mail", medTelefono: "Telefon", medBanco: "Bankname", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Kontoinhaber" },
+        ro: { bBank: "BANCA:", bIban: "IBAN:", bSwift: "SWIFT:", bHolder: "TITULAR:", invTo: "FACTURĂ CĂTRE (CLIENT)", cName: "NUME / FIRMĂ:", cVat: "CUI / TVA:", cStreet: "STRADA:", cCity: "ORAȘ:", cPostal: "COD POȘTAL:", cCountry: "ȚARA:", invFrom: "FACTURĂ DE LA (EMITENT)", mCompany: "FIRMA:", mVat: "COD TVA:", mKvk: "NR. REG:", mStatus: "STARE:", metaNo: "Nr. factură", metaIssue: "Data emiterii", metaDue: "Data scadenței", thDesc: "DESCRIERE", thImporte: "SUMĂ", thHours: "ORE", thRate: "TARIF (€)", thAmount: "TOTAL", addService: "Adaugă serviciu", subtotal: "Subtotal", tax: "TVA (", total: "TOTAL", sidebar: "FACTURA", histTitle: "Facturi salvate", histDesc: "Istoric pe dispozitiv", tabTemplate: "Factură", tabHistory: "Istoric", tabDatos: "Date", medNombre: "Nume companie", medCalle: "Stradă", medCP: "Cod poștal", medCiudad: "Oraș", medPais: "Țară", medEmail: "Email", medTelefono: "Telefon", medBanco: "Nume bancă", medIban: "IBAN", medSwift: "SWIFT", medTitular: "Titular" }
       };
 
       window.onload = function () {
@@ -1619,6 +1643,8 @@
         cargarMisDatos(false);
         cargarClienteExtra();
         cargarClienteOcultos();
+        cargarEtiquetasCliente();
+        aplicarEtiquetasClienteAFactura();
         aplicarClienteExtraAFactura();
         ocultarFilasClienteFijas();
         cargarCamposCliente();
@@ -2084,9 +2110,9 @@
       /* ================= SONIDO DE INTERFAZ Y VIBRACIÓN =================
          Comparte el mismo AudioContext que la música del menú. */
       /* Control de versiones: sube el número en cada entrega */
-      const VERSION = "3.2.9";
-      const VERSION_FECHA = "13/08/2026";
-      const VERSION_NOTAS = "'Datos de cliente' ahora permite borrar también sus 6 campos fijos (Nombre empresa, NIF/VAT, Calle...) en Modo Edición, igual que Mis Datos — con su botón ✕ y ocultando la fila correspondiente en la propia factura. Se recuerda qué campos borraste, incluso al recargar la app.";
+      const VERSION = "3.4.0";
+      const VERSION_FECHA = "14/08/2026";
+      const VERSION_NOTAS = "Tres fallos encadenados de las etiquetas de cliente: (1) el renombre no se guardaba en ningún sitio, solo cambiaba la factura en caliente, así que al volver a Datos se perdía; (2) la tarjeta y la factura usaban DOS listas distintas ('Nombre empresa' vs 'NOMBRE / EMPRESA:'), y las de la tarjeta ni siquiera se traducían; (3) al guardar la factura no se guardaban las etiquetas, así que al reabrirla del historial volvían a las de por defecto. Ahora las dos comparten la misma fuente, el renombre se guarda por idioma, y viaja con la factura. De paso, el código postal del cliente tampoco se guardaba en el historial.";
 
       function mostrarVersion() {
         fx("abrir");
@@ -2810,6 +2836,10 @@
       // negra, en vez de una gris colgando de una barra genérica aparte.
       function htmlDeGrupo(g, editable, cabeceraNegra) {
         const esFijo = g.categoria === "fijo";
+        // Estas dos etiquetas estaban escritas a mano en español, así que
+        // no cambiaban nunca de idioma (las de cantidad y precio sí,
+        // porque vienen del catálogo, que está traducido).
+        const tr = i18n[idiomaActual] || i18n.es;
         // La cabecera usa exactamente la misma rejilla que sus propias
         // filas: con ✕ o sin ella, con columna de cantidad o sin ella.
         const clases = ["grupo-cab"];
@@ -2818,10 +2848,10 @@
         if (!editable) clases.push("grupo-cab-lectura");
         let html = `<div class="grupo-articulos${cabeceraNegra ? " grupo-solo" : ""}">
           <div class="${clases.join(" ")}">
-            <span class="gc-desc">DESCRIPCIÓN</span>
+            <span class="gc-desc">${tr.thDesc}</span>
             ${esFijo ? "" : `<span class="gc-cant">${g.etq.cant}</span>`}
             <span class="gc-precio">${g.etq.precio}</span>
-            <span class="gc-total">IMPORTE</span>
+            <span class="gc-total">${tr.thImporte}</span>
             ${editable ? '<span class="gc-x"></span>' : ""}
           </div>`;
         g.lineas.forEach(({ item, index }) => {
@@ -3431,6 +3461,11 @@
           if (c.clave && t[c.clave]) c.label = t[c.clave];
         });
         guardarCamposCliente();
+        // Los 6 campos fijos del cliente comparten fuente con la factura:
+        // se vuelcan al recuadro y se repinta la tarjeta, para que los dos
+        // sitios enseñen lo mismo en el idioma nuevo.
+        aplicarEtiquetasClienteAFactura();
+        renderizarDatosClienteTarjeta();
 
         aplicarConfigBarra(false);
       }
@@ -3522,14 +3557,48 @@
       // Los 6 campos fijos del recuadro "Facturar a" de la propia factura
       // — la tarjeta de Datos es un espejo de ESTOS, no del formulario de
       // clientes guardados (que es un formulario aparte, para la lista).
+      // Estos 6 campos comparten la MISMA fuente de etiquetas que el
+      // recuadro "Facturar a" de la factura (las claves cName, cVat...),
+      // así que ya no hay dos listas distintas que se desincronicen: la
+      // tarjeta mostraba "Nombre empresa" y la factura "NOMBRE / EMPRESA:",
+      // y además las de la tarjeta estaban escritas a mano en español y
+      // no cambiaban nunca de idioma.
       const CAMPOS_CLIENTE_FACTURA = [
-        { sufijo: "name", label: "Nombre empresa" },
-        { sufijo: "vat", label: "NIF / VAT" },
-        { sufijo: "address", label: "Calle" },
-        { sufijo: "city", label: "Ciudad" },
-        { sufijo: "postal", label: "Código postal" },
-        { sufijo: "country", label: "País" },
+        { sufijo: "name", clave: "cName" },
+        { sufijo: "vat", clave: "cVat" },
+        { sufijo: "address", clave: "cStreet" },
+        { sufijo: "city", clave: "cCity" },
+        { sufijo: "postal", clave: "cPostal" },
+        { sufijo: "country", clave: "cCountry" },
       ];
+
+      // Renombres del usuario, guardados POR IDIOMA (igual que en Mis
+      // Datos): si renombras un campo en español, al pasar a inglés se
+      // sigue traduciendo solo, salvo que también lo hayas renombrado ahí.
+      let etiquetasClienteRenombradas = {};
+      function cargarEtiquetasCliente() {
+        try { etiquetasClienteRenombradas = JSON.parse(localStorage.getItem("agx_etq_cliente") || "{}"); }
+        catch (e) { etiquetasClienteRenombradas = {}; }
+      }
+      function guardarEtiquetasCliente() { localStorage.setItem("agx_etq_cliente", JSON.stringify(etiquetasClienteRenombradas)); }
+
+      // Etiqueta que toca mostrar AHORA para un campo: tu renombre en este
+      // idioma si lo hay; si no, la traducción normal.
+      function etiquetaCliente(campo) {
+        const propio = etiquetasClienteRenombradas[idiomaActual] && etiquetasClienteRenombradas[idiomaActual][campo.sufijo];
+        if (propio) return propio;
+        const t = i18n[idiomaActual] || i18n.es;
+        return (t[campo.clave] || "").replace(/:$/, "");
+      }
+
+      // Vuelca las etiquetas actuales al recuadro de la factura, para que
+      // los dos sitios enseñen siempre lo mismo.
+      function aplicarEtiquetasClienteAFactura() {
+        CAMPOS_CLIENTE_FACTURA.forEach((c) => {
+          const lbl = document.getElementById("lbl-c-" + c.sufijo);
+          if (lbl) lbl.innerText = etiquetaCliente(c) + ":";
+        });
+      }
 
       // Escribir aquí actualiza la factura al instante; al volver a esta
       // pestaña, la tarjeta se refresca con lo que haya en la factura —
@@ -3597,9 +3666,14 @@
       // tarjeta no lleva "+ Añadir campo" ni botón de quitar. Lo que SÍ
       // se puede hacer en Modo Edición es renombrar la etiqueta, y eso
       // renombra también la que se imprime en la propia factura.
+      // El renombre AHORA SE GUARDA (antes solo cambiaba la factura en
+      // caliente, y al volver a Datos o recargar se perdía).
       function renombrarEtiquetaClienteFactura(sufijo, texto) {
+        if (!etiquetasClienteRenombradas[idiomaActual]) etiquetasClienteRenombradas[idiomaActual] = {};
+        etiquetasClienteRenombradas[idiomaActual][sufijo] = texto;
+        guardarEtiquetasCliente();
         const lbl = document.getElementById("lbl-c-" + sufijo);
-        if (lbl) lbl.innerText = texto;
+        if (lbl) lbl.innerText = texto + ":";
       }
 
       // Campos EXTRA del cliente, "por si los necesitas" — aparte de los 6
@@ -3666,14 +3740,14 @@
         if (!cont) return;
         cont.innerHTML = "";
         const camposFijosVisibles = CAMPOS_CLIENTE_FACTURA.filter((c) => !camposClienteOcultos.includes(c.sufijo));
-        const todasEtiquetas = camposFijosVisibles.map((c) => c.label.length).concat(camposClienteExtra.map((c) => (c.label || "").length));
+        const todasEtiquetas = camposFijosVisibles.map((c) => etiquetaCliente(c).length).concat(camposClienteExtra.map((c) => (c.label || "").length));
         const anchoEtiqueta = Math.max(6, ...todasEtiquetas) + 1;
         camposFijosVisibles.forEach((c) => {
           const origen = document.getElementById("client-" + c.sufijo);
           const fila = document.createElement("div");
           fila.className = "dato-row dato-row-claro";
           fila.innerHTML = `
-            <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${c.label}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="renombrarEtiquetaClienteFactura('${c.sufijo}', this.value)" />
+            <input class="dato-label" type="text" size="${anchoEtiqueta}" value="${etiquetaCliente(c).replace(/"/g, "&quot;")}" ${editandoPlantillaEstructura ? "" : "readonly"} oninput="renombrarEtiquetaClienteFactura('${c.sufijo}', this.value)" />
             <input class="dato-valor" id="dc-${c.sufijo}" type="text" value="${origen ? (origen.innerText || "").replace(/"/g, "&quot;") : ""}" oninput="sincronizarCampoClienteDesdeTarjeta('${c.sufijo}')" />`;
           if (editandoPlantillaEstructura) {
             const b = document.createElement("button");
@@ -4045,7 +4119,7 @@
         const taxRate = parseFloat(document.getElementById("tax-rate").value) || 0;
         const total = subtotal + (subtotal * taxRate) / 100;
         const factura = {
-          id: numFactura, invoiceNo: numFactura, clientName: clienteNombre, clientVat: getVal("client-vat"), clientAddress: getVal("client-address"), clientCity: getVal("client-city"), clientCountry: getVal("client-country"), companyName: getVal("company-name"), companyVat: getVal("company-vat"), companyKvk: getVal("company-kvk"), companyStatus: getVal("company-status"), addrStreet: getVal("addr-street"), addrPostal: getVal("addr-postal"), addrCity: getVal("addr-city"), addrCountry: getVal("addr-country"), contactEmail: getVal("contact-email"), contactPhone: getVal("contact-phone"), bankName: getVal("bank-name"), bankIban: getVal("bank-iban"), bankBic: getVal("bank-bic"), bankHolder: getVal("bank-holder"), issueDate: getVal("issue-date"), dueDate: getVal("due-date"), servicios: JSON.parse(JSON.stringify(servicios)), taxRate: taxRate, total: total, idioma: idiomaActual,
+          id: numFactura, invoiceNo: numFactura, clientName: clienteNombre, clientVat: getVal("client-vat"), clientAddress: getVal("client-address"), clientCity: getVal("client-city"), clientCountry: getVal("client-country"), companyName: getVal("company-name"), companyVat: getVal("company-vat"), companyKvk: getVal("company-kvk"), companyStatus: getVal("company-status"), addrStreet: getVal("addr-street"), addrPostal: getVal("addr-postal"), addrCity: getVal("addr-city"), addrCountry: getVal("addr-country"), contactEmail: getVal("contact-email"), contactPhone: getVal("contact-phone"), bankName: getVal("bank-name"), bankIban: getVal("bank-iban"), bankBic: getVal("bank-bic"), bankHolder: getVal("bank-holder"), issueDate: getVal("issue-date"), dueDate: getVal("due-date"), servicios: JSON.parse(JSON.stringify(servicios)), taxRate: taxRate, total: total, idioma: idiomaActual, /* etiquetas del cliente TAL COMO estaban al guardar: sin esto, al reabrir la factura desde el historial se perdía cualquier nombre que hubieras puesto tú */ etqCliente: (function(){ const o = {}; CAMPOS_CLIENTE_FACTURA.forEach((c) => { o[c.sufijo] = etiquetaCliente(c); }); return o; })(), clientPostal: getVal("client-postal"),
         };
         const index = historialFacturas.findIndex((f) => f.invoiceNo === numFactura);
         if (index >= 0) historialFacturas[index] = factura; else historialFacturas.unshift(factura);
@@ -4207,7 +4281,15 @@
 
       function cargarFactura(numFactura) {
         const f = historialFacturas.find((fact) => fact.invoiceNo === numFactura); if (!f) return;
-        setVal("invoice-no", f.invoiceNo); setVal("client-name", f.clientName); setVal("client-vat", f.clientVat || ""); setVal("client-address", f.clientAddress || ""); setVal("client-city", f.clientCity || ""); setVal("client-country", f.clientCountry || "");
+        setVal("invoice-no", f.invoiceNo); setVal("client-name", f.clientName); setVal("client-vat", f.clientVat || ""); setVal("client-address", f.clientAddress || ""); setVal("client-city", f.clientCity || ""); setVal("client-country", f.clientCountry || ""); setVal("client-postal", f.clientPostal || "");
+        // Etiquetas del cliente tal como estaban al guardar. Si la
+        // factura es antigua y no las tiene, se usan las actuales.
+        if (f.etqCliente) {
+          CAMPOS_CLIENTE_FACTURA.forEach((c) => {
+            const lbl = document.getElementById("lbl-c-" + c.sufijo);
+            if (lbl && f.etqCliente[c.sufijo]) lbl.innerText = f.etqCliente[c.sufijo] + ":";
+          });
+        } else { aplicarEtiquetasClienteAFactura(); }
         setVal("company-name", f.companyName || ""); setVal("company-vat", f.companyVat || ""); setVal("company-kvk", f.companyKvk || ""); setVal("company-status", f.companyStatus || "");
         setVal("addr-street", f.addrStreet || ""); setVal("addr-postal", f.addrPostal || ""); setVal("addr-city", f.addrCity || ""); setVal("addr-country", f.addrCountry || ""); setVal("contact-email", f.contactEmail || ""); setVal("contact-phone", f.contactPhone || "");
         setVal("bank-name", f.bankName || ""); setVal("bank-iban", f.bankIban || ""); setVal("bank-bic", f.bankBic || ""); setVal("bank-holder", f.bankHolder || "");
